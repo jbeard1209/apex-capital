@@ -1,1153 +1,5 @@
 [
   {
-    "ts": "2026-08-28T11:04:25.568063",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T11:06:23.057100",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T15:06:44.542201",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T15:06:55.064581",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T15:06:55.070098",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T15:08:52.680646",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T11:10:45.375620",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T11:10:56.028691",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T11:10:56.031615",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T11:13:00.502846",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T15:13:21.785281",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T15:13:33.638671",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T15:13:33.641351",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T15:15:31.703867",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T11:58:02.712714",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T11:58:15.392428",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T11:58:15.397060",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:00:12.026513",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:02:52.963820",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:03:06.565499",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:03:06.572214",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:05:02.762464",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:05:23.105939",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:05:38.690068",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:05:38.696527",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:07:38.994371",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:13:50.376092",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:14:00.875054",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:14:00.879938",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:16:06.048377",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:17:20.811486",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:17:31.189266",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:17:31.195389",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:19:28.969843",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:20:29.220432",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:20:39.558938",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:20:39.564752",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:22:35.945081",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:23:23.298241",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:23:33.697308",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:23:33.704304",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:25:32.201417",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:26:31.995877",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:26:42.274371",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:26:42.279905",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:28:42.847852",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:29:24.671309",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:29:36.464690",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:29:36.469842",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:31:31.630450",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:31:52.287918",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:32:02.357060",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:32:02.363874",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:33:57.956007",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:36:52.368226",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:37:03.095303",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:37:03.102047",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T12:38:59.143080",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:39:19.782314",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:39:30.062353",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:39:30.068255",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:41:33.016733",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T13:07:04.706206",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T13:10:25.402493",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T13:10:35.755249",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T13:10:35.762615",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T13:12:32.294189",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T13:12:57.844364",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T13:13:08.039990",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T13:13:08.045016",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T13:15:04.965972",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T13:16:32.672931",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T13:16:42.800644",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T13:16:42.806318",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T13:18:40.199731",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T13:20:15.153053",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T13:20:25.537811",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T13:20:25.544592",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T13:22:23.153238",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T17:22:44.807465",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T17:22:54.940023",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T17:22:54.945583",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T17:24:51.715393",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T15:52:23.659834",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T15:52:35.984300",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T15:52:35.988639",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T15:55:08.950066",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:00:15.867438",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:00:27.042821",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:00:27.047117",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:02:50.391652",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:03:48.925913",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:03:59.727914",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:03:59.732524",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:06:27.349541",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T20:06:51.397270",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T20:07:01.751676",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T20:07:01.756630",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T20:09:22.033871",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:17:32.105731",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:17:50.892796",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:17:50.903123",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:20:16.312279",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T20:20:38.866438",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T20:20:53.243536",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T20:20:53.246595",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T20:23:18.573899",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:27:26.246348",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "MODERATE",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-28T16:27:56.230370",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "MODERATE",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
     "ts": "2026-08-28T16:28:09.701641",
     "ticker": "NVDA",
     "conviction": 4,
@@ -2093,6 +945,1224 @@
   },
   {
     "ts": "2026-09-04T18:29:07.088097",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-29T23:16:21.875080",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-29T23:18:14.461969",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-29T23:20:29.665666",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T04:20:42.080787",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-29T23:21:17.580657",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T04:21:30.662134",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T08:35:07.086399",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T13:35:18.218797",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T16:33:08.658771",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T16:33:20.000514",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T16:33:20.006538",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T16:35:35.978250",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T16:36:09.831059",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T16:36:20.295803",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T16:36:20.303189",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T16:38:29.903320",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T16:39:21.358210",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T21:39:34.338410",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T16:41:05.970545",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T21:41:18.555108",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T20:44:51.049181",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T20:45:00.919368",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T20:45:00.925744",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T20:47:10.591600",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T20:47:39.611926",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T20:47:50.670770",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T20:47:50.678926",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T21:06:04.819024",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T21:06:53.528800",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T21:07:24.588775",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T21:09:08.951333",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T21:09:19.079323",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T21:09:19.087919",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T21:11:22.051726",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T23:34:11.813144",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T04:34:28.480130",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T23:35:04.488219",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T04:35:21.147815",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T23:41:54.322422",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T23:42:04.745480",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T23:42:04.748543",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-09-30T23:44:22.666149",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T00:14:15.338195",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T00:14:25.162626",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T00:14:25.169999",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T00:16:42.934993",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T00:16:52.959863",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T00:16:52.965817",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T00:18:58.202132",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T00:19:43.890971",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T00:19:54.077453",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T00:19:54.085905",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T00:21:58.563021",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T00:22:26.282320",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T05:22:38.142529",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T00:25:12.650743",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T05:25:25.040455",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T16:03:15.164964",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T21:05:09.316578",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T17:56:13.380436",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T18:53:21.141870",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T18:53:36.765734",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T18:53:36.772267",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T18:56:09.400309",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T18:56:41.781867",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T18:56:54.309013",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T18:56:54.315080",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T18:59:23.784711",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T18:59:54.731712",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T19:00:06.425031",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T19:00:06.430373",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T19:02:22.075094",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T19:03:01.038876",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T19:03:12.645518",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T19:03:12.651681",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T19:05:28.638881",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T19:14:18.577366",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T19:14:29.385136",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T19:14:29.391759",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T19:16:41.837876",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T19:16:51.582953",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-02T00:17:04.267520",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T19:26:16.600555",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-02T00:26:29.304763",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T19:38:35.731613",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-02T00:38:48.202527",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T19:44:20.637686",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-02T00:45:58.989736",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T20:51:05.241226",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-02T01:51:19.903605",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T20:57:50.911918",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-02T01:58:16.707793",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T21:03:45.049033",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-02T02:03:59.352837",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T21:08:46.126889",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T21:09:44.462238",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-02T02:09:58.096260",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-01T21:13:20.385027",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-02T02:13:34.406744",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-03T11:15:58.128382",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-03T11:16:10.519692",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-03T11:16:10.527700",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "MODERATE",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-03T11:18:20.022460",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-03T11:19:14.674497",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-03T16:19:31.033099",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-03T11:20:02.103193",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-03T16:20:15.338722",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-03T11:36:46.964472",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "MODERATE",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-10-03T16:37:01.521582",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",

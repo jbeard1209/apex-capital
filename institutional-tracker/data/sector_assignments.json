@@ -1,9 +1,991 @@
 {
-  "generated_at": "2026-09-08T17:00:45.450078",
+  "generated_at": "2026-10-03T11:34:05.499986",
   "leader": "R&D Team Leader",
-  "cro_risk_level": "LOW",
-  "sectors_scanned": 0,
-  "sectors_assigned": 0,
-  "all_scored": [],
-  "assignments": []
+  "cro_risk_level": "MODERATE",
+  "sectors_scanned": 16,
+  "sectors_assigned": 8,
+  "all_scored": [
+    {
+      "sector_name": "Cybersecurity",
+      "etf": "CIBR",
+      "description": "Network security, endpoint, and cloud security",
+      "watchlist": [
+        "CRWD",
+        "PANW",
+        "ZS",
+        "FTNT",
+        "OKTA",
+        "S",
+        "CYBR",
+        "TENB",
+        "RPM",
+        "SAIL",
+        "MRVL"
+      ],
+      "score_data": {
+        "etf": "CIBR",
+        "price": 104.7,
+        "ma50": 97.4,
+        "ma200": 79.84,
+        "trend": "bullish",
+        "rsi_14": 63.9,
+        "ret_1m_pct": 9.84,
+        "ret_3m_pct": 13.55,
+        "volatility_20d": 28.2,
+        "pct_from_50ma": 7.49,
+        "pct_from_200ma": 31.13,
+        "score": 12,
+        "score_breakdown": {
+          "trend": 3,
+          "rsi": 3,
+          "ret_1m": 2,
+          "ret_3m": 2,
+          "vol": 2
+        }
+      }
+    },
+    {
+      "sector_name": "Cloud & SaaS",
+      "etf": "CLOU",
+      "description": "Cloud infrastructure, SaaS platforms, and data",
+      "watchlist": [
+        "MSFT",
+        "AMZN",
+        "GOOGL",
+        "CRM",
+        "NOW",
+        "SNOW",
+        "DDOG",
+        "MDB",
+        "NET",
+        "CFLT",
+        "VRT"
+      ],
+      "score_data": {
+        "etf": "CLOU",
+        "price": 28.81,
+        "ma50": 27.53,
+        "ma200": 22.9,
+        "trend": "bullish",
+        "rsi_14": 55.0,
+        "ret_1m_pct": 1.27,
+        "ret_3m_pct": 20.95,
+        "volatility_20d": 28.9,
+        "pct_from_50ma": 4.63,
+        "pct_from_200ma": 25.8,
+        "score": 11,
+        "score_breakdown": {
+          "trend": 3,
+          "rsi": 3,
+          "ret_1m": 1,
+          "ret_3m": 2,
+          "vol": 2
+        }
+      }
+    },
+    {
+      "sector_name": "Semiconductors",
+      "etf": "SMH",
+      "description": "Chip design, manufacturing, and equipment",
+      "watchlist": [
+        "NVDA",
+        "AMD",
+        "AVGO",
+        "QCOM",
+        "TXN",
+        "AMAT",
+        "LRCX",
+        "KLAC",
+        "MU",
+        "ARM",
+        "RKLB"
+      ],
+      "score_data": {
+        "etf": "SMH",
+        "price": 630.6,
+        "ma50": 569.85,
+        "ma200": 499.48,
+        "trend": "bullish",
+        "rsi_14": 88.4,
+        "ret_1m_pct": 14.12,
+        "ret_3m_pct": 8.45,
+        "volatility_20d": 31.2,
+        "pct_from_50ma": 10.66,
+        "pct_from_200ma": 26.25,
+        "score": 9,
+        "score_breakdown": {
+          "trend": 3,
+          "rsi": 0,
+          "ret_1m": 2,
+          "ret_3m": 2,
+          "vol": 2
+        }
+      }
+    },
+    {
+      "sector_name": "Biotech",
+      "etf": "IBB",
+      "description": "Biotechnology, genomics, and drug discovery",
+      "watchlist": [
+        "AMGN",
+        "GILD",
+        "VRTX",
+        "REGN",
+        "MRNA",
+        "BIIB",
+        "ALNY",
+        "INCY",
+        "EXAS",
+        "NBIX",
+        "NUE"
+      ],
+      "score_data": {
+        "etf": "IBB",
+        "price": 205.29,
+        "ma50": 203.76,
+        "ma200": 180.99,
+        "trend": "bullish",
+        "rsi_14": 51.1,
+        "ret_1m_pct": -3.98,
+        "ret_3m_pct": 3.57,
+        "volatility_20d": 20.6,
+        "pct_from_50ma": 0.75,
+        "pct_from_200ma": 13.42,
+        "score": 9,
+        "score_breakdown": {
+          "trend": 3,
+          "rsi": 3,
+          "ret_1m": 0,
+          "ret_3m": 1,
+          "vol": 2
+        }
+      }
+    },
+    {
+      "sector_name": "Technology",
+      "etf": "XLK",
+      "description": "Software, hardware, and IT services",
+      "watchlist": [
+        "MSFT",
+        "AAPL",
+        "NVDA",
+        "META",
+        "GOOGL",
+        "ORCL",
+        "CRM",
+        "ADBE",
+        "NOW",
+        "INTU",
+        "TSM"
+      ],
+      "score_data": {
+        "etf": "XLK",
+        "price": 199.81,
+        "ma50": 186.13,
+        "ma200": 164.58,
+        "trend": "bullish",
+        "rsi_14": 83.5,
+        "ret_1m_pct": 7.57,
+        "ret_3m_pct": 11.64,
+        "volatility_20d": 17.8,
+        "pct_from_50ma": 7.35,
+        "pct_from_200ma": 21.4,
+        "score": 8,
+        "score_breakdown": {
+          "trend": 3,
+          "rsi": 0,
+          "ret_1m": 2,
+          "ret_3m": 2,
+          "vol": 1
+        }
+      }
+    },
+    {
+      "sector_name": "Healthcare",
+      "etf": "XLV",
+      "description": "Pharmaceuticals, medical devices, and managed care",
+      "watchlist": [
+        "UNH",
+        "LLY",
+        "ABBV",
+        "JNJ",
+        "MRK",
+        "TMO",
+        "ABT",
+        "ISRG",
+        "VRTX",
+        "ELV",
+        "C"
+      ],
+      "score_data": {
+        "etf": "XLV",
+        "price": 166.18,
+        "ma50": 168.02,
+        "ma200": 155.5,
+        "trend": "neutral",
+        "rsi_14": 46.3,
+        "ret_1m_pct": -3.72,
+        "ret_3m_pct": 1.44,
+        "volatility_20d": 14.3,
+        "pct_from_50ma": -1.09,
+        "pct_from_200ma": 6.87,
+        "score": 5,
+        "score_breakdown": {
+          "trend": 1,
+          "rsi": 3,
+          "ret_1m": 0,
+          "ret_3m": 0,
+          "vol": 1
+        }
+      }
+    },
+    {
+      "sector_name": "Industrials",
+      "etf": "XLI",
+      "description": "Aerospace, machinery, and transportation",
+      "watchlist": [
+        "HON",
+        "GE",
+        "CAT",
+        "DE",
+        "RTX",
+        "UPS",
+        "EMR",
+        "ETN",
+        "CARR",
+        "OTIS"
+      ],
+      "score_data": {
+        "etf": "XLI",
+        "price": 169.95,
+        "ma50": 176.46,
+        "ma200": 171.48,
+        "trend": "bearish",
+        "rsi_14": 51.8,
+        "ret_1m_pct": -2.38,
+        "ret_3m_pct": -6.56,
+        "volatility_20d": 12.9,
+        "pct_from_50ma": -3.69,
+        "pct_from_200ma": -0.89,
+        "score": 4,
+        "score_breakdown": {
+          "trend": 0,
+          "rsi": 3,
+          "ret_1m": 0,
+          "ret_3m": 0,
+          "vol": 1
+        }
+      }
+    },
+    {
+      "sector_name": "Communication Services",
+      "etf": "XLC",
+      "description": "Social media, streaming, telecom, and gaming",
+      "watchlist": [
+        "META",
+        "GOOGL",
+        "NFLX",
+        "DIS",
+        "VZ",
+        "T",
+        "TMUS",
+        "CHTR",
+        "EA",
+        "TTWO"
+      ],
+      "score_data": {
+        "etf": "XLC",
+        "price": 110.32,
+        "ma50": 111.19,
+        "ma200": 113.12,
+        "trend": "bearish",
+        "rsi_14": 37.3,
+        "ret_1m_pct": -2.38,
+        "ret_3m_pct": -0.3,
+        "volatility_20d": 21.5,
+        "pct_from_50ma": -0.79,
+        "pct_from_200ma": -2.47,
+        "score": 3,
+        "score_breakdown": {
+          "trend": 0,
+          "rsi": 1,
+          "ret_1m": 0,
+          "ret_3m": 0,
+          "vol": 2
+        }
+      }
+    },
+    {
+      "sector_name": "Consumer Discretionary",
+      "etf": "XLY",
+      "description": "Retail, autos, travel, and leisure",
+      "watchlist": [
+        "AMZN",
+        "TSLA",
+        "MCD",
+        "NKE",
+        "LOW",
+        "HD",
+        "BKNG",
+        "ABNB",
+        "SBUX",
+        "RCL"
+      ],
+      "score_data": {
+        "etf": "XLY",
+        "price": 110.04,
+        "ma50": 114.18,
+        "ma200": 115.91,
+        "trend": "bearish",
+        "rsi_14": 38.7,
+        "ret_1m_pct": -5.3,
+        "ret_3m_pct": -6.05,
+        "volatility_20d": 14.6,
+        "pct_from_50ma": -3.63,
+        "pct_from_200ma": -5.06,
+        "score": 2,
+        "score_breakdown": {
+          "trend": 0,
+          "rsi": 1,
+          "ret_1m": 0,
+          "ret_3m": 0,
+          "vol": 1
+        }
+      }
+    },
+    {
+      "sector_name": "Materials",
+      "etf": "XLB",
+      "description": "Chemicals, metals, and mining (non-energy)",
+      "watchlist": [
+        "LIN",
+        "APD",
+        "FCX",
+        "NEM",
+        "DOW",
+        "PPG",
+        "SHW",
+        "ECL",
+        "ALB",
+        "MP"
+      ],
+      "score_data": {
+        "etf": "XLB",
+        "price": 48.86,
+        "ma50": 51.37,
+        "ma200": 50.24,
+        "trend": "bearish",
+        "rsi_14": 36.3,
+        "ret_1m_pct": -6.72,
+        "ret_3m_pct": -4.71,
+        "volatility_20d": 12.7,
+        "pct_from_50ma": -4.88,
+        "pct_from_200ma": -2.75,
+        "score": 2,
+        "score_breakdown": {
+          "trend": 0,
+          "rsi": 1,
+          "ret_1m": 0,
+          "ret_3m": 0,
+          "vol": 1
+        }
+      }
+    },
+    {
+      "sector_name": "Regional Banks",
+      "etf": "KRE",
+      "description": "US regional and community banking sector",
+      "watchlist": [
+        "USB",
+        "PNC",
+        "TFC",
+        "FITB",
+        "HBAN",
+        "RF",
+        "CFG",
+        "KEY",
+        "MTB",
+        "ZION"
+      ],
+      "score_data": {
+        "etf": "KRE",
+        "price": 70.78,
+        "ma50": 74.0,
+        "ma200": 69.83,
+        "trend": "neutral",
+        "rsi_14": 31.7,
+        "ret_1m_pct": -4.92,
+        "ret_3m_pct": -5.18,
+        "volatility_20d": 14.0,
+        "pct_from_50ma": -4.35,
+        "pct_from_200ma": 1.36,
+        "score": 2,
+        "score_breakdown": {
+          "trend": 1,
+          "rsi": 0,
+          "ret_1m": 0,
+          "ret_3m": 0,
+          "vol": 1
+        }
+      }
+    },
+    {
+      "sector_name": "Retail",
+      "etf": "XRT",
+      "description": "US retail \u2014 big box, specialty, and e-commerce",
+      "watchlist": [
+        "WMT",
+        "AMZN",
+        "TGT",
+        "COST",
+        "TJX",
+        "ROST",
+        "DG",
+        "DLTR",
+        "KSS",
+        "M"
+      ],
+      "score_data": {
+        "etf": "XRT",
+        "price": 82.63,
+        "ma50": 86.49,
+        "ma200": 85.38,
+        "trend": "bearish",
+        "rsi_14": 33.8,
+        "ret_1m_pct": -4.53,
+        "ret_3m_pct": -5.01,
+        "volatility_20d": 18.5,
+        "pct_from_50ma": -4.47,
+        "pct_from_200ma": -3.22,
+        "score": 2,
+        "score_breakdown": {
+          "trend": 0,
+          "rsi": 0,
+          "ret_1m": 0,
+          "ret_3m": 0,
+          "vol": 2
+        }
+      }
+    },
+    {
+      "sector_name": "Financials",
+      "etf": "XLF",
+      "description": "Banks, insurance, and asset managers",
+      "watchlist": [
+        "JPM",
+        "BAC",
+        "GS",
+        "MS",
+        "WFC",
+        "BLK",
+        "V",
+        "MA",
+        "AXP",
+        "SPGI"
+      ],
+      "score_data": {
+        "etf": "XLF",
+        "price": 53.49,
+        "ma50": 56.65,
+        "ma200": 53.32,
+        "trend": "neutral",
+        "rsi_14": 13.8,
+        "ret_1m_pct": -8.33,
+        "ret_3m_pct": -4.23,
+        "volatility_20d": 11.4,
+        "pct_from_50ma": -5.58,
+        "pct_from_200ma": 0.31,
+        "score": 1,
+        "score_breakdown": {
+          "trend": 1,
+          "rsi": 0,
+          "ret_1m": 0,
+          "ret_3m": 0,
+          "vol": 0
+        }
+      }
+    },
+    {
+      "sector_name": "Defense & Aerospace",
+      "etf": "ITA",
+      "description": "Defense contractors, aerospace, and government services",
+      "watchlist": [
+        "LMT",
+        "RTX",
+        "NOC",
+        "GD",
+        "BA",
+        "HII",
+        "LDOS",
+        "SAIC",
+        "CACI",
+        "BWXT"
+      ],
+      "score_data": {
+        "etf": "ITA",
+        "price": 207.79,
+        "ma50": 230.62,
+        "ma200": 230.07,
+        "trend": "bearish",
+        "rsi_14": 27.9,
+        "ret_1m_pct": -7.94,
+        "ret_3m_pct": -15.13,
+        "volatility_20d": 13.0,
+        "pct_from_50ma": -9.9,
+        "pct_from_200ma": -9.68,
+        "score": 1,
+        "score_breakdown": {
+          "trend": 0,
+          "rsi": 0,
+          "ret_1m": 0,
+          "ret_3m": 0,
+          "vol": 1
+        }
+      }
+    },
+    {
+      "sector_name": "Consumer Staples",
+      "etf": "XLP",
+      "description": "Food, beverages, and household products",
+      "watchlist": [
+        "WMT",
+        "PG",
+        "KO",
+        "PEP",
+        "COST",
+        "PM",
+        "MO",
+        "CL",
+        "KMB",
+        "GIS"
+      ],
+      "score_data": {
+        "etf": "XLP",
+        "price": 80.53,
+        "ma50": 83.94,
+        "ma200": 82.68,
+        "trend": "bearish",
+        "rsi_14": 25.6,
+        "ret_1m_pct": -4.93,
+        "ret_3m_pct": -4.48,
+        "volatility_20d": 11.3,
+        "pct_from_50ma": -4.06,
+        "pct_from_200ma": -2.6,
+        "score": 0,
+        "score_breakdown": {
+          "trend": 0,
+          "rsi": 0,
+          "ret_1m": 0,
+          "ret_3m": 0,
+          "vol": 0
+        }
+      }
+    },
+    {
+      "sector_name": "Real Estate",
+      "etf": "XLRE",
+      "description": "REITs \u2014 datacenter, logistics, residential, healthcare",
+      "watchlist": [
+        "PLD",
+        "AMT",
+        "EQIX",
+        "CCI",
+        "PSA",
+        "DLR",
+        "O",
+        "WELL",
+        "AVB",
+        "EQR"
+      ],
+      "score_data": {
+        "etf": "XLRE",
+        "price": 40.81,
+        "ma50": 43.62,
+        "ma200": 42.52,
+        "trend": "bearish",
+        "rsi_14": 20.4,
+        "ret_1m_pct": -7.0,
+        "ret_3m_pct": -8.32,
+        "volatility_20d": 10.2,
+        "pct_from_50ma": -6.44,
+        "pct_from_200ma": -4.03,
+        "score": 0,
+        "score_breakdown": {
+          "trend": 0,
+          "rsi": 0,
+          "ret_1m": 0,
+          "ret_3m": 0,
+          "vol": 0
+        }
+      }
+    }
+  ],
+  "assignments": [
+    {
+      "agent_id": 1,
+      "sector_name": "Cybersecurity",
+      "sector_etf": "CIBR",
+      "description": "Network security, endpoint, and cloud security",
+      "watchlist": [
+        "CRWD",
+        "PANW",
+        "ZS",
+        "FTNT",
+        "OKTA",
+        "S",
+        "CYBR",
+        "TENB",
+        "RPM",
+        "SAIL",
+        "MRVL"
+      ],
+      "momentum_score": 12,
+      "momentum_data": {
+        "etf": "CIBR",
+        "price": 104.7,
+        "ma50": 97.4,
+        "ma200": 79.84,
+        "trend": "bullish",
+        "rsi_14": 63.9,
+        "ret_1m_pct": 9.84,
+        "ret_3m_pct": 13.55,
+        "volatility_20d": 28.2,
+        "pct_from_50ma": 7.49,
+        "pct_from_200ma": 31.13,
+        "score": 12,
+        "score_breakdown": {
+          "trend": 3,
+          "rsi": 3,
+          "ret_1m": 2,
+          "ret_3m": 2,
+          "vol": 2
+        }
+      },
+      "investment_horizon": "long_term",
+      "leader_rationale": "Cybersecurity is in a confirmed uptrend (+7.5% above 50MA, +31.1% above 200MA). RSI at 64 indicates momentum is building without being overbought \u2014 ideal capture-the-momentum entry zone. Sector returned +9.8% (1M) / +13.6% (3M) with 28% annualised volatility \u2014 sufficient movement to capture momentum.",
+      "assigned_at": "2026-10-03T11:34:05.494246",
+      "cro_risk_level": "MODERATE",
+      "cro_advisory": "MODERATE RISK: Standard momentum-capture thresholds apply. 3\u2605+ picks eligible; maintain normal position sizing."
+    },
+    {
+      "agent_id": 2,
+      "sector_name": "Cloud & SaaS",
+      "sector_etf": "CLOU",
+      "description": "Cloud infrastructure, SaaS platforms, and data",
+      "watchlist": [
+        "MSFT",
+        "AMZN",
+        "GOOGL",
+        "CRM",
+        "NOW",
+        "SNOW",
+        "DDOG",
+        "MDB",
+        "NET",
+        "CFLT",
+        "VRT"
+      ],
+      "momentum_score": 11,
+      "momentum_data": {
+        "etf": "CLOU",
+        "price": 28.81,
+        "ma50": 27.53,
+        "ma200": 22.9,
+        "trend": "bullish",
+        "rsi_14": 55.0,
+        "ret_1m_pct": 1.27,
+        "ret_3m_pct": 20.95,
+        "volatility_20d": 28.9,
+        "pct_from_50ma": 4.63,
+        "pct_from_200ma": 25.8,
+        "score": 11,
+        "score_breakdown": {
+          "trend": 3,
+          "rsi": 3,
+          "ret_1m": 1,
+          "ret_3m": 2,
+          "vol": 2
+        }
+      },
+      "investment_horizon": "long_term",
+      "leader_rationale": "Cloud & SaaS is in a confirmed uptrend (+4.6% above 50MA, +25.8% above 200MA). RSI at 55 indicates momentum is building without being overbought \u2014 ideal capture-the-momentum entry zone. Sector returned +1.3% (1M) / +20.9% (3M) with 29% annualised volatility \u2014 sufficient movement to capture momentum.",
+      "assigned_at": "2026-10-03T11:34:05.494255",
+      "cro_risk_level": "MODERATE",
+      "cro_advisory": "MODERATE RISK: Standard momentum-capture thresholds apply. 3\u2605+ picks eligible; maintain normal position sizing."
+    },
+    {
+      "agent_id": 3,
+      "sector_name": "Semiconductors",
+      "sector_etf": "SMH",
+      "description": "Chip design, manufacturing, and equipment",
+      "watchlist": [
+        "NVDA",
+        "AMD",
+        "AVGO",
+        "QCOM",
+        "TXN",
+        "AMAT",
+        "LRCX",
+        "KLAC",
+        "MU",
+        "ARM",
+        "RKLB"
+      ],
+      "momentum_score": 9,
+      "momentum_data": {
+        "etf": "SMH",
+        "price": 630.6,
+        "ma50": 569.85,
+        "ma200": 499.48,
+        "trend": "bullish",
+        "rsi_14": 88.4,
+        "ret_1m_pct": 14.12,
+        "ret_3m_pct": 8.45,
+        "volatility_20d": 31.2,
+        "pct_from_50ma": 10.66,
+        "pct_from_200ma": 26.25,
+        "score": 9,
+        "score_breakdown": {
+          "trend": 3,
+          "rsi": 0,
+          "ret_1m": 2,
+          "ret_3m": 2,
+          "vol": 2
+        }
+      },
+      "investment_horizon": "both",
+      "leader_rationale": "Semiconductors is in a confirmed uptrend (+10.7% above 50MA, +26.2% above 200MA). RSI at 88 \u2014 overbought territory; research should focus on pullback entry candidates. Sector returned +14.1% (1M) / +8.4% (3M) with 31% annualised volatility \u2014 sufficient movement to capture momentum.",
+      "assigned_at": "2026-10-03T11:34:05.494260",
+      "cro_risk_level": "MODERATE",
+      "cro_advisory": "MODERATE RISK: Standard momentum-capture thresholds apply. 3\u2605+ picks eligible; maintain normal position sizing."
+    },
+    {
+      "agent_id": 4,
+      "sector_name": "Biotech",
+      "sector_etf": "IBB",
+      "description": "Biotechnology, genomics, and drug discovery",
+      "watchlist": [
+        "AMGN",
+        "GILD",
+        "VRTX",
+        "REGN",
+        "MRNA",
+        "BIIB",
+        "ALNY",
+        "INCY",
+        "EXAS",
+        "NBIX",
+        "NUE"
+      ],
+      "momentum_score": 9,
+      "momentum_data": {
+        "etf": "IBB",
+        "price": 205.29,
+        "ma50": 203.76,
+        "ma200": 180.99,
+        "trend": "bullish",
+        "rsi_14": 51.1,
+        "ret_1m_pct": -3.98,
+        "ret_3m_pct": 3.57,
+        "volatility_20d": 20.6,
+        "pct_from_50ma": 0.75,
+        "pct_from_200ma": 13.42,
+        "score": 9,
+        "score_breakdown": {
+          "trend": 3,
+          "rsi": 3,
+          "ret_1m": 0,
+          "ret_3m": 1,
+          "vol": 2
+        }
+      },
+      "investment_horizon": "both",
+      "leader_rationale": "Biotech is in a confirmed uptrend (+0.8% above 50MA, +13.4% above 200MA). RSI at 51 indicates momentum is building without being overbought \u2014 ideal capture-the-momentum entry zone. Sector returned -4.0% (1M) / +3.6% (3M) with 21% annualised volatility \u2014 sufficient movement to capture momentum.",
+      "assigned_at": "2026-10-03T11:34:05.494263",
+      "cro_risk_level": "MODERATE",
+      "cro_advisory": "MODERATE RISK: Standard momentum-capture thresholds apply. 3\u2605+ picks eligible; maintain normal position sizing."
+    },
+    {
+      "agent_id": 5,
+      "sector_name": "Technology",
+      "sector_etf": "XLK",
+      "description": "Software, hardware, and IT services",
+      "watchlist": [
+        "MSFT",
+        "AAPL",
+        "NVDA",
+        "META",
+        "GOOGL",
+        "ORCL",
+        "CRM",
+        "ADBE",
+        "NOW",
+        "INTU",
+        "TSM"
+      ],
+      "momentum_score": 8,
+      "momentum_data": {
+        "etf": "XLK",
+        "price": 199.81,
+        "ma50": 186.13,
+        "ma200": 164.58,
+        "trend": "bullish",
+        "rsi_14": 83.5,
+        "ret_1m_pct": 7.57,
+        "ret_3m_pct": 11.64,
+        "volatility_20d": 17.8,
+        "pct_from_50ma": 7.35,
+        "pct_from_200ma": 21.4,
+        "score": 8,
+        "score_breakdown": {
+          "trend": 3,
+          "rsi": 0,
+          "ret_1m": 2,
+          "ret_3m": 2,
+          "vol": 1
+        }
+      },
+      "investment_horizon": "long_term",
+      "leader_rationale": "Technology is in a confirmed uptrend (+7.3% above 50MA, +21.4% above 200MA). RSI at 84 \u2014 overbought territory; research should focus on pullback entry candidates. Sector returned +7.6% (1M) / +11.6% (3M) with 18% annualised volatility \u2014 lower volatility; focus on high-conviction individual names.",
+      "assigned_at": "2026-10-03T11:34:05.494267",
+      "cro_risk_level": "MODERATE",
+      "cro_advisory": "MODERATE RISK: Standard momentum-capture thresholds apply. 3\u2605+ picks eligible; maintain normal position sizing."
+    },
+    {
+      "agent_id": 6,
+      "sector_name": "Healthcare",
+      "sector_etf": "XLV",
+      "description": "Pharmaceuticals, medical devices, and managed care",
+      "watchlist": [
+        "UNH",
+        "LLY",
+        "ABBV",
+        "JNJ",
+        "MRK",
+        "TMO",
+        "ABT",
+        "ISRG",
+        "VRTX",
+        "ELV",
+        "C"
+      ],
+      "momentum_score": 5,
+      "momentum_data": {
+        "etf": "XLV",
+        "price": 166.18,
+        "ma50": 168.02,
+        "ma200": 155.5,
+        "trend": "neutral",
+        "rsi_14": 46.3,
+        "ret_1m_pct": -3.72,
+        "ret_3m_pct": 1.44,
+        "volatility_20d": 14.3,
+        "pct_from_50ma": -1.09,
+        "pct_from_200ma": 6.87,
+        "score": 5,
+        "score_breakdown": {
+          "trend": 1,
+          "rsi": 3,
+          "ret_1m": 0,
+          "ret_3m": 0,
+          "vol": 1
+        }
+      },
+      "investment_horizon": "both",
+      "leader_rationale": "Healthcare is at a trend inflection point \u2014 momentum may be building. RSI at 46 indicates momentum is building without being overbought \u2014 ideal capture-the-momentum entry zone. Sector returned -3.7% (1M) / +1.4% (3M) with 14% annualised volatility \u2014 lower volatility; focus on high-conviction individual names.",
+      "assigned_at": "2026-10-03T11:34:05.494270",
+      "cro_risk_level": "MODERATE",
+      "cro_advisory": "MODERATE RISK: Standard momentum-capture thresholds apply. 3\u2605+ picks eligible; maintain normal position sizing."
+    },
+    {
+      "agent_id": 7,
+      "sector_name": "Industrials",
+      "sector_etf": "XLI",
+      "description": "Aerospace, machinery, and transportation",
+      "watchlist": [
+        "HON",
+        "GE",
+        "CAT",
+        "DE",
+        "RTX",
+        "UPS",
+        "EMR",
+        "ETN",
+        "CARR",
+        "OTIS"
+      ],
+      "momentum_score": 4,
+      "momentum_data": {
+        "etf": "XLI",
+        "price": 169.95,
+        "ma50": 176.46,
+        "ma200": 171.48,
+        "trend": "bearish",
+        "rsi_14": 51.8,
+        "ret_1m_pct": -2.38,
+        "ret_3m_pct": -6.56,
+        "volatility_20d": 12.9,
+        "pct_from_50ma": -3.69,
+        "pct_from_200ma": -0.89,
+        "score": 4,
+        "score_breakdown": {
+          "trend": 0,
+          "rsi": 3,
+          "ret_1m": 0,
+          "ret_3m": 0,
+          "vol": 1
+        }
+      },
+      "investment_horizon": "both",
+      "leader_rationale": "Industrials is under pressure but showing relative strength worth watching. RSI at 52 indicates momentum is building without being overbought \u2014 ideal capture-the-momentum entry zone. Sector returned -2.4% (1M) / -6.6% (3M) with 13% annualised volatility \u2014 lower volatility; focus on high-conviction individual names.",
+      "assigned_at": "2026-10-03T11:34:05.494273",
+      "cro_risk_level": "MODERATE",
+      "cro_advisory": "MODERATE RISK: Standard momentum-capture thresholds apply. 3\u2605+ picks eligible; maintain normal position sizing."
+    },
+    {
+      "agent_id": 8,
+      "sector_name": "Communication Services",
+      "sector_etf": "XLC",
+      "description": "Social media, streaming, telecom, and gaming",
+      "watchlist": [
+        "META",
+        "GOOGL",
+        "NFLX",
+        "DIS",
+        "VZ",
+        "T",
+        "TMUS",
+        "CHTR",
+        "EA",
+        "TTWO"
+      ],
+      "momentum_score": 3,
+      "momentum_data": {
+        "etf": "XLC",
+        "price": 110.32,
+        "ma50": 111.19,
+        "ma200": 113.12,
+        "trend": "bearish",
+        "rsi_14": 37.3,
+        "ret_1m_pct": -2.38,
+        "ret_3m_pct": -0.3,
+        "volatility_20d": 21.5,
+        "pct_from_50ma": -0.79,
+        "pct_from_200ma": -2.47,
+        "score": 3,
+        "score_breakdown": {
+          "trend": 0,
+          "rsi": 1,
+          "ret_1m": 0,
+          "ret_3m": 0,
+          "vol": 2
+        }
+      },
+      "investment_horizon": "both",
+      "leader_rationale": "Communication Services is under pressure but showing relative strength worth watching. Sector returned -2.4% (1M) / -0.3% (3M) with 22% annualised volatility \u2014 sufficient movement to capture momentum.",
+      "assigned_at": "2026-10-03T11:34:05.494275",
+      "cro_risk_level": "MODERATE",
+      "cro_advisory": "MODERATE RISK: Standard momentum-capture thresholds apply. 3\u2605+ picks eligible; maintain normal position sizing."
+    }
+  ]
 }

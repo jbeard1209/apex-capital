@@ -1,8 +1,8 @@
 {
-  "checked_at": "2026-09-08T17:00:49.663934",
+  "checked_at": "2026-10-03T09:10:00.867521",
   "laws": 13,
-  "violated": 0,
-  "cannot_tell": 10,
+  "violated": 1,
+  "cannot_tell": 6,
   "results": [
     {
       "law": "nested_probabilities_are_monotone",
@@ -42,21 +42,25 @@
     },
     {
       "law": "deployed_set_matches_repo",
-      "verdict": "CANNOT_TELL",
-      "detail": "ssh to apex-capital returned nothing (ssh: connect to host 34.182.202.196 port 22: Network is unreachable\n)",
+      "verdict": "HOLDS",
+      "detail": "334 tracked .py identical on apex-capital, no uncommitted files there",
       "source_a": "git ls-files + local md5 (repo)",
       "source_b": "md5sum + find on the trading host (deployed)",
-      "n_examined": null,
+      "n_examined": 334,
       "evidence": []
     },
     {
       "law": "shipped_config_matches_repo",
-      "verdict": "CANNOT_TELL",
-      "detail": "ssh to apex-capital returned nothing (ssh: connect to host 34.182.202.196 port 22: Network is unreachable\n)",
+      "verdict": "VIOLATED",
+      "detail": "0 allowlist entr(ies) name an untracked file so the include is inert, 0 chosen file(s) absent from apex-capital, 1 differ. The host is not running the configuration the firm decided on.",
       "source_a": "deploy.sh data/ allowlist \u2229 git ls-files + local md5 (what we chose to ship)",
       "source_b": "md5sum on the trading host (what it actually has)",
-      "n_examined": null,
-      "evidence": []
+      "n_examined": 8,
+      "evidence": [
+        {
+          "differs": "data/vm_crontab_snapshot.txt"
+        }
+      ]
     },
     {
       "law": "emitted_verbs_are_handled",
@@ -87,20 +91,20 @@
     },
     {
       "law": "broker_host_census",
-      "verdict": "CANNOT_TELL",
-      "detail": "census unavailable (URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>)",
+      "verdict": "HOLDS",
+      "detail": "UNSTAMPED last traded 2026-07-30; apexcapitalc last traded 2026-10-02; mac last traded 2026-08-24; macbookair17 last traded 2026-08-07",
       "source_a": "Alpaca order history, host tag off client_order_id",
       "source_b": "DOCUMENTED_HOST_TAGS / INFRASTRUCTURE.md",
-      "n_examined": null,
+      "n_examined": 4,
       "evidence": []
     },
     {
       "law": "broker_orders_are_ledgered",
-      "verdict": "CANNOT_TELL",
-      "detail": "cannot compare (URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>) \u2014 an unreadable broker or ledger is not a clean one",
+      "verdict": "HOLDS",
+      "detail": "all 20 order(s) stamped 'mac' since 2026-07-30 passed through order_ledger, and therefore through risk_gate.check",
       "source_a": "Alpaca order history for orders stamped by THIS host",
       "source_b": "data/order_ledger.json, written inside the patched submit_order",
-      "n_examined": null,
+      "n_examined": 20,
       "evidence": []
     },
     {

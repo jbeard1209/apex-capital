@@ -1,36 +1,17 @@
 {
-  "checked_at": "2026-09-08T17:00:47.719150",
-  "issues": [
-    {
-      "severity": "HIGH",
-      "check": "deadmans_switch_sanity",
-      "message": "pipeline_heartbeat.json is 598.1h old on a weekday (threshold 26.0h) \u2014 possible genuine pipeline outage or VM issue.",
-      "auto_fixed": false
-    },
-    {
-      "severity": "HIGH",
-      "check": "email_loop_detection",
-      "message": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:LOW | Manager Grade:F | Sep 07, 2026\" \u00d716",
-      "auto_fixed": false
-    },
-    {
-      "severity": "CRITICAL",
-      "check": "peer_host_liveness",
-      "message": "apex-capital has been unreachable for 26.1h (last contact 2026-09-07T14:52:52, 1 consecutive failed probes; ssh to apex-capital failed: ssh: connect to host 34.182.202.196 port 22: Network is unreachable). The VM's schedule could not be read (no trustworthy vm_crontab_snapshot), so this falls back to elapsed hours \u2014 thresholds 6.0h/24.0h. This is the ALWAYS-ON host: ~63 cron jobs including main.py on the same Alpaca paper account. While it is down the Mac is the firm's only host and it only runs while awake. If the instance was restarted its external IP has changed \u2014 update it with gcp_setup/update_ip.sh <NEW_IP>.",
-      "auto_fixed": false
-    }
-  ],
-  "healthy": false,
+  "checked_at": "2026-10-03T11:57:35.471598",
+  "issues": [],
+  "healthy": true,
   "verdicts": {
-    "deadmans_switch_sanity": "FAIL",
-    "email_loop_detection": "FAIL",
+    "deadmans_switch_sanity": "SKIP",
+    "email_loop_detection": "PASS",
     "agent_file_freshness": "PASS",
     "ml_model_health": "SKIP",
-    "peer_host_liveness": "FAIL",
-    "single_writer": "SKIP"
+    "peer_host_liveness": "PASS",
+    "single_writer": "PASS"
   },
   "skipped": {
-    "ml_model_health": "model_v2_meta.json carries no AUC field \u2014 nothing to compare",
-    "single_writer": "could not read order history: URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+    "deadmans_switch_sanity": "this host (mac) does not run main.py (designated=apexcapitalc) \u2014 the local heartbeat and manager_decisions files are producer-side artifacts that only move on the designated host. Pipeline health on that host is judged by check 5 (peer_host_liveness).",
+    "ml_model_health": "model_v2_meta.json carries no AUC field \u2014 nothing to compare"
   }
 }

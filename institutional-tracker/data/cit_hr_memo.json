@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-09-08T16:09:13.571703",
+  "generated_at": "2026-10-03T11:35:28.278169",
   "canary_level": "GREEN",
-  "cro_level": "LOW",
+  "cro_level": "MODERATE",
   "buys_blocked": true,
   "assigned_sectors": [
     "biotech",
     "cloud & saas",
-    "consumer staples",
+    "communication services",
     "cybersecurity",
-    "financials",
     "healthcare",
-    "materials",
+    "industrials",
+    "semiconductors",
     "technology"
   ],
   "streak_agents": [],

@@ -33,5 +33,12 @@
     "note": "data/rd_system_performance.json is 0h old, within the 26h threshold",
     "by": "CITPipelineMonitor",
     "date": "2026-09-03T18:28:09.445404"
+  },
+  {
+    "signature": "severely stale output: data/research_team_report.json (<age>)",
+    "match": null,
+    "note": "data/research_team_report.json is 0h old, within the 96h threshold",
+    "by": "CITPipelineMonitor",
+    "date": "2026-09-30T05:02:59.534681"
   }
 ]

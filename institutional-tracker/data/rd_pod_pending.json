@@ -667,5 +667,42 @@
     "context_summary": "Canary: ORANGE | CRO: LOW | Positions: 0 open | Day 334",
     "routed_to_pod": "rd",
     "routed_at": "2026-09-07T12:02:33.457752"
+  },
+  {
+    "agent": "CITPipelineMonitor",
+    "category": "BUG_FIX",
+    "severity": "MEDIUM",
+    "confidence": 90,
+    "title": "7 ERROR lines \u2014 dominant: `EmailBuffer`",
+    "description": "The last 24-48h of logs contain 7 ERROR-level entries (1960 WARNINGs). Most frequent error class: `EmailBuffer` (3 of 7 lines). By class: `EmailBuffer` 3, `Canary` 2, `unclassified` 2. Systematic errors indicate an unhandled failure mode.",
+    "evidence": "Samples of `EmailBuffer` (3 of 7 lines):\n  \u2022 09:11:51  ERROR       [EmailBuffer] could not save buffer: [Errno 24] Too many open files\n  \u2022 20:09:42  ERROR       [EmailBuffer] UNREADABLE buffer quarantined to data/email_buffer.json.corrupt-20260930T200942 \u2014 st\n  \u2022 20:09:42  ERROR       [EmailBuffer] could not save buffer: [Errno 24] Too many open files: 'data/.email_buffer.t253l10m.",
+    "proposed_fix": "Most frequent error source: `EmailBuffer` (3 of 7 lines). Locate the call site in logs/run_*.log matching `09:11:51  ERROR       [EmailBuffer] could not save buffer: [`, fix the underlying condition or demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
+    "auto_implementable": false,
+    "id": "CIT-2026-906",
+    "context": {
+      "captured_at": "2026-09-30T20:09:54.114027",
+      "canary_level": "GREEN",
+      "canary_triggers": [],
+      "cro_level": "MODERATE",
+      "portfolio_value": null,
+      "open_positions": 0,
+      "paper_day": 334,
+      "cash_balance": null,
+      "loss_streak": 0,
+      "win_streak": 0,
+      "buys_blocked": false,
+      "total_closed_trades": 25,
+      "last_buy": {
+        "ticker": "TFC",
+        "date": "2026-07-31"
+      },
+      "open_issues_count": 4393,
+      "open_critical_issues": 0,
+      "pending_proposals_count": 2,
+      "critical_pending": 0
+    },
+    "context_summary": "Canary: GREEN | CRO: MODERATE | Positions: 0 open | Day 334",
+    "routed_to_pod": "rd",
+    "routed_at": "2026-09-30T20:09:54.308288"
   }
 ]

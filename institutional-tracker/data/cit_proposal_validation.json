@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-09-08T16:25:40.206980",
+  "generated_at": "2026-10-03T11:35:30.288137",
   "proposals_reviewed": 2,
   "backtester_available": true,
   "validation_log": [
     {
-      "id": "CIT-2026-842",
+      "id": "CIT-2026-905",
       "title": "Replace fixed R&D cadence with event-triggered research cycles",
       "category": "VISION",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "CIT-2026-843",
+      "id": "CIT-2026-906",
       "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
       "category": "VISION",
       "pre_validated": false,

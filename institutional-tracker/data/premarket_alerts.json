@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-09-07T08:51:17.352701",
+  "generated_at": "2026-10-02T07:36:04.451511",
   "agent": "Pre-Market Check",
   "overall_status": "MEDIUM",
-  "portfolio_value": 99272.85,
-  "n_positions": 18,
+  "portfolio_value": 95429.96,
+  "n_positions": 13,
   "vix": {
-    "vix": 15.25,
+    "vix": 16.1,
     "elevated": false,
     "data_available": true
   },
   "spy_proxy": {
-    "spy_gap_pct": -0.08,
+    "spy_gap_pct": 0.89,
     "data_available": true,
-    "direction": "down"
+    "direction": "up"
   },
   "severity_counts": {
     "MEDIUM": 1
@@ -20,9 +20,9 @@
   "alerts": [
     {
       "severity": "MEDIUM",
-      "category": "GAP_DOWN",
-      "ticker": "AMGN",
-      "message": "Large overnight gap-down: -5.08% (threshold: -3%). Review thesis."
+      "category": "STOP_PROXIMITY",
+      "ticker": "VRTX",
+      "message": "Near stop-loss: overnight gap +0.28%, projected P&L -5.9% (stop at -7.0%, margin: +1.1pp)."
     }
   ]
 }
