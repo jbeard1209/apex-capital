@@ -31,6 +31,17 @@ jobs:
       matrix:
         language: [python]
 
+    # Placeholder env vars at job scope: anything in the init/analyze flow
+    # that touches project modules (CodeQL's Python extractor, our own
+    # setup helpers, etc.) hits config.py, which raises RuntimeError if
+    # these are unset — by design, after the 2026-07-23 hardcoded-secret
+    # incident. Same justification as tests.yml. Static analysis only;
+    # never used at runtime, never leaves the runner.
+    env:
+      ALPACA_API_KEY: "CI_PLACEHOLDER_NEVER_USED_AT_RUNTIME"
+      ALPACA_SECRET_KEY: "CI_PLACEHOLDER_NEVER_USED_AT_RUNTIME"
+      GMAIL_APP_PASSWORD: "CI_PLACEHOLDER_NEVER_USED_AT_RUNTIME"
+
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
@@ -39,10 +50,22 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-          queries: security-and-quality
-
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+          # build-mode: none — Python extraction works on source directly;
+          # no build or dependency install is required. Skipping autobuild
+          # avoids its "pip install the universe, then import every module"
+          # failure mode on a 338-file / 194k-LOC codebase whose runtime
+          # imports are guarded by env vars.
+          build-mode: none
+          # security-extended = default + extra security queries.
+          # security-and-quality adds code-quality lints on top, which on
+          # this codebase size risked OOM / timeout on the 7GB runner and
+          # drowned real security signal in style nits anyway.
+          queries: security-extended
+          config: |
+            paths-ignore:
+              - 'institutional-tracker/data/**'
+              - '**/*.json'
+              - '**/__pycache__/**'
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v3
