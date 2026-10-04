@@ -54,6 +54,18 @@ jobs:
         env:
           TZ: ${{ matrix.env_tz }}
           PYTHONUNBUFFERED: "1"
+          # config.py fails loudly at IMPORT if these are unset (by design, after
+          # the 2026-07-23 hardcoded-secret incident — see config.py header). On
+          # CI there is no .env, so 4 wired agents that import from config
+          # (fi_cit_agent, dynamic_position_sizer, ml_improvement_loop,
+          # international_analyst) can't be imported, which breaks the
+          # test_all_wired_agents_can_be_imported wiring check and 8 downstream
+          # tests that transitively import them. TestWiringContracts is static —
+          # string matching, AST parsing — it never calls Alpaca or Gmail, so
+          # test-only placeholders keep config happy without weakening prod.
+          ALPACA_API_KEY: "CI_PLACEHOLDER_NEVER_USED_AT_RUNTIME"
+          ALPACA_SECRET_KEY: "CI_PLACEHOLDER_NEVER_USED_AT_RUNTIME"
+          GMAIL_APP_PASSWORD: "CI_PLACEHOLDER_NEVER_USED_AT_RUNTIME"
         run: |
           # Same test class the local pre-push gate runs (twice: local + UTC).
           # These 58 tests pin the "silent identifier mismatch" bug class — a
