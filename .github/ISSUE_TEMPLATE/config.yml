@@ -3,6 +3,3 @@ contact_links:
   - name: Security vulnerability
     url: https://github.com/jbeard1209/apex-capital/security/policy
     about: "Please DO NOT open a public issue for security bugs. Read SECURITY.md and email jack.beard07@gmail.com instead."
-  - name: Question about the design
-    url: https://github.com/jbeard1209/apex-capital/discussions
-    about: "Design questions, curiosity about a subsystem, or 'how did you decide X?' — use Discussions, not an issue."
