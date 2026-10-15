@@ -33378,12 +33378,16 @@ class TestProxyChairman(unittest.TestCase):
 
     def test_unresolve_restores_awaiting_chairman(self):
         """unresolve moves a terminal row back to awaiting_chairman, keeping
-        the original note in reopen_history."""
-        import chairman_unresolve as cu
+        the original note in reopen_history. The write lives in
+        proxy_chairman_agent now (so there is one scheduled writer, not two);
+        chairman_unresolve.py is just a CLI delegator — exercise both."""
+        import proxy_chairman_agent as pca
+        import chairman_unresolve as cu  # import ensures the CLI still loads
         import tempfile, json as _json
-        root = Path(__file__).parent
-        orig_queue = cu.QUEUE
-        orig_audit = cu.AUDIT
+        self.assertTrue(hasattr(cu, "unresolve_item"),
+                        "chairman_unresolve must re-export unresolve_item")
+        orig_queue = pca.QUEUE
+        orig_audit = pca.AUDIT
         try:
             with tempfile.TemporaryDirectory() as td:
                 qpath = Path(td) / "q.json"
@@ -33396,9 +33400,9 @@ class TestProxyChairman(unittest.TestCase):
                     "resolution_note": "test note",
                     "proxy_proposal_id": "proxy-abc",
                 }]))
-                cu.QUEUE = qpath
-                cu.AUDIT = apath
-                ok = cu.unresolve("t-xyz", reason="unit test")
+                pca.QUEUE = qpath
+                pca.AUDIT = apath
+                ok = pca.unresolve_item("t-xyz", reason="unit test")
                 self.assertTrue(ok)
                 after = _json.loads(qpath.read_text())
                 self.assertEqual(after[0]["status"], "awaiting_chairman")
@@ -33407,8 +33411,8 @@ class TestProxyChairman(unittest.TestCase):
                 self.assertEqual(after[0]["reopen_history"][0]["prior_status"],
                                  "resolved_upstream")
         finally:
-            cu.QUEUE = orig_queue
-            cu.AUDIT = orig_audit
+            pca.QUEUE = orig_queue
+            pca.AUDIT = orig_audit
 
 
 if __name__ == "__main__":

@@ -291,6 +291,51 @@ def _mark_resolved_in_queue(item_id: str, proposal: dict) -> bool:
     return changed
 
 
+def unresolve_item(item_id: str, reason: str = "(none given)") -> bool:
+    """Reverse a terminal resolution on the chairman decision queue.
+
+    This is the write-side implementation; `chairman_unresolve.py` is just a
+    thin CLI wrapper around it. Kept here so the only module that writes to
+    chairman_decision_queue.json is proxy_chairman_agent (which is scheduled),
+    not a second human-only utility (which would be an orphan writer and the
+    wiring audit would correctly flag it).
+
+    Pops a terminal row back to `awaiting_chairman` and records the prior
+    status in a `reopen_history` list for audit continuity.
+    """
+    if not QUEUE.exists():
+        return False
+    q = _load_json(QUEUE, [])
+    now = dt.datetime.now(dt.timezone.utc).isoformat()
+    hit = False
+    for r in q:
+        if r.get("id") != item_id:
+            continue
+        prior = {
+            "at": now,
+            "prior_status": r.get("status"),
+            "prior_resolved_at": r.get("resolved_at"),
+            "prior_resolved_by": r.get("resolved_by"),
+            "prior_note": r.get("resolution_note"),
+            "reopen_reason": reason,
+        }
+        r.setdefault("reopen_history", []).append(prior)
+        r["status"] = "awaiting_chairman"
+        for k in ("resolved_at", "resolved_by", "resolution_note", "proxy_proposal_id"):
+            r.pop(k, None)
+        hit = True
+        break
+    if not hit:
+        return False
+    _atomic_write_json(QUEUE, q)
+    log = _load_json(AUDIT, [])
+    if not isinstance(log, list):
+        log = []
+    log.append({"entry": "unresolve", "item_id": item_id, "reason": reason, "at": now})
+    _atomic_write_json(AUDIT, log)
+    return True
+
+
 # ---------- main pass ----------
 
 def run(mode: str, queue_threshold: int, limit: int | None) -> dict:

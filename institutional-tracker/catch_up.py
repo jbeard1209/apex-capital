@@ -357,6 +357,25 @@ JOB_REGISTRY = [
         "catchup_window":  (0, 24),
         "once_per_wakeup": True,
     },
+
+    # ── Proxy Chairman — rules-based autoresolve, dual-gated ─────────────────
+    # Chairman mandate (2026-10-15): "both triggers — cron AND queue>10". This
+    # entry is the cron half. The agent internally no-ops when the awaiting
+    # queue is at or under its threshold, so firing often is safe. Every
+    # decision is dual-reviewed and reversible via `chairman_unresolve.py`.
+    # Four fires/day during business hours matches the queue's drift rate
+    # (CIT runs daily; most adds land during the day).
+    {
+        "name":            "proxy_chairman",
+        "script":          "proxy_chairman_agent.py",
+        "args":            ["--mode", "live", "--queue-threshold", "10"],
+        "output_file":     "data/proxy_chairman_audit_log.json",
+        "ttl_hours":       7,
+        "fire_times_edt":  [8.0, 12.0, 16.0, 20.0],
+        "run_days":        "all",
+        "catchup_window":  (0, 24),
+        "once_per_wakeup": True,
+    },
 ]
 
 

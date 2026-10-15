@@ -364,6 +364,19 @@ def main():
     rep = run(write=not args.report)
     now = _now()
 
+    # Trigger the proxy chairman AFTER ingest/escalation but BEFORE printing —
+    # rules-based autoresolve, dual-approved, reversible. The agent's internal
+    # threshold check keeps this a no-op whenever the awaiting queue is small.
+    # The import also makes proxy_chairman_agent reachable from VM crontab via
+    # this daily job (wiring_audit's orphan-agent gate wants exactly that).
+    # NOT run during --report, since the proxy writes.
+    if not args.report:
+        try:
+            from proxy_chairman_agent import run as _proxy_run
+            _proxy_run(mode="live", queue_threshold=10, limit=None)
+        except Exception as _e:
+            print(f"  (proxy-chairman skipped: {_e!r})")
+
     print("=" * 66)
     print("  CHAIRMAN DECISION QUEUE  (surfaced in the Claude app — never email)")
     print("=" * 66)
