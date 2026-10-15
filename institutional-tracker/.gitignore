@@ -75,6 +75,12 @@ data/cit_history.json
 data/energy_research_report.json
 data/cos_hr_coordination.json
 
+# Proxy Chairman — runtime state only. The RULES file and the decision CORPUS
+# are tracked (they are decisions, not output). The proposal and audit logs
+# are per-host and change on every run, so they stay local like state.json.
+data/proxy_chairman_proposals.json
+data/proxy_chairman_audit_log.json
+
 # Oracle setup — contains private keys and credentials
 oracle_setup/oci_key.pem
 oracle_setup/oracle_attempts.log

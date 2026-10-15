@@ -33153,6 +33153,264 @@ class TestLtiaScriptOutputsAreReallyWritten(unittest.TestCase):
                           f"failure diagnosis would call its output missing")
 
 
+class TestProxyChairman(unittest.TestCase):
+    """Proxy Chairman is a rules-based auto-closer for the chairman decision
+    queue. Chairman decision 2026-10-15: rules-based only, dual-gated
+    (precision + escape-risk), reversible, hard carve-outs enforced before
+    any rule is tried. These tests guard the carve-outs and the gates.
+
+    Everything in this class works on an in-memory list — no disk writes
+    into the real queue — so this safe-list is enforced at test construction.
+    """
+
+    def _make_item(self, **over):
+        base = {
+            "id": "test-item-20260801-abc",
+            "description": "a safe test item",
+            "severity": "MEDIUM",
+            "category": "freshness",
+            "chairman_only": False,
+            "status": "awaiting_chairman",
+            "created_at": "2026-07-01T00:00:00+00:00",
+        }
+        base.update(over)
+        return base
+
+    # ---- carve-outs ----
+
+    def test_chairman_only_is_carved_out_regardless_of_rule(self):
+        from proxy_chairman_agent import _fails_carveout
+        it = self._make_item(chairman_only=True, description="resolved: looks safe")
+        self.assertIn("chairman_only", _fails_carveout(it) or "")
+
+    def test_arm_gate_category_is_carved_out(self):
+        from proxy_chairman_agent import _fails_carveout
+        it = self._make_item(category="arm_gate", description="resolved: looks safe")
+        self.assertTrue(_fails_carveout(it))
+
+    def test_reserved_token_in_id_blocks_proxy(self):
+        from proxy_chairman_agent import _fails_carveout
+        it = self._make_item(id="chairman-decision-20260727-cro-unfreeze",
+                             description="resolved: looks safe")
+        self.assertTrue(_fails_carveout(it))
+
+    def test_hr_termination_token_blocks_proxy(self):
+        from proxy_chairman_agent import _fails_carveout
+        it = self._make_item(description="hr_termination of AGENT_X requested")
+        self.assertTrue(_fails_carveout(it))
+
+    def test_credential_rotation_blocks_proxy(self):
+        from proxy_chairman_agent import _fails_carveout
+        it = self._make_item(description="api_key rotation needed urgently")
+        self.assertTrue(_fails_carveout(it))
+
+    def test_critical_recent_item_is_carved_out(self):
+        from proxy_chairman_agent import _fails_carveout
+        now = datetime.now(timezone.utc).isoformat()
+        it = self._make_item(severity="CRITICAL", created_at=now,
+                             description="resolved: looks safe")
+        reason = _fails_carveout(it)
+        self.assertIn("48h", reason or "")
+
+    def test_old_critical_item_passes_carveout(self):
+        """A CRITICAL item older than 48h passes the carve-out layer;
+        the per-rule Claude review will still reject it."""
+        from proxy_chairman_agent import _fails_carveout
+        it = self._make_item(severity="CRITICAL",
+                             created_at="2026-06-01T00:00:00+00:00")
+        self.assertIsNone(_fails_carveout(it))
+
+    def test_recent_normal_item_is_in_chairman_attention_zone(self):
+        from proxy_chairman_agent import _fails_carveout
+        now = datetime.now(timezone.utc).isoformat()
+        it = self._make_item(created_at=now, description="resolved: new")
+        self.assertIn("attention zone", _fails_carveout(it) or "")
+
+    # ---- predicate matching ----
+
+    def test_predicate_description_prefix_is_case_insensitive(self):
+        from proxy_chairman_agent import _match_predicate
+        for d in ("resolved: a", "Resolved: a", "RESOLVED: a"):
+            it = self._make_item(description=d)
+            self.assertTrue(_match_predicate(it, {"description_prefix": "resolved:"}),
+                            f"case-insensitive failed on {d!r}")
+
+    def test_predicate_id_prefix_is_case_insensitive(self):
+        from proxy_chairman_agent import _match_predicate
+        it = self._make_item(id="LTIA-20260730-X")
+        self.assertTrue(_match_predicate(it, {"id_prefix_any": ["ltia-"]}))
+
+    def test_predicate_date_extracted_from_id_when_created_at_missing(self):
+        from proxy_chairman_agent import _match_predicate
+        it = self._make_item(id="INVEST-BUG-2026-0703-pyarrow", created_at=None)
+        # 20260703 < 20260801 → match
+        self.assertTrue(_match_predicate(it, {"created_before_yyyymmdd": "20260801"}))
+
+    def test_predicate_date_from_created_at_is_authoritative(self):
+        from proxy_chairman_agent import _match_predicate
+        # id would say 2026-07-03 but created_at says 2026-10-01 → fail
+        it = self._make_item(id="INVEST-BUG-2026-0703-x",
+                             created_at="2026-10-01T00:00:00+00:00")
+        self.assertFalse(_match_predicate(it, {"created_before_yyyymmdd": "20260801"}))
+
+    def test_predicate_unknown_key_raises(self):
+        from proxy_chairman_agent import _match_predicate, UnknownMatchKey
+        it = self._make_item()
+        with self.assertRaises(UnknownMatchKey):
+            _match_predicate(it, {"not_a_real_key": "x"})
+
+    # ---- rules file sanity ----
+
+    def test_rules_file_loads_and_each_rule_has_citation(self):
+        import json
+        root = Path(__file__).parent
+        doc = json.loads((root / "data" / "autoresolve_rules.json").read_text())
+        self.assertIn("version", doc)
+        self.assertTrue(doc["rules"])
+        for r in doc["rules"]:
+            self.assertIn("id", r)
+            self.assertIn("citation", r)
+            self.assertTrue(r["citation"].strip(),
+                            f"rule {r.get('id')} has empty citation")
+            self.assertIn("match", r)
+            self.assertIn("verdict", r)
+            self.assertIn("rationale", r)
+            self.assertIn(r["verdict"], ("resolved", "resolved_upstream"))
+            self.assertEqual(sorted(r.get("approvers_required", [])),
+                             ["board", "claude"])
+
+    def test_every_rule_predicate_uses_only_known_keys(self):
+        import json
+        from proxy_chairman_agent import _KNOWN_MATCH_KEYS
+        root = Path(__file__).parent
+        doc = json.loads((root / "data" / "autoresolve_rules.json").read_text())
+        for r in doc["rules"]:
+            for k in r["match"].keys():
+                self.assertIn(k, _KNOWN_MATCH_KEYS,
+                              f"rule {r['id']} uses unknown key {k!r}")
+
+    def test_rule_ids_are_unique(self):
+        import json
+        root = Path(__file__).parent
+        doc = json.loads((root / "data" / "autoresolve_rules.json").read_text())
+        ids = [r["id"] for r in doc["rules"]]
+        self.assertEqual(len(ids), len(set(ids)),
+                         f"duplicate rule ids: {ids}")
+
+    # ---- claude review ----
+
+    def test_claude_review_rejects_critical(self):
+        from proxy_chairman_claude_review import review
+        p = {"item_severity": "CRITICAL", "verdict": "resolved_upstream",
+             "rule_citation": "memory: email_leak_root_cause"}
+        rule = {"id": "x", "match": {"chairman_only_is": False}}
+        it = self._make_item(severity="CRITICAL")
+        out = review(p, it, rule)
+        self.assertFalse(out["approved"])
+
+    def test_claude_review_rejects_when_rule_no_longer_matches(self):
+        from proxy_chairman_claude_review import review
+        p = {"item_severity": "MEDIUM", "verdict": "resolved_upstream",
+             "rule_citation": "memory: email_leak_root_cause"}
+        rule = {"id": "x", "match": {"description_prefix": "resolved:"}}
+        it = self._make_item(description="not resolved")
+        out = review(p, it, rule)
+        self.assertFalse(out["approved"])
+        self.assertIn("predicate", out["reason"])
+
+    def test_claude_review_approves_when_match_holds(self):
+        from proxy_chairman_claude_review import review
+        p = {"item_severity": "MEDIUM", "verdict": "resolved_upstream",
+             "rule_citation": "memory: email_leak_root_cause",
+             "rationale": "self-closing"}
+        rule = {"id": "x", "match": {"description_prefix": "resolved:"}}
+        it = self._make_item(description="resolved: looks good")
+        out = review(p, it, rule)
+        self.assertTrue(out["approved"])
+
+    # ---- board review ----
+
+    def test_board_review_blocks_capital_tokens(self):
+        from proxy_chairman_board_review import review
+        p = {"proposal_id": "x", "item_id": "test-x"}
+        rule = {"id": "x"}
+        it = self._make_item(description="capital release approved")
+        out = review(p, it, rule)
+        self.assertFalse(out["approved"])
+
+    def test_board_review_approves_normal_item(self):
+        from proxy_chairman_board_review import review
+        import uuid as _uuid
+        # Use a unique item id so no prior proposal matches it on disk.
+        fresh_id = f"test-fresh-item-{_uuid.uuid4().hex[:8]}"
+        p = {"proposal_id": "x-new", "item_id": fresh_id}
+        rule = {"id": "x"}
+        it = self._make_item(id=fresh_id, description="normal stale item")
+        out = review(p, it, rule)
+        self.assertTrue(out["approved"], msg=f"reason: {out.get('reason')}")
+
+    # ---- threshold / trigger ----
+
+    def test_run_does_not_fire_below_threshold(self):
+        """A queue at or below the threshold must not fire the proxy."""
+        import proxy_chairman_agent as pca
+        from unittest.mock import patch
+        tiny_queue = [self._make_item(id=f"t-{i}") for i in range(5)]
+        with patch("proxy_chairman_agent._load_json") as lj, \
+             patch("proxy_chairman_agent._append_audit"):
+            def side(path, default):
+                if "chairman_decision_queue" in str(path):
+                    return tiny_queue
+                if "autoresolve_rules" in str(path):
+                    return {"version": "test",
+                            "rules": [{"id": "any", "citation": "x",
+                                       "match": {"chairman_only_is": False},
+                                       "verdict": "resolved_upstream",
+                                       "rationale": "x",
+                                       "approvers_required": ["claude", "board"]}]}
+                return default
+            lj.side_effect = side
+            summary = pca.run("shadow", queue_threshold=10, limit=None)
+        self.assertFalse(summary["triggered"])
+        self.assertEqual(summary["proposed"], 0)
+
+    # ---- unresolve round-trip ----
+
+    def test_unresolve_restores_awaiting_chairman(self):
+        """unresolve moves a terminal row back to awaiting_chairman, keeping
+        the original note in reopen_history."""
+        import chairman_unresolve as cu
+        import tempfile, json as _json
+        root = Path(__file__).parent
+        orig_queue = cu.QUEUE
+        orig_audit = cu.AUDIT
+        try:
+            with tempfile.TemporaryDirectory() as td:
+                qpath = Path(td) / "q.json"
+                apath = Path(td) / "a.json"
+                qpath.write_text(_json.dumps([{
+                    "id": "t-xyz",
+                    "status": "resolved_upstream",
+                    "resolved_at": "2026-10-15T00:00:00+00:00",
+                    "resolved_by": "proxy-chairman:test",
+                    "resolution_note": "test note",
+                    "proxy_proposal_id": "proxy-abc",
+                }]))
+                cu.QUEUE = qpath
+                cu.AUDIT = apath
+                ok = cu.unresolve("t-xyz", reason="unit test")
+                self.assertTrue(ok)
+                after = _json.loads(qpath.read_text())
+                self.assertEqual(after[0]["status"], "awaiting_chairman")
+                self.assertNotIn("resolved_at", after[0])
+                self.assertEqual(len(after[0]["reopen_history"]), 1)
+                self.assertEqual(after[0]["reopen_history"][0]["prior_status"],
+                                 "resolved_upstream")
+        finally:
+            cu.QUEUE = orig_queue
+            cu.AUDIT = orig_audit
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

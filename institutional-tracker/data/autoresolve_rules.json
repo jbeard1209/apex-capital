@@ -1,0 +1,170 @@
+{
+  "version": "2026-10-15",
+  "notes": "Rules used by proxy_chairman_agent.py. Each rule is deterministic, cites a memory or past Chairman decision, and matches only items that are NOT chairman_only and NOT in a carve-out category. The agent's hard carve-outs are enforced separately in proxy_chairman_agent.py::_fails_carveout() and apply BEFORE any rule match. Rules are tried in order; first match wins.",
+  "rules": [
+    {
+      "id": "resolved-prefix",
+      "citation": "self-closing: author of the item wrote 'resolved: ...' as the description",
+      "match": {
+        "description_prefix": "resolved:",
+        "chairman_only_is": false
+      },
+      "verdict": "resolved_upstream",
+      "rationale": "Item description self-states resolution ('resolved: ...').",
+      "approvers_required": ["claude", "board"]
+    },
+    {
+      "id": "oracle-ghost",
+      "citation": "memory: oracle_third_host (crontab wiped 2026-07-26, instance TERMINATED 2026-07-27)",
+      "match": {
+        "description_contains_any": ["150.136.182.51", "Oracle VM", "oracle_third_host", "foreign trades from Oracle", "third host"],
+        "chairman_only_is": false
+      },
+      "verdict": "resolved_upstream",
+      "rationale": "Oracle third host was terminated 2026-07-27; related anomalies have no live source.",
+      "approvers_required": ["claude", "board"]
+    },
+    {
+      "id": "email-leak-fixed",
+      "citation": "memory: email_leak_root_cause (fixed 2026-07-26 — scheduled Claude routines no longer bypass mail_guard)",
+      "match": {
+        "id_contains_any": ["email_loop", "email_buffer", "email_flood"],
+        "created_before_yyyymmdd": "20260901",
+        "chairman_only_is": false
+      },
+      "verdict": "resolved_upstream",
+      "rationale": "Email leak root cause fixed 2026-07-26; items dated before 2026-09-01 pre-date confirmation window.",
+      "approvers_required": ["claude", "board"]
+    },
+    {
+      "id": "cron-stale-fixed",
+      "citation": "task #46 fix: _CRON_LOG_CHECKS misdirected globs corrected",
+      "match": {
+        "id_contains_any": ["cron_job_stale", "cron_stale"],
+        "created_before_yyyymmdd": "20260924",
+        "chairman_only_is": false
+      },
+      "verdict": "resolved_upstream",
+      "rationale": "cron_job_stale false-positives were produced by misdirected _CRON_LOG_CHECKS globs; the generator bug was fixed in task #46 (2026-09-24).",
+      "approvers_required": ["claude", "board"]
+    },
+    {
+      "id": "kr-tech-short-donotshort",
+      "citation": "memory: kr_tech_short_pod — VERDICT = DO NOT SHORT (anti-chasing law; +6.73% fwd / 40.7% win rate on extension-shorts)",
+      "match": {
+        "description_contains_any": ["KR tech-short", "Korea tech short", "Korea AI hardware short", "SOXS short", "KR tech"],
+        "chairman_only_is": false
+      },
+      "verdict": "resolved",
+      "rationale": "Chairman standing verdict (memory kr_tech_short_pod): DO NOT SHORT Korea/AI-hardware extensions. Items in this family are closed with that verdict.",
+      "approvers_required": ["claude", "board"]
+    },
+    {
+      "id": "orphan-agents-arch-note",
+      "citation": "memory: orphan_agents_blindness (12 agents wired-but-unscheduled, codified 2026-08)",
+      "match": {
+        "description_contains_any": ["orphan agents", "orphan_agents", "wired-but-unscheduled"],
+        "created_before_yyyymmdd": "20260801",
+        "chairman_only_is": false
+      },
+      "verdict": "resolved_upstream",
+      "rationale": "Orphan-agents class is tracked by the shrink-only ratchet (memory orphan_agents_blindness); pre-August entries are the baseline, not open work.",
+      "approvers_required": ["claude", "board"]
+    },
+    {
+      "id": "rdevt-moment-in-time",
+      "citation": "RDEVT = Rapid Development Event Tracker; macro shock events are moment-in-time by definition",
+      "match": {
+        "id_contains_any": ["index_gap", "oil_shock", "vix_spike", "yield_shock", "RDEVT"],
+        "chairman_only_is": false
+      },
+      "verdict": "resolved_upstream",
+      "rationale": "Macro shock events are moment-in-time — once the shock day passes, there is no action to take.",
+      "approvers_required": ["claude", "board"]
+    },
+    {
+      "id": "ltia-ltr-stale",
+      "citation": "superseded by chairman-decision-20260727-cro-unfreeze and subsequent risk framework",
+      "match": {
+        "id_prefix_any": ["LTIA-", "LO-", "LT-", "PHM-"],
+        "created_before_yyyymmdd": "20260801",
+        "chairman_only_is": false
+      },
+      "verdict": "resolved_upstream",
+      "rationale": "Logic-team / long-term agent findings dated pre-August are superseded by subsequent risk framework decisions.",
+      "approvers_required": ["claude", "board"]
+    },
+    {
+      "id": "cro-dup-strand",
+      "citation": "all three IDs reference the same open decision: chairman-decision-20260727-cro-unfreeze",
+      "match": {
+        "id_contains_any": ["cro_extended_no_review", "cro_paralysis", "extended_cro_high"],
+        "chairman_only_is": false
+      },
+      "verdict": "resolved_upstream",
+      "rationale": "Duplicate strand of the still-open CRO unfreeze decision (chairman-decision-20260727-cro-unfreeze remains open and is the canonical row).",
+      "approvers_required": ["claude", "board"]
+    },
+    {
+      "id": "watch-stale-pre-aug",
+      "citation": "watchlist items pre-August are superseded by current watch rotation",
+      "match": {
+        "id_prefix_any": ["watch-"],
+        "created_before_yyyymmdd": "20260801",
+        "chairman_only_is": false
+      },
+      "verdict": "resolved_upstream",
+      "rationale": "Pre-August watch- items were rotated out; the current watchlist is maintained live by Board Rememberer.",
+      "approvers_required": ["claude", "board"]
+    },
+    {
+      "id": "heartbeat-stale-pre-aug",
+      "citation": "pipeline_heartbeat / deadmans_switch pre-August are superseded by scheduler-stopped-while-reporting-healthy fix (Mac-critical checks moved to launchd)",
+      "match": {
+        "id_contains_any": ["deadmans_switch", "pipeline_heartbeat", "scheduler_stale"],
+        "created_before_yyyymmdd": "20260801",
+        "chairman_only_is": false
+      },
+      "verdict": "resolved_upstream",
+      "rationale": "Heartbeat/deadman items pre-August are superseded by the launchd migration (memory scheduler-stopped-while-reporting-healthy).",
+      "approvers_required": ["claude", "board"]
+    },
+    {
+      "id": "peer-host-live-verified",
+      "citation": "VM reachability verified 2026-10-05; items older than that are stale observations",
+      "match": {
+        "id_contains_any": ["peer_host_liveness", "peer_host_unreach"],
+        "created_before_yyyymmdd": "20260930",
+        "chairman_only_is": false
+      },
+      "verdict": "resolved_upstream",
+      "rationale": "Peer-host liveness: VM confirmed reachable in a recent audit; items dated before 2026-09-30 pre-date the confirmation.",
+      "approvers_required": ["claude", "board"]
+    },
+    {
+      "id": "cit-missing-dir-pre-aug",
+      "citation": "apex-sys-cit missing-dir findings pre-August are superseded by the dir-check hardening in CIT (2026-08)",
+      "match": {
+        "id_contains_any": ["apex-sys-cit"],
+        "description_contains_any": ["missing dir", "missing_dir", "deep_research_librar", "fe_watchlist_missing"],
+        "created_before_yyyymmdd": "20260801",
+        "chairman_only_is": false
+      },
+      "verdict": "resolved_upstream",
+      "rationale": "Pre-August CIT missing-dir findings are superseded by subsequent dir-check hardening.",
+      "approvers_required": ["claude", "board"]
+    },
+    {
+      "id": "edgar-cache-stale-snapshot",
+      "citation": "edgar_cache_partially_stale snapshots from before 2026-08-31 are superseded by the current empty-state detector",
+      "match": {
+        "id_contains_any": ["edgar_cache_partially_stale", "edgar_cache_stale"],
+        "created_before_yyyymmdd": "20260831",
+        "chairman_only_is": false
+      },
+      "verdict": "resolved_upstream",
+      "rationale": "Partial-stale snapshots pre-dating the empty-state detector reclassification are not actionable now.",
+      "approvers_required": ["claude", "board"]
+    }
+  ]
+}
