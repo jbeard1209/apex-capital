@@ -122,6 +122,27 @@ def entry_from_fills(orders: List[dict], symbol: str,
     if not fills:
         return None, None
 
+    if held_qty is not None and float(held_qty) != 0:
+        # Walk BACKWARD from the broker's quantity, which is known to be true.
+        # The forward walk below starts from an assumed zero, so when the window
+        # opens mid-position it never sees the book go flat — and a full exit
+        # followed by a re-buy inside the window was missed, dating the re-buy
+        # from the window's first fill. XLE, 2026-10-12: max-hold sold 153 at
+        # 13:45, ETF pod 3 re-bought 151 at 20:15, and the next morning the
+        # one-day-old position was sold again as "max_hold (89 days)". Anchored
+        # on the broker, a missing OLD fill cannot hide a RECENT re-open.
+        pos = float(held_qty)
+        for ts, q in reversed(fills):
+            before = pos - q
+            if abs(before) < 1e-6:
+                return ts.strftime("%Y-%m-%d"), BASIS_FLAT_CROSSING
+            pos = before
+        # Never flat inside the window: the position predates it — a bound.
+        # It errs toward the position looking OLDER, so a max-hold exit fires
+        # sooner rather than never, and unlike an absent date it lets the
+        # time-based rules run at all.
+        return fills[0][0].strftime("%Y-%m-%d"), BASIS_WINDOW_START
+
     running = 0.0
     opened_at: Optional[datetime] = None
     for ts, q in fills:
@@ -132,17 +153,8 @@ def entry_from_fills(orders: List[dict], symbol: str,
         elif running == 0:
             opened_at = None
 
-    complete = (held_qty is None) or (abs(running - float(held_qty)) < 1e-6)
-
-    if opened_at is not None and complete:
+    if opened_at is not None and held_qty is None:
         return opened_at.strftime("%Y-%m-%d"), BASIS_FLAT_CROSSING
-
-    if held_qty is not None and float(held_qty) != 0:
-        # We hold it, but the replay does not account for the whole position.
-        # A bound beats both alternatives: it errs toward the position looking
-        # OLDER, so a max-hold exit fires sooner rather than never, and unlike
-        # an absent date it lets the time-based rules run at all.
-        return fills[0][0].strftime("%Y-%m-%d"), BASIS_WINDOW_START
 
     if running != 0 and held_qty is None:
         return fills[0][0].strftime("%Y-%m-%d"), BASIS_WINDOW_START

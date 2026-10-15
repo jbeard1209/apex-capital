@@ -287,10 +287,14 @@ _SCRIPT_OUTPUTS: dict = {
     "rd_team_leader.py":              "data/research_team_report.json",
     "fi_pipeline.py":                 "data/fi_pipeline_report.json",
     "fe_pipeline.py":                 "data/fe_pipeline_log.json",
-    "review_agent.py":                "data/review_agent_log.json",
-    "pod_ledger.py":                  "data/pod_ledger.json",
+    # These three named files no script writes (review_agent_log.json,
+    # pod_ledger.json, ml_live_tests.json) until 2026-10-10, so every failure
+    # of those scripts was diagnosed "output_missing" — a live output reported
+    # as dead. TestLtiaScriptOutputsAreReallyWritten pins each to its producer.
+    "review_agent.py":                "data/review_recommendations.json",
+    "pod_ledger.py":                  "data/pod_allocations.json",
     "predictive_model/ml_model.py":   "data/model_meta.json",
-    "ml_live_test_runner.py":         "data/ml_live_tests.json",
+    "ml_live_test_runner.py":         "data/ml_live_picks_log.json",
 }
 
 

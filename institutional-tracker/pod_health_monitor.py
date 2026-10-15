@@ -55,7 +55,7 @@ ERROR_FLOOD_THRESHOLD = 50   # ERROR lines/day above this = a flood worth fixing
 POD_SPECS = {
     "FI": {
         "name": "Fixed Income",
-        "report": "fi_pipeline_report.json", "max_age_h": 30,
+        "report": "fi_pipeline_report.json", "max_age_h": 30, "weekdays_only": True,
         "picks_file": "fi_picks_queue.json",
         "log_glob": "logs/fi_*.log",
         "fix": "python3 fi_pipeline.py",
@@ -63,7 +63,7 @@ POD_SPECS = {
     },
     "FE": {
         "name": "First Eagle Value",
-        "report": "fe_pipeline_log.json", "max_age_h": 30,
+        "report": "fe_pipeline_log.json", "max_age_h": 30, "weekdays_only": True,
         "picks_file": "fe_picks_queue.json",
         "log_glob": "logs/fe_*.log",
         "fix": "python3 fe_pipeline.py  (then widen FE_VALUE_UNIVERSE if still 0 — keep the 25% MoS bar)",
@@ -95,6 +95,25 @@ def _age_hours(path: Path):
     if not path.exists():
         return None
     return (datetime.now().timestamp() - path.stat().st_mtime) / 3600.0
+
+
+def _weekday_hours_between(start: datetime, end: datetime) -> float:
+    """Hours in [start, end) that fall Mon-Fri.
+
+    FI and FE are `1-5` crons. A flat 30h limit read them STALE (CRITICAL) from
+    Saturday evening to Monday's run and filed board + Chairman rows for a
+    pipeline that was on schedule — never from this module's own weekday
+    cron, but on every weekend manual run (the weekly investigator runs it
+    by mandate). freshness_sentinel already exempts these same files with
+    `weekdays_only`; this is the same rule, measured instead of skipped.
+    """
+    hours, cur = 0.0, start
+    while cur < end:
+        nxt = min(end, datetime.combine(cur.date() + timedelta(days=1), datetime.min.time()))
+        if cur.weekday() < 5:
+            hours += (nxt - cur).total_seconds() / 3600.0
+        cur = nxt
+    return hours
 
 
 def _count_picks(path: Path) -> int:
@@ -191,6 +210,10 @@ def _deploy_drift_check() -> dict:
 def check_pod(pod: str, spec: dict) -> dict:
     report = DATA_DIR / spec["report"]
     age = _age_hours(report)
+    stale_age = age
+    if age is not None and spec.get("weekdays_only"):
+        stale_age = _weekday_hours_between(
+            datetime.fromtimestamp(report.stat().st_mtime), datetime.now())
     picks = _count_picks(DATA_DIR / spec["picks_file"])
     if picks == 0:
         picks = _pod_positions(pod)   # executed-and-held counts as deployed
@@ -198,7 +221,7 @@ def check_pod(pod: str, spec: dict) -> dict:
 
     problems = []
     severity = "OK"
-    if age is None or age > spec["max_age_h"]:
+    if age is None or stale_age > spec["max_age_h"]:
         problems.append(("STALE", "CRITICAL",
                          f"{spec['name']} pipeline report is "
                          f"{'missing' if age is None else f'{age:.0f}h old'} "

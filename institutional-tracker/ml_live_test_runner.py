@@ -26,7 +26,7 @@ import os
 import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 
 logging.basicConfig(
     level=logging.INFO,
@@ -76,16 +76,49 @@ def _save_json(path: Path, data):
     path.write_text(json.dumps(data, indent=2, default=str))
 
 
-def _fetch_current_price(ticker: str) -> Optional[float]:
+def _fetch_close(ticker: str) -> Tuple[Optional[float], Optional[str]]:
+    """Latest close AND the market date it belongs to.
+
+    The date is what makes an entry an observation. The cron runs at 06:00 UTC
+    every day, so Saturday, Sunday and Monday (pre-open) all read Friday's
+    close: three "picks" that are one bet. That is how 2026-06-14 (a Sunday)
+    and 2026-06-15 each logged the same 10 tickers at identical entry prices,
+    were evaluated in the same pass at identical exit prices, and the report
+    showed n=20 for 10 outcomes.
+    """
     try:
         import yfinance as yf
         t = yf.Ticker(ticker)
-        hist = t.history(period="2d")
+        hist = t.history(period="5d")
         if not hist.empty:
-            return float(hist["Close"].iloc[-1])
+            return float(hist["Close"].iloc[-1]), hist.index[-1].date().isoformat()
     except Exception as e:
         logger.warning(f"Could not fetch price for {ticker}: {e}")
-    return None
+    return None, None
+
+
+def _fetch_current_price(ticker: str) -> Optional[float]:
+    return _fetch_close(ticker)[0]
+
+
+def _independent_observations(picks: list) -> list:
+    """Collapse evaluated picks that are the same bet logged twice.
+
+    Keyed on (model, ticker, the close the entry used, exit price). New rows
+    carry `entry_price_date`; rows from before it existed fall back to the
+    entry price itself — two entries at the identical float price for the
+    same ticker came from the same close. First occurrence wins.
+    """
+    seen, out = set(), []
+    for p in picks:
+        entry_key = p.get("entry_price_date") or round(float(p.get("entry_price") or 0), 4)
+        key = (p.get("model"), p.get("ticker"), entry_key,
+               round(float(p.get("exit_price") or 0), 4))
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(p)
+    return out
 
 
 def enter_new_picks(model: str = "shortterm", top_n: int = 10) -> list:
@@ -157,10 +190,17 @@ def enter_new_picks(model: str = "shortterm", top_n: int = 10) -> list:
         _save_json(LIVE_PICKS_FILE, picks_log)
         return []
 
-    new_picks = []
+    # A (ticker, close-date) already on the log is not a new observation —
+    # see _fetch_close. Skip it rather than log the same bet twice.
+    already = {(p.get("model"), p.get("ticker"), p.get("entry_price_date"))
+               for p in picks_log["picks"] if p.get("entry_price_date")}
+    new_picks, n_same_close = [], 0
     for pick in top_picks:
         ticker = pick.get("ticker", "?")
-        entry_price = _fetch_current_price(ticker)
+        entry_price, entry_price_date = _fetch_close(ticker)
+        if entry_price_date and (model, ticker, entry_price_date) in already:
+            n_same_close += 1
+            continue
         new_picks.append({
             "model": model,
             "pick_date": today,
@@ -171,14 +211,23 @@ def enter_new_picks(model: str = "shortterm", top_n: int = 10) -> list:
             "ml_label": pick.get("ml_label"),
             "conviction": pick.get("conviction"),
             "entry_price": entry_price,
+            "entry_price_date": entry_price_date,
             "exit_price": None,
             "return_pct": None,
             "correct_direction": None,
         })
 
+    if not new_picks and n_same_close:
+        # A visible row, not silence: the run happened, there was nothing new.
+        picks_log["picks"].append({
+            "model": model, "pick_date": today, "status": "no_new_session",
+            "note": f"All {n_same_close} picks priced off a close already logged.",
+            "horizon_days": horizon, "picks": [],
+        })
     picks_log["picks"].extend(new_picks)
     _save_json(LIVE_PICKS_FILE, picks_log)
-    logger.info(f"  Recorded {len(new_picks)} live picks for {today}.")
+    logger.info(f"  Recorded {len(new_picks)} live picks for {today}"
+                f" ({n_same_close} skipped: same close already logged).")
     return new_picks
 
 
@@ -224,6 +273,13 @@ def evaluate_expired_picks() -> dict:
 
     _save_json(LIVE_PICKS_FILE, picks_log)
 
+    # Score independent observations only — the same bet logged twice is one
+    # outcome, and counting it twice halves the apparent sampling error.
+    results["picks"] = _independent_observations(results["picks"])
+    results["evaluated"] = len(results["picks"])
+    results["correct"] = sum(1 for p in results["picks"] if p.get("correct_direction"))
+    results["incorrect"] = results["evaluated"] - results["correct"]
+
     if results["evaluated"] > 0:
         hit_rate = results["correct"] / results["evaluated"]
         avg_ret  = sum(p.get("return_pct", 0) for p in results["picks"]) / results["evaluated"]
@@ -258,14 +314,21 @@ def _log_evaluation_to_improvement_log(results: dict):
 def print_full_report():
     picks_log  = _load_json(LIVE_PICKS_FILE, {"picks": []})
     all_picks  = picks_log.get("picks", [])
-    evaluated  = [p for p in all_picks if p.get("status") == "evaluated"]
+    raw_evaluated = [p for p in all_picks if p.get("status") == "evaluated"]
+    evaluated  = _independent_observations(raw_evaluated)
     pending    = [p for p in all_picks if p.get("status") == "pending"]
+    # Gate-held / no-pick rows are run records, not picks. Counting them made
+    # "Total picks recorded: 224" out of 20 real picks.
+    real_picks = [p for p in all_picks if p.get("ticker")]
+    gate_held  = sum(1 for p in all_picks if p.get("status") == "model_below_gate")
 
     print("\n" + "="*65)
     print("APEX CAPITAL — ML LIVE PICKS REPORT (ST Model)")
     print("="*65)
-    print(f"Total picks recorded : {len(all_picks)}")
-    print(f"Evaluated            : {len(evaluated)}")
+    print(f"Total picks recorded : {len(real_picks)}  ({gate_held} runs held below the AUC gate)")
+    print(f"Evaluated            : {len(evaluated)} independent"
+          + (f"  ({len(raw_evaluated) - len(evaluated)} duplicate entries of the same close collapsed)"
+             if len(raw_evaluated) != len(evaluated) else ""))
     print(f"Pending (< 20 days)  : {len(pending)}")
     if evaluated:
         hit_rate = sum(1 for p in evaluated if p.get("correct_direction")) / len(evaluated)

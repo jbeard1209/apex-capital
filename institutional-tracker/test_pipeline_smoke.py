@@ -14781,6 +14781,22 @@ class TestEntryDateLedger(unittest.TestCase):
                          "an incomplete replay was reported as an exact crossing")
         self.assertEqual(date, "2026-05-05")
 
+    def test_a_reopen_inside_a_truncated_window_is_dated_from_the_reopen(self):
+        """XLE 2026-10-12/13: window opens mid-position, full exit, re-buy.
+
+        The forward walk never saw the book go flat (the opening fill predates
+        the window), so it dated a one-day-old re-buy from the window's first
+        fill and max-hold sold it the next morning at "89 days". Anchored on
+        the broker's quantity, the backward walk finds the re-open.
+        """
+        from entry_date_ledger import entry_from_fills, BASIS_FLAT_CROSSING
+        orders = [self._fill("XLE", "buy", 3, "2026-07-16T00:00:00Z"),   # top-up; open predates window
+                  self._fill("XLE", "sell", 153, "2026-10-12T13:45:05Z"),  # full exit
+                  self._fill("XLE", "buy", 151, "2026-10-12T20:15:55Z")]   # ETF pod re-buy
+        date, basis = entry_from_fills(orders, "XLE", held_qty=151)
+        self.assertEqual((date, basis), ("2026-10-12", BASIS_FLAT_CROSSING),
+                         "a same-day re-buy was dated from the window start")
+
     def test_a_position_with_no_fill_history_is_left_undated_not_guessed(self):
         from entry_date_ledger import entry_from_fills, reconcile
         self.assertEqual(entry_from_fills([], "ZZZ", held_qty=5), (None, None))
@@ -33028,6 +33044,113 @@ class TestKalshiDailyStatusIsWiredEndToEnd(unittest.TestCase):
                       "kalshi_daily_status.py is not in the VM crontab "
                       "snapshot — the brief is unscheduled and will silently "
                       "stop updating")
+
+
+class TestMlLivePicksCountEachCloseOnce(unittest.TestCase):
+    """2026-06-14 (Sunday) and 06-15 (Monday, 06:00 UTC pre-open) each logged
+    the same 10 tickers off Friday's close; both were evaluated in one pass,
+    so the live record said n=20 for 10 outcomes. A repeated bet is one
+    observation — at entry and at scoring."""
+
+    def setUp(self):
+        import ml_live_test_runner as m
+        self.m = m
+        self.tmp = tempfile.TemporaryDirectory()
+        self.path = Path(self.tmp.name) / "ml_live_picks_log.json"
+        self._p = patch.object(m, "LIVE_PICKS_FILE", self.path)
+        self._p.start()
+
+    def tearDown(self):
+        self._p.stop()
+        self.tmp.cleanup()
+
+    def _row(self, day, tk, entry, exit_, ok):
+        return {"model": "shortterm", "pick_date": day, "status": "evaluated",
+                "ticker": tk, "entry_price": entry, "exit_price": exit_,
+                "return_pct": round((exit_ - entry) / entry * 100, 2),
+                "correct_direction": ok}
+
+    def test_legacy_same_close_rows_collapse_to_one(self):
+        rows = [self._row("2026-06-14", "ON", 116.79000091552734, 95.94, False),
+                self._row("2026-06-15", "ON", 116.79000091552734, 95.94, False),
+                self._row("2026-06-15", "V", 322.39, 345.67, True)]
+        self.assertEqual(len(self.m._independent_observations(rows)), 2)
+
+    def test_distinct_closes_are_distinct_observations(self):
+        a = self._row("2026-06-15", "ON", 116.79, 95.94, False)
+        b = self._row("2026-06-16", "ON", 118.02, 95.94, False)
+        self.assertEqual(len(self.m._independent_observations([a, b])), 2)
+
+    def test_entry_skips_a_ticker_already_logged_on_that_close(self):
+        self.path.write_text(json.dumps({"picks": [
+            {"model": "shortterm", "pick_date": "2000-01-03", "status": "pending",
+             "ticker": "ABBV", "entry_price": 200.0, "entry_price_date": "2026-10-09"}]}))
+        fake_pred = MagicMock()
+        fake_pred.enhance_signals = lambda sigs: [
+            {"ticker": "ABBV", "ml_score": 0.9}, {"ticker": "V", "ml_score": 0.8}]
+        with patch.object(self.m, "_model_clears_gate", return_value=(True, 0.6, 0.57)), \
+             patch.object(self.m, "_fetch_close", return_value=(201.0, "2026-10-09")), \
+             patch.dict(sys.modules, {"predictive_model.predictor": fake_pred}):
+            new = self.m.enter_new_picks("shortterm")
+        self.assertEqual([p["ticker"] for p in new], ["V"])
+        self.assertEqual(new[0]["entry_price_date"], "2026-10-09")
+
+    def test_evaluation_scores_independent_observations(self):
+        self.path.write_text(json.dumps({"picks": [
+            dict(self._row("2026-06-14", "ON", 116.79, 0, None), status="pending",
+                 evaluate_after="2026-07-04", exit_price=None),
+            dict(self._row("2026-06-15", "ON", 116.79, 0, None), status="pending",
+                 evaluate_after="2026-07-05", exit_price=None)]}))
+        with patch.object(self.m, "_fetch_current_price", return_value=95.94), \
+             patch.object(self.m, "_log_evaluation_to_improvement_log"):
+            res = self.m.evaluate_expired_picks()
+        self.assertEqual(res["evaluated"], 1)
+        self.assertEqual(res["correct"] + res["incorrect"], 1)
+
+
+class TestPodHealthWeekdayPipelinesAreNotStaleOnWeekends(unittest.TestCase):
+    """FI/FE are Mon-Fri crons; a flat 30h limit filed CRITICAL STALE board +
+    Chairman rows every Saturday evening (2026-10-10, from a manual run).
+    Weekend hours must not count — but a real multi-day outage still must."""
+
+    def test_weekday_hours_skip_the_weekend(self):
+        import pod_health_monitor as phm
+        fri = datetime(2026, 10, 9, 15, 0)    # Friday's FE run
+        sat = datetime(2026, 10, 10, 23, 0)   # 32h later, all but 9h weekend
+        self.assertAlmostEqual(phm._weekday_hours_between(fri, sat), 9.0)
+        mon = datetime(2026, 10, 12, 14, 0)   # Monday, before the run
+        self.assertAlmostEqual(phm._weekday_hours_between(fri, mon), 23.0)
+
+    def test_real_outage_still_stale_and_flat_pods_unchanged(self):
+        import pod_health_monitor as phm
+        with tempfile.TemporaryDirectory() as d:
+            rpt = Path(d) / "r.json"
+            rpt.write_text("{}")
+            t = (datetime.now() - timedelta(days=5)).timestamp()
+            os.utime(rpt, (t, t))   # 5 days ⊇ at least 3 weekdays = 72h > 30h
+            spec = {"name": "X", "report": "r.json", "max_age_h": 30,
+                    "picks_file": "none.json", "log_glob": "logs/none_*.log"}
+            with patch.object(phm, "DATA_DIR", Path(d)):
+                for wk in (True, False):
+                    r = phm.check_pod("FI", dict(spec, weekdays_only=wk))
+                    self.assertEqual(r["severity"], "CRITICAL", wk)
+                    self.assertEqual(r["problems"][0][0], "STALE")
+
+
+class TestLtiaScriptOutputsAreReallyWritten(unittest.TestCase):
+    """_SCRIPT_OUTPUTS named review_agent_log.json, pod_ledger.json and
+    ml_live_tests.json — files no script writes — so a failure of those
+    scripts was diagnosed "output_missing" while the real output was fresh.
+    Each entry's basename must appear in its own producer's source."""
+
+    def test_each_output_is_named_by_its_producer(self):
+        import logic_team_implementation_agent as ltia
+        root = Path(__file__).parent
+        for script, out in ltia._SCRIPT_OUTPUTS.items():
+            src = (root / script).read_text(encoding="utf-8", errors="replace")
+            self.assertIn(Path(out).name, src,
+                          f"{script} never names {Path(out).name}; the "
+                          f"failure diagnosis would call its output missing")
 
 
 if __name__ == "__main__":
