@@ -181,6 +181,13 @@ trap 'rm -f "$DEPLOY_EXCLUDES"' EXIT
 git -C "$LOCAL_DIR" ls-files --others | sed 's|^|/|' > "$DEPLOY_EXCLUDES"
 echo "  $(wc -l < "$DEPLOY_EXCLUDES" | tr -d ' ') untracked path(s) held back — git decides what deploys."
 
+# data/autoresolve_rules.json is the proxy chairman's hand-written rulebook
+# (no code writes it). Tracked but unlisted until 2026-10-17, so the VM had
+# never received it: its proxy chairman would load zero rules and resolve
+# nothing, and 3 TestProxyChairman tests ERRORed on the VM only.
+# data/chairman_decision_corpus.json is its anchor evidence, same story: absent,
+# every resolved_upstream proposal fails claude-review's anchor check there.
+#
 # data/signoff_mode.json is in the allowlist because the autonomy gate is a
 # firm-wide decision carried in a per-host file. It was tracked in git from the
 # start but never shipped, and the VM is not a checkout — so it had never once
@@ -201,6 +208,8 @@ rsync -avz --progress \
     --include="data/parameter_derivations.json" \
     --include="data/parameter_audit_baseline.json" \
     --include="data/signoff_mode.json" \
+    --include="data/autoresolve_rules.json" \
+    --include="data/chairman_decision_corpus.json" \
     --exclude="data/*" \
     --exclude-from="$DEPLOY_EXCLUDES" \
     --exclude="logs/" \

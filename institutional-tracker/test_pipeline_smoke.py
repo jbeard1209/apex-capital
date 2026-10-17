@@ -33341,6 +33341,20 @@ class TestProxyChairman(unittest.TestCase):
 
     # ---- rules file sanity ----
 
+    def test_rules_file_reaches_the_vm(self):
+        """2026-10-17: autoresolve_rules.json was tracked in git but missing from
+        deploy.sh's data/ allowlist, so it had never arrived on the VM. There
+        proxy_chairman_agent loads {"rules": []} and resolves nothing, silently,
+        and the three rules-file tests below ERRORed on the VM while passing on
+        the Mac. Same shape as signoff_mode.json. chairman_decision_corpus.json
+        is the claude-review anchor evidence — absent, every resolved_upstream
+        proposal fails its anchor check on the VM only."""
+        deploy = (Path(__file__).resolve().parent / "gcp_setup" / "deploy.sh").read_text()
+        for rel in ("data/autoresolve_rules.json", "data/chairman_decision_corpus.json"):
+            self.assertIn('--include="%s"' % rel, deploy,
+                          "%s is not in deploy.sh's data/ allowlist — the VM's "
+                          "proxy chairman runs without it" % rel)
+
     def test_rules_file_loads_and_each_rule_has_citation(self):
         import json
         root = Path(__file__).parent
