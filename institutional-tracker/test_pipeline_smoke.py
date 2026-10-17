@@ -1003,6 +1003,86 @@ class TestDeputyBoardRouting(unittest.TestCase):
             self.assertIn(cat, self.auto_cats)
 
 
+class TestDeputyBoardSurvivesLabelConfidence(unittest.TestCase):
+    """board_issue_ledger and problem_lifecycle_sentinel write
+    `"confidence": "HIGH"` into cit_pending_proposals.json; every deputy
+    threshold is a percentage. Until 2026-10-17 the first such row raised
+    TypeError at `conf < 60`, killing the whole deputy session — on the VM it
+    reviewed nothing from 2026-08-18 while cit_director logged a one-line
+    WARNING 4x/day. The rows are built by the REAL producers here, so a
+    producer that changes shape is exercised, not a hand-written fixture."""
+
+    def _vote(self, proposal):
+        import deputy_board as db
+        with tempfile.TemporaryDirectory() as d, \
+             patch.object(db, "CLARIFY_PATH", os.path.join(d, "clarify.json")), \
+             patch.object(db, "PENDING_PATH", os.path.join(d, "pending.json")):
+            return db._vote_on_proposal(proposal)
+
+    def _producer_rows(self):
+        import board_issue_ledger as bil
+        import problem_lifecycle_sentinel as pls
+        now = "2026-10-17T00:00:00+00:00"
+        rec = {"sig": "abc123", "latest_text": "Canary ORANGE", "sightings": 3,
+               "first_seen": "2026-10-01", "strikes": 0}
+        rows = [bil._board_item(rec, now)]
+        captured = []
+        with patch.object(pls, "_append_deduped",
+                               side_effect=lambda path, entry, key: captured.append(entry) or True):
+            pls._escalate_looping({"sig": "def456", "title": "x", "occurrences": 5,
+                                   "recurred_after_resolution": 2,
+                                   "first_seen": "2026-09-01"}, now)
+        return rows + captured
+
+    def test_real_producer_rows_defer_instead_of_crashing(self):
+        rows = self._producer_rows()
+        self.assertEqual(len(rows), 2)
+        for row in rows:
+            result = self._vote(row)          # must not raise
+            if not isinstance(row.get("confidence"), (int, float)):
+                self.assertEqual(result["classification"], "DEFERRED")
+                self.assertFalse(result["passed"])
+                self.assertEqual(result["approves"], 0)
+
+    def test_confidence_parsing(self):
+        from deputy_board import _confidence_pct
+        self.assertEqual(_confidence_pct({"confidence": 85}), 85.0)
+        self.assertEqual(_confidence_pct({"confidence": "85%"}), 85.0)
+        self.assertEqual(_confidence_pct({}), 50.0)
+        for bad in ("HIGH", True, None, float("nan"), "nan"):
+            self.assertIsNone(_confidence_pct({"confidence": bad}), bad)
+
+    def test_numeric_string_still_votes(self):
+        result = self._vote({"id": "t1", "category": "BUG_FIX", "severity": "MEDIUM",
+                             "confidence": "85", "title": "t", "proposed_fix": "",
+                             "evidence": ""})
+        self.assertNotEqual(result["votes"][0]["deputy"], "Deputy Board")
+
+
+class TestBackupRetentionCountsOnlySnapshots(unittest.TestCase):
+    """cit_director writes data/backups/cit_inline/; the pruner counted it as a
+    snapshot and, sorting after "2026-...", never pruned it — so prod kept
+    MAX_BACKUPS-1 dailies. Retention must count timestamped snapshots only and
+    must never delete a directory it does not own."""
+
+    def test_cit_inline_neither_counted_nor_pruned(self):
+        import backup_data as bd
+        with tempfile.TemporaryDirectory() as d:
+            data = Path(d) / "data"
+            bdir = data / "backups"
+            (bdir / "cit_inline").mkdir(parents=True)
+            for name in ("2026-10-14_090001", "2026-10-15_090001", "2026-10-16_090001"):
+                (bdir / name).mkdir()
+            (data / "x.json").write_text("{}")
+            with patch.object(bd, "DATA_DIR", data), patch.object(bd, "BACKUP_DIR", bdir):
+                bd.run_backup(quiet=True)
+            snaps = sorted(p.name for p in bdir.iterdir() if p.name[:4].isdigit())
+            self.assertEqual(len(snaps), bd.MAX_BACKUPS)
+            self.assertNotIn("2026-10-14_090001", snaps)        # oldest pruned
+            self.assertIn("2026-10-15_090001", snaps)           # 3 real dailies kept
+            self.assertTrue((bdir / "cit_inline").is_dir())     # not ours, untouched
+
+
 class TestChairmanQueueDedup(unittest.TestCase):
     """Chronic findings (CRO paralysis, stale-chairman-actions, ...) render a
     growing cycle/day count into their title every run. Dedup that compares

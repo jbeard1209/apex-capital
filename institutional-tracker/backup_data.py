@@ -6,7 +6,7 @@
 # Run automatically at the end of the daily pipeline (main.py Step 12+)
 # or manually at any time.
 #
-# Retention policy: keeps the last 30 daily backups, then prunes oldest.
+# Retention policy: keeps the last MAX_BACKUPS (3) snapshots, then prunes oldest.
 #
 # Usage:
 #   python3 backup_data.py              # backup and prune
@@ -18,6 +18,7 @@ import argparse
 import json
 import logging
 import os
+import re
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -36,6 +37,20 @@ MAX_BACKUPS = 3    # rolling window. Was 30: on the prod VM's 9.7GB disk, each
                    # snapshot is ~1.3GB, so 30 days would need ~40GB — the backup
                    # job itself filled the disk to 100% twice in July 2026. Three
                    # dailies + GitHub (code) + EDGAR (rebuildable DBs) is plenty.
+
+# Only directories named like run_backup()'s own timestamp are snapshots.
+# data/backups/ is shared: cit_director writes per-file .bak copies into
+# data/backups/cit_inline/. Until 2026-10-17 the pruner counted every subdir,
+# and "cit_inline" sorts after "2026-..." so it was never pruned and held one
+# of the three slots forever — prod kept 2 daily snapshots, not 3.
+_SNAPSHOT_RE = re.compile(r"^\d{4}-\d{2}-\d{2}_\d{6}$")
+
+
+def _snapshots() -> list:
+    return sorted(
+        [d for d in BACKUP_DIR.iterdir() if d.is_dir() and _SNAPSHOT_RE.match(d.name)],
+        key=lambda d: d.name,
+    )
 
 # Files that are runtime-only, rebuildable, or too big — not backed up
 EXCLUDE_PATTERNS = {
@@ -91,10 +106,7 @@ def run_backup(quiet: bool = False) -> dict:
         logger.info(f"  ✅ Backup created: {dest.name} ({len(copied)} files)")
 
     # ── Pruning ───────────────────────────────────────────────────────────
-    all_backups = sorted(
-        [d for d in BACKUP_DIR.iterdir() if d.is_dir()],
-        key=lambda d: d.name,
-    )
+    all_backups = _snapshots()
     pruned = []
     while len(all_backups) > MAX_BACKUPS:
         oldest = all_backups.pop(0)
@@ -120,10 +132,7 @@ def list_backups():
         print("No backups found — data/backups/ does not exist yet.")
         return
 
-    backups = sorted(
-        [d for d in BACKUP_DIR.iterdir() if d.is_dir()],
-        key=lambda d: d.name,
-    )
+    backups = _snapshots()
     if not backups:
         print("No backups found.")
         return
@@ -152,8 +161,7 @@ def restore_backup(date_str: str):
         print(f"No backups found.")
         return
 
-    matches = [d for d in BACKUP_DIR.iterdir()
-               if d.is_dir() and d.name.startswith(date_str)]
+    matches = [d for d in _snapshots() if d.name.startswith(date_str)]
     if not matches:
         print(f"No backup found for date: {date_str}")
         return

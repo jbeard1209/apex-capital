@@ -100,6 +100,36 @@ CLARIFY_PATH = "data/cit_clarification_requests.json"
 MAX_CLARIFICATION_ROUNDS = 3
 
 
+def _confidence_pct(proposal: dict, default=50) -> Optional[float]:
+    """The proposal's confidence as a 0-100 number, or None when it isn't one.
+
+    Every threshold in this file (65, 60, 70) is a percentage, but the queue has
+    more than one producer and not all of them write one: board_issue_ledger and
+    problem_lifecycle_sentinel stamp `"confidence": "HIGH"`, a label. Until
+    2026-10-17 the first such row to reach `conf < 60` raised TypeError, which
+    cit_director swallowed as a one-line WARNING — and since the exception
+    escaped run_deputy_board, the WHOLE session died with it: on the VM the
+    deputy board had reviewed nothing (79 label rows in a 289-row queue) and its
+    report stayed frozen at 2026-08-18 while CIT logged it as convened 4x/day.
+
+    None, not a guessed number: mapping "HIGH" to 80 would let deputies
+    APPROVE items whose producer addressed them to the full board. The caller
+    defers those rows instead, which leaves them pending for board_meeting.
+    """
+    raw = proposal.get("confidence", default)
+    if isinstance(raw, bool):
+        return None
+    if isinstance(raw, (int, float)):
+        return float(raw) if raw == raw else None    # NaN is not a confidence
+    if isinstance(raw, str):
+        try:
+            v = float(raw.strip().rstrip("%"))
+        except ValueError:
+            return None
+        return v if v == v else None
+    return None
+
+
 def _load_json(path: str):
     try:
         if os.path.exists(path):
@@ -523,6 +553,29 @@ def _vote_on_proposal(proposal: dict) -> dict:
     # so deputies can see the full Q&A when making their decision
     proposal = _inject_clarification_context(proposal)
 
+    # Fail closed on a confidence that isn't a percentage — see _confidence_pct.
+    # One DEFER, no voters run: DEFERRED leaves the row pending for the full
+    # board, so nothing is approved, rejected or hidden by this path.
+    conf = _confidence_pct(proposal)
+    if conf is None:
+        return {
+            "proposal_id":    proposal.get("id", "?"),
+            "title":          proposal.get("title", ""),
+            "severity":       proposal.get("severity", ""),
+            "category":       proposal.get("category", ""),
+            "passed":         False,
+            "classification": "DEFERRED",
+            "approves":       0,
+            "rejects":        0,
+            "defers":         1,
+            "clarifies":      0,
+            "votes":          [{"deputy": "Deputy Board", "vote": "DEFER",
+                                "rationale": f"Confidence {proposal.get('confidence')!r} is not a "
+                                             f"percentage — deputy thresholds cannot apply; route "
+                                             f"to the full board."}],
+        }
+    proposal = {**proposal, "confidence": int(conf) if conf.is_integer() else conf}
+
     for voter in DEPUTY_VOTERS:
         result = voter.vote(proposal)
         v = result["vote"]
@@ -778,7 +831,7 @@ def run_deputy_board(dry_run: bool = False) -> dict:
         p for p in all_pending
         if p.get("category", "") in AUTO_IMPLEMENT_CATEGORIES
         and p.get("severity", "MEDIUM") == AUTO_IMPLEMENT_MAX_SEVERITY
-        and p.get("confidence", 0) >= AUTO_IMPLEMENT_MIN_CONFIDENCE
+        and (_confidence_pct(p, default=0) or 0) >= AUTO_IMPLEMENT_MIN_CONFIDENCE
         and p.get("id", "") not in unanswered_pids
     ]
     if auto_implement:
