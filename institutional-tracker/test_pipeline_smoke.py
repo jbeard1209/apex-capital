@@ -15760,7 +15760,7 @@ class TestCanaryAlertHasOneReader(unittest.TestCase):
     """
 
     READERS = ("main.py", "morning_briefing.py", "etf_pod_board.py",
-               "deputy_agents.py")
+               "deputy_agents.py", "irm_board/macro_analyst.py")
 
     # Modules that only NAME the alert file in a registry / backup / inbox map.
     # They never interpret its contents, so they cannot get the contract wrong.
@@ -15769,7 +15769,22 @@ class TestCanaryAlertHasOneReader(unittest.TestCase):
         "backup_data.py", "agent_inbox.py", "rd_system_performance.py",
         "canary_agent.py",          # the producer, and the one accessor
         "test_pipeline_smoke.py",   # this file
+        "dashboard/sync_to_cloud.py",  # dead Railway sync: a filename map only
     }
+
+    # Subpackages count. Until 2026-10-21 the sweep below was BASE.glob("*.py")
+    # — top level only — so irm_board/macro_analyst.py read `level` off the raw
+    # file for months and inferred a BEAR regime from a cleared ORANGE.
+    _NOT_SOURCE = {"backups", "venv", ".venv", "__pycache__", "node_modules"}
+
+    @classmethod
+    def _source_files(cls):
+        for p in sorted(cls.BASE.rglob("*.py")):
+            rel = p.relative_to(cls.BASE)
+            if any(part in cls._NOT_SOURCE or part.startswith(".")
+                   for part in rel.parts):
+                continue
+            yield rel.as_posix(), p
 
     @classmethod
     def setUpClass(cls):
@@ -15844,9 +15859,13 @@ class TestCanaryAlertHasOneReader(unittest.TestCase):
                         producing_fns.add(fn.name)
             bound |= local
         for n in ast.walk(tree):
-            if (isinstance(n, ast.Assign) and isinstance(n.value, ast.Call)
-                    and isinstance(n.value.func, ast.Name)
-                    and n.value.func.id in producing_fns):
+            # `_load_canary_alert()` or, in a class, `self._load_canary_alert()`
+            fn_name = None
+            if isinstance(n, ast.Assign) and isinstance(n.value, ast.Call):
+                f = n.value.func
+                fn_name = (f.id if isinstance(f, ast.Name) else
+                           f.attr if isinstance(f, ast.Attribute) else None)
+            if fn_name in producing_fns:
                 bound |= {t.id for t in n.targets if isinstance(t, ast.Name)}
         reads = set()
         for n in ast.walk(tree):
@@ -15967,12 +15986,38 @@ class TestCanaryAlertHasOneReader(unittest.TestCase):
                     f"canary_agent.load_active_alert — four readers with four "
                     f"private contracts is exactly what broke")
 
+    def test_irm_macro_analyst_does_not_infer_bear_from_a_cleared_orange(self):
+        """The 2026-10-21 escape, end to end: the VM's real cleared record
+        (PM -7.5%, active False) made the IRM infer BEAR with the CRO at LOW."""
+        import canary_agent
+        from irm_board.macro_analyst import MacroAnalyst
+        d = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        p = d / "canary_alert.json"
+        rec = {"active": False, "level": "ORANGE",
+               "triggered_at": "2026-10-21T13:30:09",
+               "cleared_at": "2026-10-21T13:35:00",
+               "triggers": ["Position pressure: PM down -7.5%"]}
+        p.write_text(json.dumps(rec))
+        irm = {"risk_assessment": {"risk_level": "LOW"}}
+        with patch.object(canary_agent, "ALERT_PATH", str(p)):
+            ma = MacroAnalyst()
+            self.assertEqual("BULL_MID", ma._infer_macro_regime(
+                irm, ma._load_canary_alert(), {}))
+            rec["active"] = True                       # a live ORANGE still counts
+            p.write_text(json.dumps(rec))
+            self.assertEqual("BEAR", ma._infer_macro_regime(
+                irm, ma._load_canary_alert(), {}))
+
     def test_no_other_module_opens_the_alert_file(self):
         offenders = []
-        for p in sorted(self.BASE.glob("*.py")):
-            if p.name in self.NAMES_IT_WITHOUT_READING_IT:
+        for rel, p in self._source_files():
+            if rel in self.NAMES_IT_WITHOUT_READING_IT:
                 continue
-            src = p.read_text()
+            try:
+                src = p.read_text()
+            except (OSError, UnicodeDecodeError):
+                continue
             if "canary_alert.json" not in src:
                 continue
             try:
@@ -15980,7 +16025,11 @@ class TestCanaryAlertHasOneReader(unittest.TestCase):
             except SyntaxError:
                 continue
             if not any(self._accessor_call(n) for n in ast.walk(tree)):
-                offenders.append(p.name)
+                offenders.append(rel)
+        self.assertIn("irm_board/macro_analyst.py",
+                      dict(self._source_files()),
+                      "the sweep stopped descending into subpackages — the "
+                      "blind spot this test was widened to close")
         self.assertEqual(
             [], offenders,
             "these modules reach for data/canary_alert.json without going "

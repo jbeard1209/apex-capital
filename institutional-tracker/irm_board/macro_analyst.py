@@ -144,14 +144,18 @@ class MacroAnalyst:
         return {}
 
     def _load_canary_alert(self) -> dict:
-        for p in ["data/canary_alert.json", "data/canary_state.json"]:
-            if os.path.exists(p):
-                try:
-                    with open(p) as f:
-                        return json.load(f)
-                except Exception:
-                    pass
-        return {}
+        # Through canary_agent.load_active_alert(), never the raw file. This
+        # used to json.load data/canary_alert.json and read `level`, ignoring
+        # `active` — the exact contract break that held the firm in defensive
+        # mode for 3 days in August. A cleared record keeps level=ORANGE, so
+        # every IRM daily check from 2026-10-16 to 10-21 inferred a "BEAR"
+        # regime from one stock (PM -7.5%) whose 13:30 ORANGE had cleared,
+        # while macro_regime_state.json read BULL 0.875 and the CRO read LOW —
+        # and the resulting "raise cash to 55%" tip convened an emergency board
+        # every day. TestCanaryAlertHasOneReader could not see it: it globbed
+        # top-level *.py only, and this file lives in irm_board/.
+        from canary_agent import load_active_alert
+        return load_active_alert()
 
     def _load_capital_efficiency(self) -> dict:
         path = "data/capital_efficiency_report.json"
@@ -183,7 +187,7 @@ class MacroAnalyst:
         Uses a hierarchy of evidence: IRM risk level → Canary level → PDO regime.
         """
         risk_level = irm.get("risk_assessment", {}).get("risk_level", "UNKNOWN")
-        canary_level = canary.get("level", canary.get("last_level", "GREEN"))
+        canary_level = canary.get("level", "GREEN")   # {} == not alerting
         pdo_regime = pdo.get("market_conditions", {}).get("regime", "neutral")
 
         # Map signals to regime
