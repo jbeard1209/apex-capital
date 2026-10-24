@@ -13432,17 +13432,44 @@ class TestCoherenceLaws(unittest.TestCase):
         is still firing. Testing the detector was keeping the detector green.
         The byte-comparison below is the guard: it fails if anyone drops the
         flag, or if a write ever moves outside the flag's reach.
+
+        The Chairman queue is compared on its `coherence-*` rows only — the
+        only rows coherence_laws can write. A whole-file hash failed the VM's
+        slow gate in the UTC zone on 2026-10-20 and 10-23: parameter_audit.py
+        (cron 03:40) appends to the same file while the 03:30 gate is mid-run,
+        so the test blamed the dry run for another producer's row. Narrowing
+        loses nothing: a real (non-dry) run always restamps
+        coherence_report.json's `checked_at`, which is still byte-compared.
         """
         import hashlib
         import subprocess
+        import time as _time
         data = Path(__file__).parent / "data"
-        watched = [data / n for n in ("coherence_report.json",
-                                      "chairman_action_required.json",
-                                      "coherence_notified.json")]
+        whole = [data / n for n in ("coherence_report.json",
+                                    "coherence_notified.json")]
+        queue = data / "chairman_action_required.json"
+
+        def own_rows():
+            if not queue.exists():
+                return None
+            for _ in range(5):  # another producer may be mid-write
+                try:
+                    rows = json.loads(queue.read_text())
+                    break
+                except ValueError:
+                    _time.sleep(0.5)
+            else:
+                return "unparseable"
+            mine = [r for r in rows if isinstance(r, dict)
+                    and str(r.get("id", "")).startswith("coherence-")]
+            return hashlib.md5(json.dumps(mine, sort_keys=True)
+                               .encode()).hexdigest()
 
         def digest():
-            return {p.name: hashlib.md5(p.read_bytes()).hexdigest()
-                    if p.exists() else None for p in watched}
+            d = {p.name: hashlib.md5(p.read_bytes()).hexdigest()
+                 if p.exists() else None for p in whole}
+            d[queue.name + "[coherence-*]"] = own_rows()
+            return d
 
         before = digest()
         cl = self._law_sources()
