@@ -33202,6 +33202,119 @@ class TestKalshiDailyStatusIsWiredEndToEnd(unittest.TestCase):
                       "stop updating")
 
 
+class TestKalshiDailyStatusReadsWhatItsProducersWrite(unittest.TestCase):
+    """2026-10-31 investigator run #16. The brief above was wired (cron,
+    imports, missing-file tolerance) and read three things nobody writes:
+
+      * `kalshi_calibration_report.json` and `kalshi_board_report.json` — no
+        producer has ever written either name (calibration persists its
+        verdict to `kalshi_verdict_notified.json`; the board to
+        `kalshi_board_log.json`), so calibration was "MISSING" every day
+        while the VM's verdict was DEAD|NOT_PROVEN|UNHARVESTABLE;
+      * the paper report's numbers under `gate`/top level, where the producer
+        nests them under `snapshot` — so with n=2050/500 settled and day
+        33/30 the brief told the Chairman "n_prospective=0/500, days=0/30 …
+        passing time discharges it", when the gate is failing on EV
+        (+0.21c < 0.5c floor, CI-low −0.39c). Waiting would never clear it.
+
+    Worse, `verdict` was therefore never True, so the flip-to-READY alert
+    could not fire — and its writer, once reachable, trimmed the shared
+    queue to its last 200 rows (VM: 236) with no lock and no `status`, so
+    the SLA ingest would have skipped the very row it raised.
+    """
+
+    # The VM's real report, 2026-10-31 11:55 UTC — the producer's own shape.
+    PAPER = {
+        "ready": False,
+        "reasons_against": ["EV_net +0.208c < arming floor 0.5c",
+                            "EV_net CI-low -0.389c is not strictly > 0"],
+        "snapshot": {"started": True, "start_date": "2026-09-28",
+                     "days_since_start": 33, "n_prospective_settled": 2050,
+                     "n_prospective_pending": 939,
+                     "ev_net_cents_per_contract": 0.20829,
+                     "ev_net_ci_low_cents": -0.38871},
+    }
+
+    def test_every_upstream_file_is_one_a_producer_writes(self):
+        import kalshi_daily_status as k
+        here = Path(__file__).parent
+        producers = "".join(p.read_text() for p in here.glob("kalshi_*.py")
+                            if p.name != "kalshi_daily_status.py")
+        for const in ("SCAN_LOG", "CALIB_REPORT", "PAPER_REPORT",
+                      "BOARD_REPORT"):
+            name = getattr(k, const).name
+            self.assertIn(f'"{name}"', producers,
+                          f"{const} = {name}: no kalshi_*.py producer writes "
+                          f"that file, so the brief reports it MISSING forever")
+
+    def test_paper_numbers_come_from_the_producers_snapshot(self):
+        import kalshi_daily_status as k
+        s = k._summarize_paper_mirror(self.PAPER)
+        self.assertIs(s["verdict"], False)
+        self.assertEqual(s["n_prospective"], 2050)
+        self.assertEqual(s["days_since_start"], 33)
+        self.assertAlmostEqual(s["ev_net_mean"], 0.20829)
+        self.assertAlmostEqual(s["ev_net_ci_low"], -0.38871)
+
+    def test_a_gate_failing_on_evidence_is_not_told_to_wait(self):
+        import kalshi_daily_status as k
+        status = {"scan": {"structural_arbs_found": 0},
+                  "calibration": {"verdict": "UNKNOWN"},
+                  "paper_mirror": k._summarize_paper_mirror(self.PAPER)}
+        line = k._bottom_line(status)
+        self.assertNotIn("passing time discharges", line,
+                         "n and days are both past target — more time "
+                         "cannot clear an EV that is below the floor")
+        self.assertIn("arming floor", line)
+        self.assertNotEqual(k._gate_status_label(status), "WAITING")
+
+    def test_a_ready_gate_reaches_the_flip_alert(self):
+        import kalshi_daily_status as k
+        ready = dict(self.PAPER, ready=True, reasons_against=[])
+        cur = {"scan": {"structural_arbs_found": 0},
+               "paper_mirror": k._summarize_paper_mirror(ready)}
+        prior = {"scan": {"structural_arbs_found": 0},
+                 "paper_mirror": k._summarize_paper_mirror(self.PAPER)}
+        self.assertIsNotNone(k._has_flip_to_green(prior, cur))
+
+    def test_calibration_verdict_is_read_from_its_state_file(self):
+        import kalshi_daily_status as k
+        s = k._summarize_calibration({
+            "signature": "DEAD|NOT_PROVEN|UNHARVESTABLE",
+            "at": "2026-10-30T11:46:00+00:00",
+            "subject": "Kalshi verdict: premise DEAD, edge not proven, cost "
+                       "UNHARVESTABLE (n=25980 settled)"})
+        self.assertEqual(s["state"], "OK")
+        self.assertEqual(s["verdict"], "DEAD|NOT_PROVEN|UNHARVESTABLE")
+        self.assertEqual(s["n_settled"], 25980)
+
+    def test_the_flip_row_cannot_evict_other_producers(self):
+        import kalshi_daily_status as k
+        td = Path(tempfile.mkdtemp())
+        feed = td / "chairman_action_required.json"
+        others = [{"id": f"other-{i}", "source": "someone_else",
+                   "status": "awaiting_chairman", "description": f"item {i}"}
+                  for i in range(236)]
+        feed.write_text(json.dumps(others))
+        orig = k.CHAIRMAN_FEED
+        try:
+            k.CHAIRMAN_FEED = feed
+            k._append_chairman_row("paper mirror gate crossed to READY today",
+                                   {"gate_label": "GREEN"})
+        finally:
+            k.CHAIRMAN_FEED = orig
+        rows = json.loads(feed.read_text())
+        ids = {r["id"] for r in rows}
+        self.assertTrue(all(f"other-{i}" in ids for i in range(236)),
+                        f"{236 - sum(1 for r in rows if r['source'] == 'someone_else')}"
+                        " of another producer's open rows were evicted")
+        mine = [r for r in rows if r.get("source") == "kalshi_daily_status"]
+        self.assertEqual(len(mine), 1)
+        self.assertEqual(mine[0].get("status"), "awaiting_chairman",
+                         "chairman_decision_sla ingests only awaiting_chairman "
+                         "rows — a row without it never reaches the inbox")
+
+
 class TestMlLivePicksCountEachCloseOnce(unittest.TestCase):
     """2026-06-14 (Sunday) and 06-15 (Monday, 06:00 UTC pre-open) each logged
     the same 10 tickers off Friday's close; both were evaluated in one pass,

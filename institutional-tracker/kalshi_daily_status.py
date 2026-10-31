@@ -9,10 +9,10 @@ WHY THIS EXISTS
 Five files answer "where are we with Kalshi today":
 
     data/kalshi_scan_log.json                  (scanner)
-    data/kalshi_calibration_report.json        (calibration verdict)
+    data/kalshi_verdict_notified.json          (calibration verdict)
     data/kalshi_mirror_paper_report.json       (paper mirror gate)
     data/kalshi_mirror_candidate_queue.jsonl   (armed-execute queue)
-    data/kalshi_board_report.json              (board vote)
+    data/kalshi_board_log.json                 (board vote)
 
 The Chairman does not want to read five files to know whether anything
 changed. This aggregates them into ONE stable JSON:
@@ -63,6 +63,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -73,11 +74,16 @@ DATA_DIR = BASE_DIR / "data"
 LOG_DIR = BASE_DIR / "logs"
 LOG_DIR.mkdir(exist_ok=True)
 
+# Each name below must be one its producer actually writes. Until 2026-10-31
+# CALIB_REPORT and BOARD_REPORT named files no code has ever written, so the
+# brief said calibration "MISSING" every day while the VM's verdict was
+# DEAD|NOT_PROVEN|UNHARVESTABLE. Pinned by
+# TestKalshiDailyStatusReadsWhatItsProducersWrite.
 SCAN_LOG = DATA_DIR / "kalshi_scan_log.json"
-CALIB_REPORT = DATA_DIR / "kalshi_calibration_report.json"
+CALIB_REPORT = DATA_DIR / "kalshi_verdict_notified.json"    # kalshi_calibration.VERDICT_STATE
 PAPER_REPORT = DATA_DIR / "kalshi_mirror_paper_report.json"
 CANDIDATE_QUEUE = DATA_DIR / "kalshi_mirror_candidate_queue.jsonl"
-BOARD_REPORT = DATA_DIR / "kalshi_board_report.json"
+BOARD_REPORT = DATA_DIR / "kalshi_board_log.json"           # kalshi_board.BOARD_LOG
 
 STATUS_FILE = DATA_DIR / "kalshi_daily_status.json"
 STATUS_PRIOR_FILE = DATA_DIR / "kalshi_daily_status_prior.json"
@@ -147,18 +153,17 @@ def _summarize_calibration(rep: Optional[dict]) -> dict:
             "verdict": "UNKNOWN",
             "reason": "no calibration report yet",
         }
-    verdict = rep.get("verdict") or rep.get("edge_proven") or "UNKNOWN"
-    n_settled = rep.get("n_settled") or rep.get("settled_rows") or 0
-    hit_rate = rep.get("hit_rate")
-    band = rep.get("band") or "90-100c"
-    blocker = rep.get("blocker") or rep.get("reason")
+    # kalshi_calibration persists only its last-notified verdict:
+    # {"signature": "PREMISE|PROVEN|COST", "at", "subject"}. n is in the
+    # subject line; None when absent, never a made-up 0.
+    verdict = rep.get("signature") or "UNKNOWN"
+    m = re.search(r"n=(\d+) settled", str(rep.get("subject") or ""))
     return {
         "state": "OK",
         "verdict": verdict,
-        "n_settled": n_settled,
-        "hit_rate": hit_rate,
-        "band": band,
-        "blocker": blocker,
+        "n_settled": int(m.group(1)) if m else None,
+        "as_of": rep.get("at"),
+        "blocker": rep.get("subject"),
     }
 
 
@@ -169,14 +174,19 @@ def _summarize_paper_mirror(rep: Optional[dict]) -> dict:
             "verdict": "UNKNOWN",
             "reason": "no paper mirror report yet",
         }
-    gate = rep.get("gate") or {}
+    # kalshi_mirror_paper writes {"ready", "reasons_against", "snapshot": {...}}.
+    # This used to read `gate`/top-level keys that do not exist, so verdict was
+    # always "UNKNOWN" and the READY flip alert below could never fire.
+    snap = rep.get("snapshot") or {}
+    ready = rep.get("ready")
     return {
         "state": "OK",
-        "verdict": gate.get("ready") if isinstance(gate.get("ready"), bool) else gate.get("verdict") or "UNKNOWN",
-        "n_prospective": rep.get("n_prospective") or gate.get("n_prospective"),
-        "ev_net_mean": rep.get("ev_net_mean") or gate.get("ev_net_mean"),
-        "ev_net_ci_low": rep.get("ev_net_ci_low") or gate.get("ev_net_ci_low"),
-        "days_since_start": rep.get("days_since_start") or gate.get("days_since_start"),
+        "verdict": ready if isinstance(ready, bool) else "UNKNOWN",
+        "reasons_against": list(rep.get("reasons_against") or []),
+        "n_prospective": snap.get("n_prospective_settled"),
+        "ev_net_mean": snap.get("ev_net_cents_per_contract"),
+        "ev_net_ci_low": snap.get("ev_net_ci_low_cents"),
+        "days_since_start": snap.get("days_since_start"),
         "target_n": 500,
         "target_ci_low_c": 0.0,
         "target_days": 30,
@@ -230,6 +240,16 @@ def _bottom_line(status: dict) -> str:
         )
     n_prosp = status["paper_mirror"].get("n_prospective") or 0
     days = status["paper_mirror"].get("days_since_start") or 0
+    against = status["paper_mirror"].get("reasons_against") or []
+    if paper_verdict is False and n_prosp >= 500 and days >= 30 and against:
+        # Sample and clock are both past target: the gate is failing on the
+        # evidence, and more time will not discharge it.
+        return (
+            f"Paper mirror gate FAILING ON EVIDENCE, not waiting: "
+            f"n_prospective={n_prosp}/500, days={days}/30 are both met, but "
+            f"{'; '.join(against)}. More settlements only tighten the "
+            f"interval around this estimate."
+        )
     if paper_verdict in (False, "not_ready", "UNKNOWN"):
         return (
             f"Paper mirror gate not ready: n_prospective={n_prosp}/500, "
@@ -252,6 +272,11 @@ def _gate_status_label(status: dict) -> str:
         return "GREEN (paper mirror gate ready)"
     if str(status["calibration"].get("verdict")) == "BLOCKED":
         return "BLOCKED (calibration structural blocker)"
+    pm = status["paper_mirror"]
+    if (pm.get("verdict") is False and pm.get("reasons_against")
+            and (pm.get("n_prospective") or 0) >= pm.get("target_n", 500)
+            and (pm.get("days_since_start") or 0) >= pm.get("target_days", 30)):
+        return "FAILING ON EVIDENCE (paper mirror)"
     return "WAITING"
 
 
@@ -271,23 +296,27 @@ def _has_flip_to_green(prior: Optional[dict], current: dict) -> Optional[str]:
 
 
 def _append_chairman_row(reason: str, status: dict) -> None:
+    # Through chairman_queue.submit: it locks, never evicts another producer's
+    # rows, and dedups. This used to append raw and keep `[-200:]` of the
+    # SHARED list (VM had 236 rows), with no `status`, so the SLA ingest —
+    # which takes only awaiting_chairman rows — would have skipped it.
+    import chairman_queue
     row = {
         "id": f"kalshi-flip-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}",
         "source": "kalshi_daily_status",
         "severity": "HIGH",
         "type": "kalshi_gate_flip",
         "created_utc": datetime.now(timezone.utc).isoformat(),
+        "status": "awaiting_chairman",
+        "dedup_key": f"kalshi-flip|{reason}",
         "summary": f"Kalshi state changed: {reason}",
+        "description": f"Kalshi state changed: {reason}",
         "status_snapshot": status,
         "action": "Chairman review — arming decision required per kalshi_sector policy",
     }
-    existing = _load_json(CHAIRMAN_FEED) or []
-    if isinstance(existing, dict):
-        existing = existing.get("items", []) or []
-    existing.append(row)
-    kept = existing[-200:]
-    CHAIRMAN_FEED.write_text(json.dumps(kept, indent=2))
-    log.info("appended chairman row: %s", row["id"])
+    added, dup = chairman_queue.submit([row], "kalshi_daily_status",
+                                       path=str(CHAIRMAN_FEED))
+    log.info("chairman row %s: added=%d suppressed=%d", row["id"], added, dup)
 
 
 def build_status() -> dict:
@@ -303,7 +332,8 @@ def build_status() -> dict:
         "paper_mirror": _summarize_paper_mirror(paper if isinstance(paper, dict) else None),
         "execute": _summarize_execute(),
         "board_last_vote": (
-            (board or {}).get("verdict") if isinstance(board, dict) else None
+            {k: board.get(k) for k in ("session_at", "considered", "approved")}
+            if isinstance(board, dict) and board.get("session_at") else None
         ),
     }
     status["gate_label"] = _gate_status_label(status)
