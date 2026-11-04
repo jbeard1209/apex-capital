@@ -33698,6 +33698,301 @@ class TestProxyChairman(unittest.TestCase):
             pca.AUDIT = orig_audit
 
 
+
+class TestKalshiCopytradeCannotOverspendOrMisfire(unittest.TestCase):
+    """kalshi_copytrade.py is the first Apex module that can place a real Kalshi
+    order (Chairman decision 2026-11-04, "live now, tiny caps"). These pin the
+    four ways it could hurt: copying the wrong direction, copying stale or
+    historical trades, spending past the caps, and transmitting while unarmed."""
+
+    NOW = datetime(2026, 11, 4, 22, 0, 0, tzinfo=timezone.utc)
+
+    def _trade(self, **kw):
+        t = {"trade_id": "t1", "ticker": "KXTEST-1", "price_dollars": "0.4000",
+             "count_fp": "50.00", "taker_side": "yes", "taker_action": "buy",
+             "taker_nickname": "Leader", "maker_nickname": "",
+             "create_date": "2026-11-04T21:59:58Z"}
+        t.update(kw)
+        return t
+
+    def _cfg(self, **kw):
+        import kalshi_copytrade as ct
+        c = dict(ct.DEFAULTS)
+        c.update(kw)
+        return c
+
+    def test_each_taker_fill_maps_to_the_leaders_own_direction(self):
+        import kalshi_copytrade as ct
+        cases = {("yes", "buy"): ("bid", False), ("no", "buy"): ("ask", False),
+                 ("yes", "sell"): ("ask", True), ("no", "sell"): ("bid", True)}
+        for (side, action), (v2, reduce_only) in cases.items():
+            d = ct.decide(self._trade(taker_side=side, taker_action=action),
+                          "leader", self._cfg(), 0.0, now=self.NOW)
+            self.assertEqual(d["action"], "order", (side, action, d))
+            self.assertEqual((d["side"], d["reduce_only"]), (v2, reduce_only),
+                             f"{action} {side} copied as {d['side']}")
+
+    def test_a_maker_fill_is_never_copied(self):
+        """On a maker fill the taker_* fields describe the counterparty. Copying
+        them would put us on the opposite side of the person we follow."""
+        import kalshi_copytrade as ct
+        d = ct.decide(self._trade(taker_nickname="someone", maker_nickname="Leader"),
+                      "leader", self._cfg(), 0.0, now=self.NOW)
+        self.assertEqual(d["action"], "skip")
+        self.assertIn("maker", d["reason"])
+
+    def test_a_stale_trade_is_not_copied(self):
+        import kalshi_copytrade as ct
+        d = ct.decide(self._trade(create_date="2026-11-04T21:58:00Z"),
+                      "leader", self._cfg(max_age_s=30), 0.0, now=self.NOW)
+        self.assertEqual(d["action"], "skip")
+        self.assertIn("stale", d["reason"])
+
+    def test_the_per_trade_and_daily_caps_bind(self):
+        import kalshi_copytrade as ct
+        # $5 at a 42c limit (40c + 2c slippage) buys 11 contracts, not the leader's 50
+        d = ct.decide(self._trade(), "leader", self._cfg(), 0.0, now=self.NOW)
+        self.assertEqual(d["count"], 11)
+        self.assertLessEqual(d["cost_usd"], 5.0)
+        # $1 left of the day buys 2, and $0.30 left buys none
+        d = ct.decide(self._trade(), "leader", self._cfg(), 19.0, now=self.NOW)
+        self.assertEqual(d["count"], 2)
+        d = ct.decide(self._trade(), "leader", self._cfg(), 19.7, now=self.NOW)
+        self.assertEqual(d["action"], "skip")
+        # buying NO costs 1 - limit: 60c + 2c slippage -> 38c YES ask, 62c per NO
+        d = ct.decide(self._trade(taker_side="no", price_dollars="0.6000"),
+                      "leader", self._cfg(), 0.0, now=self.NOW)
+        self.assertEqual((d["side"], d["price"], d["count"]), ("ask", 0.58, 11))
+
+    def test_exits_are_never_blocked_by_the_budget(self):
+        """Blocking an exit costs money with no ceiling (single_writer's asymmetry)."""
+        import kalshi_copytrade as ct
+        d = ct.decide(self._trade(taker_action="sell"), "leader", self._cfg(),
+                      20.0, now=self.NOW)
+        self.assertEqual(d["action"], "order")
+        self.assertTrue(d["reduce_only"])
+
+    def test_a_config_typo_cannot_raise_the_caps_past_the_hard_maximum(self):
+        import kalshi_copytrade as ct
+        with tempfile.TemporaryDirectory() as td:
+            orig = ct.CONFIG_FILE
+            try:
+                ct.CONFIG_FILE = Path(td) / "c.json"
+                ct.CONFIG_FILE.write_text(json.dumps(
+                    {"per_trade_usd": 5000, "per_day_usd": "nan", "leaders": ["a"]}))
+                c = ct.load_config()
+                self.assertEqual(c["per_trade_usd"], ct.HARD_MAX_PER_TRADE)
+                self.assertEqual(c["per_day_usd"], ct.DEFAULTS["per_day_usd"])
+            finally:
+                ct.CONFIG_FILE = orig
+
+    def test_first_poll_seeds_history_and_copies_nothing_then_copies_new(self):
+        """Following someone must never mean buying their last 100 trades."""
+        import kalshi_copytrade as ct
+        with tempfile.TemporaryDirectory() as td:
+            orig = (ct.LEDGER_FILE, ct.HALT_FILE)
+            ct.LEDGER_FILE, ct.HALT_FILE = Path(td) / "l.jsonl", Path(td) / "h"
+            try:
+                feed = {"trades": [self._trade(trade_id="old")]}
+                cfg, state = self._cfg(leaders=["Leader"]), {}
+                with patch.object(ct, "armed", return_value=(False, "test")):
+                    rows = ct.poll_once(cfg, state, now=self.NOW, fetch=lambda n: feed)
+                    self.assertEqual(rows, [])
+                    feed = {"trades": [self._trade(trade_id="new"),
+                                       self._trade(trade_id="old")]}
+                    rows = ct.poll_once(cfg, state, now=self.NOW, fetch=lambda n: feed)
+                self.assertEqual([r["leader_trade_id"] for r in rows], ["new"])
+                self.assertEqual(rows[0]["status"], "paper")
+            finally:
+                ct.LEDGER_FILE, ct.HALT_FILE = orig
+
+    def test_unarmed_never_transmits(self):
+        import kalshi_copytrade as ct
+        sent = []
+        with tempfile.TemporaryDirectory() as td:
+            orig = (ct.LEDGER_FILE, ct.HALT_FILE)
+            ct.LEDGER_FILE, ct.HALT_FILE = Path(td) / "l.jsonl", Path(td) / "h"
+            try:
+                state = {"seen": {"Leader": ["x"]}, "initialised": ["Leader"]}
+                feed = {"trades": [self._trade(trade_id="n1")]}
+                with patch.dict(os.environ, {"KALSHI_ENV": "live"}):
+                    ok, why = ct.armed()
+                    rows = ct.poll_once(self._cfg(leaders=["Leader"]), state,
+                                        now=self.NOW, fetch=lambda n: feed,
+                                        place=lambda **k: sent.append(k))
+            finally:
+                ct.LEDGER_FILE, ct.HALT_FILE = orig
+        if not ok:      # on a host that is NOT armed, nothing may be sent
+            self.assertEqual(sent, [], why)
+            self.assertEqual(rows[0]["status"], "paper")
+
+    def test_repeated_order_errors_halt_the_copier(self):
+        import kalshi_copytrade as ct
+        with tempfile.TemporaryDirectory() as td:
+            orig = (ct.LEDGER_FILE, ct.HALT_FILE)
+            ct.LEDGER_FILE, ct.HALT_FILE = Path(td) / "l.jsonl", Path(td) / "h"
+            try:
+                state = {"seen": {"Leader": ["x"]}, "initialised": ["Leader"]}
+                feed = {"trades": [self._trade(trade_id=f"e{i}") for i in range(4)]}
+                def boom(**k):
+                    raise RuntimeError("exchange said no")
+                with patch.object(ct, "armed", return_value=(True, "")):
+                    rows = ct.poll_once(self._cfg(leaders=["Leader"], per_day_usd=100),
+                                        state, now=self.NOW, fetch=lambda n: feed,
+                                        place=boom)
+                self.assertTrue(ct.HALT_FILE.exists(), "3 errors must write the halt file")
+                self.assertEqual([r["status"] for r in rows],
+                                 ["error", "error", "error", "paper"])
+            finally:
+                ct.LEDGER_FILE, ct.HALT_FILE = orig
+
+    def test_the_request_signature_verifies_against_the_public_key(self):
+        """Kalshi's spec: sign ts + METHOD + path WITHOUT the query string,
+        RSA-PSS(SHA-256, MGF1 SHA-256, salt = 32). A wrong salt or a signed
+        query string is a 401 on every order, discovered live."""
+        import base64
+        import kalshi_client as kc
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa
+        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        h = kc.auth_headers("post", "/trade-api/v2/portfolio/events/orders?x=1",
+                            "kid", key, ts_ms=1700000000000)
+        self.assertEqual(h["KALSHI-ACCESS-KEY"], "kid")
+        key.public_key().verify(
+            base64.b64decode(h["KALSHI-ACCESS-SIGNATURE"]),
+            b"1700000000000POST/trade-api/v2/portfolio/events/orders",
+            padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=32),
+            hashes.SHA256())
+        ek = ed25519.Ed25519PrivateKey.generate()
+        h = kc.auth_headers("GET", "/trade-api/v2/portfolio/balance", "kid", ek,
+                            ts_ms=1)
+        ek.public_key().verify(base64.b64decode(h["KALSHI-ACCESS-SIGNATURE"]),
+                               b"1GET/trade-api/v2/portfolio/balance")
+
+    def test_place_order_refuses_without_keys_even_when_armed(self):
+        import kalshi_client as kc
+        with tempfile.TemporaryDirectory() as td:
+            orig = kc.ARM_FILE
+            kc.ARM_FILE = Path(td) / ".kalshi_armed"
+            kc.ARM_FILE.write_text(json.dumps({"env": "demo", "armed": True}))
+            try:
+                with patch.dict(os.environ, {"KALSHI_ENV": "demo",
+                                             "KALSHI_API_KEY_ID": "",
+                                             "KALSHI_PRIVATE_KEY_PATH": ""}), \
+                     patch.object(kc, "_ensure_env_loaded", lambda: None), \
+                     patch("urllib.request.urlopen") as net:
+                    with self.assertRaises(kc.KalshiNotArmed):
+                        kc.place_order(ticker="X", side="bid", count=1, price=0.5)
+                    net.assert_not_called()
+            finally:
+                kc.ARM_FILE = orig
+
+    def test_the_copier_and_its_state_are_gitignored(self):
+        """An arm file in git ships to every host on the next deploy."""
+        root = Path(__file__).resolve().parent.parent
+        for name in (".kalshi_copytrade_armed", ".kalshi_copytrade_halted",
+                     "kalshi_copytrade_config.json", "kalshi_copytrade_state.json",
+                     "kalshi_copytrade_ledger.jsonl"):
+            r = subprocess.run(["git", "check-ignore", "-q",
+                                f"institutional-tracker/data/{name}"], cwd=root)
+            self.assertEqual(r.returncode, 0, f"data/{name} is not gitignored")
+
+
+class TestKalshiCopytradeScoutDropsBadLeaders(unittest.TestCase):
+    """The scout decides who the copier follows. Chairman, 2026-11-04: "make sure
+    the traders you do track are still optimal ... so that you don't follow a
+    bad trader down a rabbit hole." These pin that a slipping leader is
+    dropped, a bot is never picked, and a failed fetch never unfollows anyone."""
+
+    NOW = datetime(2026, 11, 4, 22, 0, 0, tzinfo=timezone.utc)
+
+    def _fills(self, nick, n=20, taker=True, price="0.40", age_h=1):
+        ts = (self.NOW - timedelta(hours=age_h)).isoformat()
+        return [{"trade_id": f"{nick}{i}", "price_dollars": price, "create_date": ts,
+                 "taker_nickname": nick if taker else "", "maker_nickname": "" if taker else nick}
+                for i in range(n)]
+
+    def _api(self, boards, profiles):
+        """profiles: nick -> (visible, fills, all_time_pnl_usd)."""
+        def get(path, retries=3):
+            if path.startswith("leaderboard"):
+                q = dict(x.split("=") for x in path.split("?")[1].split("&"))
+                rows = boards.get((q["metric_name"], q["time_period"]), [])
+                return {"rank_list": [{"nickname": n, "value": v} for n, v in rows]}
+            nick = path.split("nickname=")[1]
+            vis, fills, pnl = profiles[nick]
+            if path.startswith("trades"):
+                return {"trades": fills if vis else [],
+                        "visibility_state": "visible" if vis else "hidden"}
+            return {"metrics": {"pnl": pnl * 10000}}
+        return get
+
+    def _run(self, boards, profiles, cfg):
+        import kalshi_copytrade as ct
+        import kalshi_copytrade_scout as sc
+        with tempfile.TemporaryDirectory() as td:
+            orig = (ct.CONFIG_FILE, ct.LEDGER_FILE, sc.REPORT_FILE)
+            ct.CONFIG_FILE, ct.LEDGER_FILE = Path(td) / "c.json", Path(td) / "l.jsonl"
+            sc.REPORT_FILE = Path(td) / "r.json"
+            ct.CONFIG_FILE.write_text(json.dumps(cfg))
+            try:
+                with patch.object(sc, "_get", self._api(boards, profiles)):
+                    rep = sc.scout(now=self.NOW)
+                return rep, json.loads(ct.CONFIG_FILE.read_text())
+            finally:
+                ct.CONFIG_FILE, ct.LEDGER_FILE, sc.REPORT_FILE = orig
+
+    def test_hidden_bot_and_losing_traders_are_never_picked(self):
+        boards = {("projected_pnl", "monthly"): [("hidden", 9e6), ("bot", 8e6),
+                                                 ("lucky", 7e6), ("good", 1e5)]}
+        profiles = {"hidden": (False, [], 1e6),
+                    "bot": (True, self._fills("bot", price="0.99"), 1e6),
+                    "lucky": (True, self._fills("lucky"), -5e5),   # losing career
+                    "good": (True, self._fills("good"), 2e5)}
+        rep, cfg = self._run(boards, profiles, {"leaders": []})
+        self.assertEqual(cfg["leaders"], ["good"])
+
+    def test_a_leader_who_stops_qualifying_is_dropped_with_a_reason(self):
+        boards = {("projected_pnl", "monthly"): [("good", 1e5)]}
+        profiles = {"good": (True, self._fills("good"), 2e5),
+                    "faded": (True, self._fills("faded", age_h=24 * 10), 3e5)}
+        rep, cfg = self._run(boards, profiles, {"leaders": ["faded"]})
+        self.assertEqual(cfg["leaders"], ["good"])
+        removed = [c for c in rep["changes"] if c.get("removed") == "faded"]
+        self.assertTrue(removed and "month" in removed[0]["why"], rep["changes"])
+
+    def test_an_unreadable_monthly_board_changes_nothing(self):
+        rep, cfg = self._run({}, {}, {"leaders": ["someone"]})
+        self.assertEqual(cfg["leaders"], ["someone"],
+                         "a failed fetch must never unfollow everyone")
+        self.assertIn("error", rep)
+
+    def test_a_pinned_leader_stays_but_is_reported_when_failing(self):
+        boards = {("projected_pnl", "monthly"): [("good", 1e5)]}
+        profiles = {"good": (True, self._fills("good"), 2e5),
+                    "jacks": (True, self._fills("jacks", taker=False), 1e5)}
+        rep, cfg = self._run(boards, profiles, {"leaders": ["jacks"], "pinned": ["jacks"]})
+        self.assertIn("jacks", cfg["leaders"])
+        self.assertEqual([g["nickname"] for g in rep["pinned_failing"]], ["jacks"])
+
+    def test_our_own_copy_pnl_is_yes_book_arithmetic(self):
+        """Long YES 10 @ 0.40 settling YES = +6.00 less fees; short YES (long NO)
+        10 @ 0.40 settling YES = -6.00 less fees."""
+        import kalshi_client as kc
+        import kalshi_copytrade_scout as sc
+        fee = kc.fee_cents(0.40, 10) / 100.0
+        row = {"leader": "L", "status": "placed", "ticker": "T", "fill_count": "10.00",
+               "price": 0.40}
+        n, pnl = sc.own_copy_record("L", rows=[dict(row, side="bid")],
+                                    result=lambda t, c: "yes")
+        self.assertEqual((n, pnl), (1, round(6.0 - fee, 2)))
+        n, pnl = sc.own_copy_record("L", rows=[dict(row, side="ask")],
+                                    result=lambda t, c: "yes")
+        self.assertEqual(pnl, round(-6.0 - fee, 2))
+        n, pnl = sc.own_copy_record("L", rows=[dict(row, side="bid")],
+                                    result=lambda t, c: None)
+        self.assertEqual((n, pnl), (0, 0.0), "an open market has no P&L yet")
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

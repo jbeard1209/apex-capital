@@ -16,6 +16,14 @@ and only the Chairman can create them.
 
 ## Guardrails (do not cross)
 
+> **Changed 2026-11-04 for copy-trading only.** The Chairman chose "live now,
+> tiny caps" for `kalshi_copytrade.py`, so `kalshi_client.place_order()` now has
+> a working signer. Claude still never handles the key or writes an arm file:
+> the Chairman installs `KALSHI_API_KEY_ID` / `KALSHI_PRIVATE_KEY_PATH` and
+> creates both `data/.kalshi_armed` and `data/.kalshi_copytrade_armed` himself.
+> Caps: $5/trade and $20/day by default, hard-capped in code at $25 and $100.
+> Every other Kalshi strategy below is unchanged.
+
 - Kalshi contracts are CFTC-regulated. Apex code **does not**
   place a live bet, connect to Jack's Kalshi account, or handle
   his Kalshi API keys.
