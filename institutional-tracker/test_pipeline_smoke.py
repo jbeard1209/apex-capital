@@ -10351,6 +10351,11 @@ class TestKalshiSector(unittest.TestCase):
         import os
         import kalshi_client as kc
         prev = os.environ.get("KALSHI_ENV")
+        # env_name() now reads .env; on an armed host that file says live,
+        # and this test is about the default, not about that host.
+        loader = patch.object(kc, "_ensure_env_loaded", lambda: None)
+        loader.start()
+        self.addCleanup(loader.stop)
         try:
             os.environ.pop("KALSHI_ENV", None)
             self.assertEqual(kc.env_name(), "shadow",
@@ -33886,6 +33891,25 @@ class TestKalshiCopytradeCannotOverspendOrMisfire(unittest.TestCase):
                     net.assert_not_called()
             finally:
                 kc.ARM_FILE = orig
+
+    def test_kalshi_env_set_only_in_dotenv_is_seen(self):
+        """Cron does not export .env. The VM had KALSHI_ENV=live there and the
+        copier still reported shadow, because env_name() never read the file."""
+        import kalshi_client as kc
+        with tempfile.TemporaryDirectory() as td:
+            envf = Path(td) / ".env"
+            envf.write_text("KALSHI_ENV=live\n")
+            def load():
+                from dotenv import load_dotenv
+                load_dotenv(dotenv_path=str(envf), override=False)
+            prev = os.environ.pop("KALSHI_ENV", None)
+            try:
+                with patch.object(kc, "_ensure_env_loaded", load):
+                    self.assertEqual(kc.env_name(), "live")
+            finally:
+                os.environ.pop("KALSHI_ENV", None)
+                if prev is not None:
+                    os.environ["KALSHI_ENV"] = prev
 
     def test_the_copier_and_its_state_are_gitignored(self):
         """An arm file in git ships to every host on the next deploy."""

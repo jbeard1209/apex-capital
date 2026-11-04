@@ -91,7 +91,14 @@ class KalshiNotArmed(RuntimeError):
 
 
 def env_name() -> str:
-    """shadow | demo | live. Default is the one that cannot spend money."""
+    """shadow | demo | live. Default is the one that cannot spend money.
+
+    Reads the Chairman's .env first. Until 2026-11-04 it read only the process
+    environment, and cron does not export .env, so `KALSHI_ENV=live` set there
+    was invisible: kalshi_copytrade reported "paper (KALSHI_ENV=shadow)" on the
+    armed VM while --check-key, which loads .env via load_signer(), passed.
+    """
+    _ensure_env_loaded()
     v = (os.environ.get("KALSHI_ENV") or "shadow").strip().lower()
     return v if v in ("shadow", "demo", "live") else "shadow"
 
