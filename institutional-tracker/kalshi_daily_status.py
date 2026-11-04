@@ -84,6 +84,7 @@ CALIB_REPORT = DATA_DIR / "kalshi_verdict_notified.json"    # kalshi_calibration
 PAPER_REPORT = DATA_DIR / "kalshi_mirror_paper_report.json"
 CANDIDATE_QUEUE = DATA_DIR / "kalshi_mirror_candidate_queue.jsonl"
 BOARD_REPORT = DATA_DIR / "kalshi_board_log.json"           # kalshi_board.BOARD_LOG
+COPYTRADE_REPORT = DATA_DIR / "kalshi_copytrade_manager_report.json"  # kalshi_copytrade_manager
 
 STATUS_FILE = DATA_DIR / "kalshi_daily_status.json"
 STATUS_PRIOR_FILE = DATA_DIR / "kalshi_daily_status_prior.json"
@@ -319,6 +320,20 @@ def _append_chairman_row(reason: str, status: dict) -> None:
     log.info("chairman row %s: added=%d suppressed=%d", row["id"], added, dup)
 
 
+def _summarize_copytrade(rep: Optional[dict]) -> dict:
+    """The copy-trading desk runs outside the board process (Chairman,
+    2026-11-04) and has its own manager; this only surfaces its verdict so the
+    Kalshi brief covers the whole sector."""
+    if not rep:
+        return {"health": "MISSING"}
+    perf = rep.get("performance") or {}
+    return {"health": rep.get("status"),
+            "findings": [f.get("kind") for f in rep.get("findings") or []],
+            "today_usd": (perf.get("today") or {}).get("total_usd"),
+            "all_time_usd": (perf.get("all_time") or {}).get("total_usd"),
+            "checked_at": rep.get("at")}
+
+
 def build_status() -> dict:
     scan = _load_json(SCAN_LOG)
     calib = _load_json(CALIB_REPORT)
@@ -331,6 +346,8 @@ def build_status() -> dict:
         "calibration": _summarize_calibration(calib if isinstance(calib, dict) else None),
         "paper_mirror": _summarize_paper_mirror(paper if isinstance(paper, dict) else None),
         "execute": _summarize_execute(),
+        "copytrade": _summarize_copytrade(
+            ct if isinstance(ct := _load_json(COPYTRADE_REPORT), dict) else None),
         "board_last_vote": (
             {k: board.get(k) for k in ("session_at", "considered", "approved")}
             if isinstance(board, dict) and board.get("session_at") else None
@@ -370,6 +387,9 @@ def print_brief(status: dict) -> None:
           f"EV_net={status['paper_mirror'].get('ev_net_mean')}c")
     print(f"EXECUTE:       queue_lines={status['execute'].get('queue_lines')}, "
           f"emitting={status['execute'].get('emitting')}")
+    cp = status.get("copytrade") or {}
+    print(f"COPY-TRADE:    health={cp.get('health')}, today=${cp.get('today_usd')}, "
+          f"all_time=${cp.get('all_time_usd')}")
     print()
     print("BOTTOM LINE:")
     print(f"  {status['bottom_line']}")

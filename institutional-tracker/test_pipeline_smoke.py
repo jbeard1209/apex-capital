@@ -34017,6 +34017,158 @@ class TestKalshiCopytradeScoutDropsBadLeaders(unittest.TestCase):
                                     result=lambda t, c: None)
         self.assertEqual((n, pnl), (0, 0.0), "an open market has no P&L yet")
 
+
+class TestKalshiCopytradeManagerCatchesWhatWentWrong(unittest.TestCase):
+    """The copy-trade manager (Chairman, 2026-11-04) must notice the desk being
+    down, armed-but-idle, losing, or following someone who went private, and
+    must report P&L per period. Its first case is real: on launch day the bot
+    was armed and sat on paper because KALSHI_ENV never reached it."""
+
+    NOW = datetime(2026, 11, 20, 22, 0, 0, tzinfo=timezone.utc)
+
+    def _sandbox(self, td):
+        import kalshi_copytrade as ct
+        import kalshi_copytrade_manager as km
+        import kalshi_copytrade_scout as sc
+        names = ("CONFIG_FILE", "STATE_FILE", "LEDGER_FILE", "ARM_FILE", "HALT_FILE")
+        saved = {n: getattr(ct, n) for n in names}
+        saved_m = (km.REPORT_FILE, km.STATE_FILE, sc.REPORT_FILE)
+        for n in names:
+            setattr(ct, n, Path(td) / n.lower())
+        km.REPORT_FILE, km.STATE_FILE = Path(td) / "mr", Path(td) / "ms"
+        sc.REPORT_FILE = Path(td) / "sr"
+        def restore():
+            for n, v in saved.items():
+                setattr(ct, n, v)
+            km.REPORT_FILE, km.STATE_FILE, sc.REPORT_FILE = saved_m
+        self.addCleanup(restore)
+        ct.CONFIG_FILE.write_text(json.dumps({"leaders": ["L1"], "per_day_usd": 3}))
+        ct.STATE_FILE.write_text("{}")
+        sc.REPORT_FILE.write_text("{}")
+        return ct, km
+
+    def _row(self, side, price, n, ticker="T", at="2026-11-20T10:00:00+00:00", **kw):
+        r = {"status": "placed", "ticker": ticker, "side": side, "price": price,
+             "fill_count": n, "at": at, "leader": "L1", "reduce_only": False}
+        r.update(kw)
+        return r
+
+    def test_armed_but_paper_is_named_not_mistaken_for_a_quiet_day(self):
+        with tempfile.TemporaryDirectory() as td:
+            ct, km = self._sandbox(td)
+            ct.ARM_FILE.write_text(json.dumps({"env": "live", "armed": True}))
+            with patch.dict(os.environ, {"KALSHI_ENV": "shadow"}), \
+                 patch.object(kc_mod(), "_ensure_env_loaded", lambda: None):
+                f, _, _ = km.check_health(now=datetime.now(timezone.utc), rows=[],
+                                          balance=10.0, market=lambda t: None,
+                                          fetch=lambda n: {"trades": []})
+            kinds = {x["kind"] for x in f}
+            self.assertIn("ARMED_BUT_PAPER", kinds)
+            self.assertNotIn("COPIER_NOT_RUNNING", kinds)
+
+    def test_a_dead_copier_and_a_private_leader_are_flagged(self):
+        with tempfile.TemporaryDirectory() as td:
+            ct, km = self._sandbox(td)
+            old = time_mod().time() - 3600
+            os.utime(ct.STATE_FILE, (old, old))
+            f, hidden, _ = km.check_health(now=datetime.now(timezone.utc), rows=[],
+                                           market=lambda t: None,
+                                           fetch=lambda n: {"visibility_state": "hidden"})
+            kinds = {x["kind"] for x in f}
+            self.assertIn("COPIER_NOT_RUNNING", kinds)
+            self.assertEqual(hidden, ["L1"])
+
+    def test_a_private_leader_triggers_an_immediate_rescout(self):
+        with tempfile.TemporaryDirectory() as td:
+            ct, km = self._sandbox(td)
+            called = []
+            with patch.object(km, "check_health",
+                              return_value=([], ["L1"], 0.0)):
+                km.run_check(now=self.NOW, send_urgent=lambda *a, **k: True,
+                             send_digest=lambda **k: True,
+                             rescout=lambda: called.append(1))
+            self.assertEqual(called, [1])
+
+    def test_a_losing_week_trips_the_circuit_breaker(self):
+        with tempfile.TemporaryDirectory() as td:
+            ct, km = self._sandbox(td)
+            # three 60c YES buys that all settle NO: -$18 against a -$6 limit
+            rows = [self._row("bid", 0.60, 10, ticker=f"T{i}") for i in range(3)]
+            f, _, real7 = km.check_health(now=self.NOW, rows=rows, balance=10.0,
+                                          market=lambda t: {"result": "no"},
+                                          fetch=lambda n: {"trades": []})
+            self.assertLess(real7, -6.0)
+            self.assertIn("LOSING", {x["kind"] for x in f})
+
+    def test_period_pnl_is_yes_book_arithmetic(self):
+        import kalshi_client as kc
+        import kalshi_copytrade_manager as km
+        fee = kc.fee_cents(0.40, 10) / 100.0
+        rows = [self._row("bid", 0.40, 10, ticker="WIN", at="2026-11-20T09:00:00+00:00"),
+                self._row("ask", 0.40, 10, ticker="LOSE", at="2026-01-05T09:00:00+00:00"),
+                self._row("bid", 0.50, 4, ticker="OPEN", at="2026-11-20T09:00:00+00:00")]
+        mk = {"WIN": {"result": "yes"}, "LOSE": {"result": "yes"},
+              "OPEN": {"result": "", "last_price_dollars": "0.6000"}}
+        p = km.performance(rows, now=self.NOW, market=lambda t: mk[t])
+        win, lose = round(6.0 - fee, 2), round(-6.0 - fee, 2)
+        open_ = round(4 * 0.10 - kc.fee_cents(0.50, 4) / 100.0, 2)
+        self.assertEqual(p["today"]["realised_usd"], win)
+        self.assertEqual(p["today"]["unrealised_usd"], open_)
+        self.assertEqual(p["all_time"]["realised_usd"], round(win + lose, 2))
+        self.assertEqual(p["year"]["markets"], 3)
+        self.assertEqual(p["month"]["markets"], 2, "January's copy is not this month's")
+
+    def test_a_host_that_does_not_run_the_desk_sends_nothing(self):
+        with tempfile.TemporaryDirectory() as td:
+            ct, km = self._sandbox(td)
+            ct.STATE_FILE.unlink()
+            sent = []
+            rep = km.run_check(now=self.NOW,
+                               send_urgent=lambda *a, **k: sent.append(a),
+                               send_digest=lambda **k: sent.append(k))
+            self.assertEqual((rep["status"], sent), ("NOT_DEPLOYED_HERE", []))
+
+    def test_asking_for_the_report_never_emails(self):
+        with tempfile.TemporaryDirectory() as td:
+            ct, km = self._sandbox(td)
+            with patch.object(km, "_send") as send, \
+                 patch.object(km, "check_health", return_value=(
+                     [{"kind": "HALTED", "severity": "CRITICAL", "detail": "x"}], [], 0.0)):
+                rep = km.run_check(now=self.NOW, notify=False)
+            send.assert_not_called()
+            self.assertEqual(rep["status"], "CRITICAL")
+
+    def test_urgent_alerts_email_once_per_cooldown(self):
+        import kalshi_copytrade_manager as km
+        sent = []
+        f = {"kind": "HALTED", "severity": "CRITICAL", "detail": "x"}
+        st = {}
+        km._send(f, st, self.NOW, send_urgent=lambda s, b, force: sent.append(s) or True)
+        km._send(f, st, self.NOW + timedelta(hours=1),
+                 send_urgent=lambda s, b, force: sent.append(s) or True)
+        km._send(f, st, self.NOW + timedelta(hours=7),
+                 send_urgent=lambda s, b, force: sent.append(s) or True)
+        self.assertEqual(len(sent), 2)
+
+    def test_the_kalshi_brief_reads_the_managers_report(self):
+        import kalshi_daily_status as k
+        import kalshi_copytrade_manager as km
+        self.assertEqual(k.COPYTRADE_REPORT.name, km.REPORT_FILE.name)
+        s = k._summarize_copytrade({"status": "OK", "findings": [],
+                                    "performance": {"today": {"total_usd": 1.5},
+                                                    "all_time": {"total_usd": 4.0}}})
+        self.assertEqual((s["health"], s["today_usd"], s["all_time_usd"]), ("OK", 1.5, 4.0))
+
+
+def kc_mod():
+    import kalshi_client
+    return kalshi_client
+
+
+def time_mod():
+    import time
+    return time
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.
