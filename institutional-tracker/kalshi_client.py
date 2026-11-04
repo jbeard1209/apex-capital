@@ -45,12 +45,16 @@ AUTH AND THE ARM GATE
 Public market data needs no credentials at all (verified: HTTP 200 unauthed),
 so the entire research and calibration phase runs with zero secrets on disk.
 
-Order placement needs RSA-PSS request signing. Claude does not and will not
-handle those keys: `KALSHI_API_KEY_ID` and `KALSHI_PRIVATE_KEY_PATH` are read
-from the environment, which the Chairman populates himself. On top of that,
-`place_order()` refuses to do anything unless `data/.kalshi_armed` exists and
-names the same environment — the same shadow -> ENFORCE shape as
+Order placement needs signed requests (RSA-PSS or Ed25519). Claude does not
+and will not handle those keys: `KALSHI_API_KEY_ID` and `KALSHI_PRIVATE_KEY_PATH`
+are read from the environment, which the Chairman populates himself. On top of
+that, `place_order()` refuses to do anything unless `data/.kalshi_armed` exists
+and names the same environment — the same shadow -> ENFORCE shape as
 `signoff_ledger`. Default is `shadow`, which cannot place an order at all.
+
+The signer was a deliberate stub until 2026-11-04, when the Chairman chose
+"live now, tiny caps" for copy-trading (`kalshi_copytrade.py`). Installing the
+key and creating the arm file are still his steps, not code's.
 
 Usage:
     python3 kalshi_client.py --report        # exchange snapshot + book health
@@ -457,12 +461,123 @@ def armed_for(target_env):
     return d.get("env") == target_env and bool(d.get("armed"))
 
 
-def place_order(**kwargs):
-    """Refuses unless explicitly armed. Not wired to a signer yet, on purpose.
+class KalshiOrderRejected(RuntimeError):
+    """The exchange answered, and the answer was no. Distinct from
+    KalshiNotArmed (we refused to ask) so a caller can tell the two apart."""
 
-    The RSA-PSS signing path needs KALSHI_API_KEY_ID and a private key file that
-    only the Chairman installs. Until this firm has measured calibration on the
-    read-only path, an order function that works is a liability, not a feature.
+
+API_PREFIX = "/trade-api/v2"
+
+
+def _ensure_env_loaded():
+    """Pick up the Chairman's .env (same pattern as single_writer)."""
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(dotenv_path=str(Path(__file__).resolve().parent / ".env"),
+                    override=False)
+    except Exception:
+        pass
+
+
+def sign_message(private_key, message: bytes) -> str:
+    """Base64 signature of `message` with whichever key type Kalshi registered.
+
+    Kalshi picks the verifier from the registered public key, so the signer
+    must follow the parsed key, not the PEM header: RSA -> PSS(SHA-256, MGF1
+    SHA-256, salt = digest length), Ed25519 -> raw sign.
+    """
+    import base64
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa
+    if isinstance(private_key, ed25519.Ed25519PrivateKey):
+        sig = private_key.sign(message)
+    elif isinstance(private_key, rsa.RSAPrivateKey):
+        sig = private_key.sign(
+            message,
+            padding.PSS(mgf=padding.MGF1(hashes.SHA256()),
+                        salt_length=padding.PSS.DIGEST_LENGTH),
+            hashes.SHA256())
+    else:
+        raise KalshiNotArmed(f"unsupported Kalshi key type {type(private_key).__name__}")
+    return base64.b64encode(sig).decode()
+
+
+def auth_headers(method: str, path: str, key_id: str, private_key,
+                 ts_ms: int = None) -> dict:
+    """The three KALSHI-ACCESS-* headers. `path` is the full request path from
+    the host, e.g. /trade-api/v2/portfolio/balance; the query string is NOT
+    signed, so it is stripped here rather than trusted to every caller."""
+    ts = str(ts_ms if ts_ms is not None else int(time.time() * 1000))
+    bare = path.split("?", 1)[0]
+    return {"KALSHI-ACCESS-KEY": key_id,
+            "KALSHI-ACCESS-TIMESTAMP": ts,
+            "KALSHI-ACCESS-SIGNATURE": sign_message(
+                private_key, (ts + method.upper() + bare).encode())}
+
+
+def load_signer():
+    """(key_id, private_key) from the environment, or raise KalshiNotArmed.
+
+    Missing credentials RAISE — a caller that gets None back has, more than
+    once in this codebase, gone on to record a trade nobody placed.
+    """
+    _ensure_env_loaded()
+    key_id = (os.environ.get("KALSHI_API_KEY_ID") or "").strip()
+    key_path = (os.environ.get("KALSHI_PRIVATE_KEY_PATH") or "").strip()
+    if not key_id or not key_path:
+        raise KalshiNotArmed("KALSHI_API_KEY_ID / KALSHI_PRIVATE_KEY_PATH not set "
+                             "in the environment or .env")
+    try:
+        from cryptography.hazmat.primitives import serialization
+        pem = Path(key_path).expanduser().read_bytes()
+        key = serialization.load_pem_private_key(pem, password=None)
+    except Exception as e:
+        raise KalshiNotArmed(f"cannot load Kalshi private key at {key_path}: "
+                             f"{type(e).__name__}") from e
+    return key_id, key
+
+
+def _signed(method, path, body=None, timeout=15):
+    """Authenticated request. `path` is relative to the API root (/portfolio/...)."""
+    key_id, key = load_signer()
+    url = base_url() + path
+    headers = {"User-Agent": USER_AGENT, "Content-Type": "application/json",
+               **auth_headers(method, API_PREFIX + path, key_id, key)}
+    data = json.dumps(body).encode() if body is not None else None
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return json.load(r)
+    except urllib.error.HTTPError as e:
+        detail = ""
+        try:
+            detail = e.read().decode()[:300]
+        except Exception:
+            pass
+        raise KalshiOrderRejected(f"HTTP {e.code} on {method} {path}: {detail}") from e
+
+
+def get_balance():
+    """Signed read-only call; spends nothing. Used to prove the key works."""
+    return _signed("GET", "/portfolio/balance")
+
+
+def _fixed(v, places):
+    return f"{float(v):.{places}f}"
+
+
+def place_order(ticker=None, side=None, count=None, price=None,
+                time_in_force="immediate_or_cancel", reduce_only=False,
+                client_order_id=None, **_ignored):
+    """Submit ONE order via the V2 endpoint (POST /portfolio/events/orders).
+
+    V2 speaks only the YES book: side="bid" buys YES, side="ask" sells YES
+    (which is how a NO position is opened). `price` is the YES price in dollars.
+
+    Refuses, by raising, unless ALL of:  KALSHI_ENV is demo|live, data/.kalshi_armed
+    names that env, and the Chairman's key is installed. The arm checks run
+    before argument validation, so a shadow-mode caller learns "not armed"
+    rather than "bad side".
     """
     env = env_name()
     if env == "shadow":
@@ -473,10 +588,24 @@ def place_order(**kwargs):
         raise KalshiNotArmed(
             f"KALSHI_ENV={env} but data/.kalshi_armed does not authorise '{env}'. "
             f"Arming is a Chairman action.")
-    raise KalshiNotArmed(
-        f"Armed for {env}, but no request signer is installed. Install "
-        f"KALSHI_API_KEY_ID + KALSHI_PRIVATE_KEY_PATH and implement RSA-PSS "
-        f"signing before this can transmit.")
+    if side not in ("bid", "ask"):
+        raise ValueError(f"side must be 'bid' (buy YES) or 'ask' (sell YES), got {side!r}")
+    p = parse_price(price)
+    if p is None:
+        raise ValueError(f"price must be a YES price strictly inside (0, 1), got {price!r}")
+    try:
+        n = float(count)
+    except (TypeError, ValueError):
+        raise ValueError(f"count must be a positive number, got {count!r}")
+    if not n > 0:
+        raise ValueError(f"count must be a positive number, got {count!r}")
+    body = {"ticker": str(ticker), "side": side, "count": _fixed(n, 2),
+            "price": _fixed(p, 4), "time_in_force": time_in_force,
+            "self_trade_prevention_type": "taker_at_cross",
+            "reduce_only": bool(reduce_only)}
+    if client_order_id:
+        body["client_order_id"] = str(client_order_id)
+    return _signed("POST", "/portfolio/events/orders", body)
 
 
 # ------------------------------------------------------------------ report --

@@ -44,6 +44,15 @@ institutional-tracker/logs/
 # on the VM. Arm where the pipeline runs, deliberately, by hand.
 institutional-tracker/data/.fi_armed
 institutional-tracker/data/.kalshi_armed
+# kalshi_copytrade.py (2026-11-04): its own arm file and kill switch, plus its
+# runtime state. The leader list is per-host on purpose: only the armed host
+# should be following anyone.
+institutional-tracker/data/.kalshi_copytrade_armed
+institutional-tracker/data/.kalshi_copytrade_halted
+institutional-tracker/data/kalshi_copytrade_config.json
+institutional-tracker/data/kalshi_copytrade_state.json
+institutional-tracker/data/kalshi_copytrade_ledger.jsonl
+institutional-tracker/data/kalshi_copytrade_scout_report.json
 
 # ── Backups ───────────────────────────────────────────────────────────────────
 institutional-tracker/data/backups/
