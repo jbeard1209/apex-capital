@@ -53,6 +53,8 @@ institutional-tracker/data/kalshi_copytrade_config.json
 institutional-tracker/data/kalshi_copytrade_state.json
 institutional-tracker/data/kalshi_copytrade_ledger.jsonl
 institutional-tracker/data/kalshi_copytrade_scout_report.json
+institutional-tracker/data/kalshi_copytrade_manager_report.json
+institutional-tracker/data/kalshi_copytrade_manager_state.json
 
 # ── Backups ───────────────────────────────────────────────────────────────────
 institutional-tracker/data/backups/
