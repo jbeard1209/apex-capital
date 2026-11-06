@@ -117,9 +117,12 @@ DEFAULTS = {
     "max_age_s": 30.0,
     "slippage": 0.02,      # dollars of YES price we'll pay past the leader's fill
     "poll_s": 3.0,
+    "max_payout_usd": 16.0,   # most one market can ever pay us; see payout_cap()
 }
 HARD_MAX_PER_TRADE = 25.0
 HARD_MAX_PER_DAY = 100.0
+HARD_MAX_PAYOUT = 50.0
+PAYOUT_MULTIPLE = 5.0      # payout cap = this x per_trade_usd, under max_payout_usd
 MIN_PRICE = 0.15   # was 0.05 until 2026-11-06; see the module docstring
 MAX_PRICE = 0.85
 MAX_CONSECUTIVE_ERRORS = 3
@@ -148,7 +151,8 @@ def load_config():
     if isinstance(raw, dict):
         cfg.update({k: v for k, v in raw.items() if k in DEFAULTS})
     cfg["leaders"] = [str(x) for x in (cfg.get("leaders") or []) if str(x).strip()]
-    for k in ("per_trade_usd", "per_day_usd", "max_age_s", "slippage", "poll_s"):
+    for k in ("per_trade_usd", "per_day_usd", "max_age_s", "slippage", "poll_s",
+              "max_payout_usd"):
         try:
             cfg[k] = float(cfg[k])
         except (TypeError, ValueError):
@@ -157,6 +161,7 @@ def load_config():
             cfg[k] = DEFAULTS[k]
     cfg["per_trade_usd"] = min(cfg["per_trade_usd"], HARD_MAX_PER_TRADE)
     cfg["per_day_usd"] = min(cfg["per_day_usd"], HARD_MAX_PER_DAY)
+    cfg["max_payout_usd"] = min(cfg["max_payout_usd"], HARD_MAX_PAYOUT)
     cfg["poll_s"] = max(cfg["poll_s"], 1.0)
     return cfg
 
@@ -205,7 +210,21 @@ INTENT = {("yes", "buy"): ("bid", False),
           ("no", "sell"): ("bid", True)}
 
 
-def decide(trade, leader, cfg, spent_today, now=None, market_spent=0.0):
+def payout_cap(cfg):
+    """Most a single market may pay us if it wins, in dollars (= contracts held,
+    since each pays $1). Jack, 2026-11-06: "dont put more than 2 dollars on 8x".
+    A cheap contract pays a big multiple, so a dollar cap alone lets the bot
+    load up on longshots; this caps the payout too: PAYOUT_MULTIPLE x the
+    per-market dollar cap, never above max_payout_usd (default $16 = $2 at 8x)
+    or HARD_MAX_PAYOUT. At $1 per market that is $5: at most 5 contracts in
+    any one market, so a 15c bet risks $0.75, not $1."""
+    return min(PAYOUT_MULTIPLE * float(cfg.get("per_trade_usd", DEFAULTS["per_trade_usd"])),
+               float(cfg.get("max_payout_usd", DEFAULTS["max_payout_usd"])),
+               HARD_MAX_PAYOUT)
+
+
+def decide(trade, leader, cfg, spent_today, now=None, market_spent=0.0,
+           market_contracts=0.0):
     """Pure function: one leader fill -> an order dict, or a skip.
 
     `spent_today` is what we have already put into opening orders today;
@@ -262,9 +281,14 @@ def decide(trade, leader, cfg, spent_today, now=None, market_spent=0.0):
     market_left = cfg["per_trade_usd"] - market_spent
     day_left = cfg["per_day_usd"] - spent_today
     budget = min(market_left, day_left)
-    n = min(math.floor(lc), math.floor(budget / per_contract + 1e-9))
+    payout_left = payout_cap(cfg) - market_contracts
+    n = min(math.floor(lc), math.floor(budget / per_contract + 1e-9),
+            math.floor(payout_left + 1e-9))
     while n >= 1 and n * per_contract + (kc.fee_cents(per_contract, n) or 0) / 100 > budget + 1e-9:
         n -= 1
+    if n < 1 and payout_left < 1:
+        return {"action": "skip", "reason": f"payout cap: already hold "
+                f"{market_contracts:g} contracts (max ${payout_cap(cfg):.0f} payout per market)"}
     if n < 1:
         which = "per-market" if market_left <= day_left else "daily"
         return {"action": "skip", "reason": f"{which} cap: ${max(budget, 0):.2f} left "
@@ -318,6 +342,22 @@ def spent_today(rows=None, now=None):
                      if str(r.get("at", ""))[:10] == day), 2)
 
 
+def market_contracts(ticker, rows=None):
+    """Contracts ever opened in one market (filled live, or paper), which is
+    the most that market can pay us. Exits are not netted off: re-entering a
+    market we exited still counts, which errs towards smaller positions."""
+    n = 0.0
+    for r in ledger_rows() if rows is None else rows:
+        if r.get("ticker") != ticker or r.get("reduce_only"):
+            continue
+        if r.get("status") == "placed":
+            f = kc.parse_size(r.get("fill_count"))
+            n += float(r.get("count") or 0) if f is None else f
+        elif r.get("status") == "paper":
+            n += float(r.get("count") or 0)
+    return n
+
+
 def market_spent(ticker, rows=None):
     """Dollars ever committed to opening positions in one market. This is
     what per_trade_usd caps, so a leader order that fills in five pieces (or
@@ -357,7 +397,8 @@ def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order):
             now_ = now or datetime.now(timezone.utc)
             rows_ = ledger_rows()
             dec = decide(t, leader, cfg, spent_today(rows_, now=now_), now=now_,
-                         market_spent=market_spent(t.get("ticker"), rows_))
+                         market_spent=market_spent(t.get("ticker"), rows_),
+                         market_contracts=market_contracts(t.get("ticker"), rows_))
             row = {"at": now_.isoformat(), "leader": leader,
                    "leader_trade_id": t["trade_id"], "leader_ts": t.get("create_date"),
                    "leader_side": t.get("taker_side"), "leader_action": t.get("taker_action"),

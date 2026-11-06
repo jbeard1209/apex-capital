@@ -424,6 +424,9 @@ def print_report(rep):
     print("KALSHI COPY-TRADE MANAGER")
     print(f"  mode    : {'LIVE' if live else 'paper (' + why + ')'}")
     print(f"  leaders : {', '.join(cfg['leaders']) or '(none)'}")
+    print(f"  limits  : ${cfg['per_trade_usd']:.2f} per market, ${cfg['per_day_usd']:.2f} per day, "
+          f"max ${ct.payout_cap(cfg):.0f} payout per market, only sides priced "
+          f"{ct.MIN_PRICE*100:.0f}-{ct.MAX_PRICE*100:.0f}c")
     print(f"  health  : {rep['status']}")
     for f in rep["findings"]:
         print(f"    [{f['severity']}] {f['kind']}: {f['detail']}")

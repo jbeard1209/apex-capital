@@ -33811,6 +33811,31 @@ class TestKalshiCopytradeCannotOverspendOrMisfire(unittest.TestCase):
                       "leader", self._cfg(), 0.0, now=self.NOW)
         self.assertEqual(d["action"], "order", "a 30c NO is inside the band")
 
+    def test_cheap_contracts_are_capped_by_payout_not_just_dollars(self):
+        """Jack, 2026-11-06: "dont put more than 2 dollars on 8x". At $1 per
+        market the payout cap is $5, so a 15c YES buys 5 contracts ($0.85 +
+        fee), not the 6 the dollar cap alone allows; and once a market holds
+        5 contracts nothing more goes in."""
+        import kalshi_copytrade as ct
+        cfg = self._cfg(per_trade_usd=1.0)
+        self.assertEqual(ct.payout_cap(cfg), 5.0)
+        self.assertEqual(ct.payout_cap(self._cfg(per_trade_usd=25.0)), 16.0)
+        self.assertEqual(ct.payout_cap(self._cfg(per_trade_usd=25.0, max_payout_usd=999)),
+                         ct.HARD_MAX_PAYOUT)
+        d = ct.decide(self._trade(price_dollars="0.1500"), "leader", cfg, 0.0,
+                      now=self.NOW)
+        self.assertEqual(d["count"], 5, d)
+        d = ct.decide(self._trade(price_dollars="0.1500"), "leader",
+                      self._cfg(per_trade_usd=5.0), 0.0, now=self.NOW, market_contracts=25)
+        self.assertEqual(d["action"], "skip")
+        self.assertIn("payout cap", d["reason"])
+        rows = [{"ticker": "T", "status": "placed", "count": 5, "fill_count": "3.00"},
+                {"ticker": "T", "status": "paper", "count": 2},
+                {"ticker": "T", "status": "placed", "count": 4, "fill_count": "4.00",
+                 "reduce_only": True},
+                {"ticker": "U", "status": "placed", "count": 9, "fill_count": "9.00"}]
+        self.assertEqual(ct.market_contracts("T", rows), 5.0)
+
     def test_the_cap_includes_the_fee(self):
         """$1 must mean $1 out of pocket: 2 contracts at 48c is $0.96 plus a
         4c fee, which is $1.00 and fits; 2 at 49c would be $1.03 and must not."""
