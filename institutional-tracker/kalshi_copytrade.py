@@ -44,7 +44,11 @@ opposite side of the person it follows.
 
 Opening trades priced outside [MIN_PRICE, MAX_PRICE] are skipped: the visible
 high-volume profiles are bots trading 1c and 99c contracts by the thousand, and
-at those prices a single contract's fee is most of the edge.
+at those prices a single contract's fee is most of the edge. The band was
+5c-95c until 2026-11-06, when it let through a 6c longshot that Jack (rightly)
+called a lottery ticket: $2.55 for a $42 payout. It is now 15c-85c, measured
+on the price of the side we actually buy (the band is symmetric, so YES at
+p and NO at 1-p are judged alike).
 
 Only trades younger than `max_age_s` are copied. On a leader's first poll every
 existing trade is marked seen and NOTHING is copied — following someone must
@@ -53,7 +57,11 @@ never mean buying their last 100 trades.
 THE CAPS (the whole reason this is allowed to be live)
 ------------------------------------------------------
 per_trade_usd (default $5) and per_day_usd (default $20, UTC day) come from
-data/kalshi_copytrade_config.json, and are clipped to HARD_MAX_* in code so a
+data/kalshi_copytrade_config.json. per_trade_usd is the most we will ever put
+into ONE MARKET, fees included, summed over every copy we make in it — not a
+cap per leader fill. Until 2026-11-06 it was checked per fill, and one leader
+order that filled in three pieces was copied three times at ~$0.85 each:
+$2.55 into one 6c market under a "$1 per trade" cap. Both are and are clipped to HARD_MAX_* in code so a
 typo in that file cannot authorise $5,000. Exits are always allowed: blocking
 an exit costs money with no ceiling (same asymmetry as single_writer.py).
 Three consecutive order errors write data/.kalshi_copytrade_halted and stop
@@ -112,8 +120,8 @@ DEFAULTS = {
 }
 HARD_MAX_PER_TRADE = 25.0
 HARD_MAX_PER_DAY = 100.0
-MIN_PRICE = 0.05
-MAX_PRICE = 0.95
+MIN_PRICE = 0.15   # was 0.05 until 2026-11-06; see the module docstring
+MAX_PRICE = 0.85
 MAX_CONSECUTIVE_ERRORS = 3
 
 
@@ -197,8 +205,12 @@ INTENT = {("yes", "buy"): ("bid", False),
           ("no", "sell"): ("bid", True)}
 
 
-def decide(trade, leader, cfg, spent_today, now=None):
+def decide(trade, leader, cfg, spent_today, now=None, market_spent=0.0):
     """Pure function: one leader fill -> an order dict, or a skip.
+
+    `spent_today` is what we have already put into opening orders today;
+    `market_spent` is what we have already put into THIS ticker, ever. The
+    order may use only what both caps still leave, fees included.
 
     Returns {"action": "order", ...} or {"action": "skip", "reason": ...}.
     No I/O, so every branch is testable without the exchange.
@@ -241,17 +253,25 @@ def decide(trade, leader, cfg, spent_today, now=None):
             return {"action": "skip", "reason": "exit smaller than one contract"}
         return {"action": "order", "count": n, "cost_usd": 0.0, **base}
 
-    if not (MIN_PRICE <= p <= MAX_PRICE):
-        return {"action": "skip", "reason": f"price {p:.2f} outside "
-                f"{MIN_PRICE:.2f}-{MAX_PRICE:.2f}"}
-    per_contract = limit if side == "bid" else (1.0 - limit)
-    budget = min(cfg["per_trade_usd"], cfg["per_day_usd"] - spent_today)
+    leader_cost = p if side == "bid" else 1.0 - p    # price of the side bought
+    if not (MIN_PRICE - 1e-9 <= leader_cost <= MAX_PRICE + 1e-9):
+        what = "YES" if side == "bid" else "NO"
+        return {"action": "skip", "reason": f"{what} at {leader_cost:.2f} is outside "
+                f"{MIN_PRICE:.2f}-{MAX_PRICE:.2f} (longshot/near-certain)"}
+    per_contract = round(limit if side == "bid" else (1.0 - limit), 2)
+    market_left = cfg["per_trade_usd"] - market_spent
+    day_left = cfg["per_day_usd"] - spent_today
+    budget = min(market_left, day_left)
     n = min(math.floor(lc), math.floor(budget / per_contract + 1e-9))
+    while n >= 1 and n * per_contract + (kc.fee_cents(per_contract, n) or 0) / 100 > budget + 1e-9:
+        n -= 1
     if n < 1:
-        return {"action": "skip", "reason": f"cap: ${budget:.2f} left buys no "
-                f"contract at ${per_contract:.2f}"}
+        which = "per-market" if market_left <= day_left else "daily"
+        return {"action": "skip", "reason": f"{which} cap: ${max(budget, 0):.2f} left "
+                f"buys no contract at ${per_contract:.2f} plus fee"}
+    fee = (kc.fee_cents(per_contract, n) or 0) / 100
     return {"action": "order", "count": n,
-            "cost_usd": round(n * per_contract, 2), **base}
+            "cost_usd": round(n * per_contract + fee, 2), **base}
 
 
 # ----------------------------------------------------------------- ledger --
@@ -276,22 +296,34 @@ def ledger_rows():
     return out
 
 
-def spent_today(rows=None, now=None):
-    """Dollars committed to OPENING orders today (UTC). Live rows count what
-    filled; a live row with no fill count is charged in full, because an
+def _opening_cost(r):
+    """Dollars one ledger row committed to opening a position. Live rows count
+    what filled; a live row with no fill count is charged in full, because an
     unknown fill must not reopen the budget."""
+    if r.get("reduce_only"):
+        return 0.0
+    if r.get("status") == "placed":
+        req, filled = r.get("count") or 0, r.get("fill_count")
+        frac = (float(filled) / req) if (filled is not None and req) else 1.0
+        return float(r.get("cost_usd") or 0) * min(max(frac, 0.0), 1.0)
+    if r.get("status") == "paper":
+        return float(r.get("cost_usd") or 0)
+    return 0.0
+
+
+def spent_today(rows=None, now=None):
+    """Dollars committed to OPENING orders today (UTC)."""
     day = (now or datetime.now(timezone.utc)).strftime("%Y-%m-%d")
-    total = 0.0
-    for r in ledger_rows() if rows is None else rows:
-        if str(r.get("at", ""))[:10] != day or r.get("reduce_only"):
-            continue
-        if r.get("status") == "placed":
-            req, filled = r.get("count") or 0, r.get("fill_count")
-            frac = (float(filled) / req) if (filled is not None and req) else 1.0
-            total += float(r.get("cost_usd") or 0) * min(max(frac, 0.0), 1.0)
-        elif r.get("status") == "paper":
-            total += float(r.get("cost_usd") or 0)
-    return round(total, 2)
+    return round(sum(_opening_cost(r) for r in (ledger_rows() if rows is None else rows)
+                     if str(r.get("at", ""))[:10] == day), 2)
+
+
+def market_spent(ticker, rows=None):
+    """Dollars ever committed to opening positions in one market. This is
+    what per_trade_usd caps, so a leader order that fills in five pieces (or
+    five leaders piling into one market) cannot stack five full-size copies."""
+    return round(sum(_opening_cost(r) for r in (ledger_rows() if rows is None else rows)
+                     if r.get("ticker") == ticker), 2)
 
 
 # ------------------------------------------------------------------- loop --
@@ -323,7 +355,9 @@ def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order):
             if first:
                 continue
             now_ = now or datetime.now(timezone.utc)
-            dec = decide(t, leader, cfg, spent_today(now=now_), now=now_)
+            rows_ = ledger_rows()
+            dec = decide(t, leader, cfg, spent_today(rows_, now=now_), now=now_,
+                         market_spent=market_spent(t.get("ticker"), rows_))
             row = {"at": now_.isoformat(), "leader": leader,
                    "leader_trade_id": t["trade_id"], "leader_ts": t.get("create_date"),
                    "leader_side": t.get("taker_side"), "leader_action": t.get("taker_action"),

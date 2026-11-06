@@ -364,6 +364,60 @@ def run_check(now=None, send_urgent=None, send_digest=None, rescout=None,
 
 # --------------------------------------------------------------------- cli --
 
+def explain_copies(rows, limit=15):
+    """One plain-English line per order we sent (newest last), so "why did it
+    buy THAT?" is answerable from --report: who we copied, which side, what
+    they paid, what we paid, how many, the cash at risk and the payout if it
+    wins. Added 2026-11-06 after a $2.55 copy of a 6c longshot could not be
+    explained without digging through the raw ledger."""
+    out = []
+    for r in [r for r in rows if r.get("status") in ("placed", "paper", "error")][-limit:]:
+        side = r.get("side")
+        what = ("sell " if r.get("reduce_only") else "buy ") + \
+            (("YES" if side == "bid" else "NO") if not r.get("reduce_only")
+             else ("YES" if side == "ask" else "NO"))
+        px = r.get("price")
+        our = None if px is None else (float(px) if side == "bid" else 1.0 - float(px))
+        lp = r.get("leader_price")
+        their = None if lp is None else (float(lp) if side == "bid" else 1.0 - float(lp))
+        if r.get("reduce_only"):
+            their, our = (None if their is None else 1.0 - their,
+                          None if our is None else 1.0 - our)
+        filled = r.get("fill_count") if r.get("status") == "placed" else r.get("count")
+        n = kc.parse_size(filled) or 0
+        cost = n * our if (our is not None and not r.get("reduce_only")) else 0.0
+        bits = [str(r.get("at", ""))[:16].replace("T", " "), r.get("leader") or "?",
+                str(r.get("ticker")), what,
+                (f"they sold at {their:.2f}" if r.get("reduce_only") else
+                 f"they paid {their:.2f}") if their is not None else "",
+                (f"we sold at >= {our:.2f}" if r.get("reduce_only") else
+                 f"we paid <= {our:.2f}") if our is not None else "",
+                f"x{n:g}"]
+        if not r.get("reduce_only") and n:
+            bits.append(f"cost ${cost:.2f}, pays ${n:.0f} if right")
+        st = r.get("status")
+        if st == "paper":
+            bits.append("[paper]")
+        elif st == "error":
+            bits.append(f"[ERROR: {str(r.get('error'))[:60]}]")
+        elif n == 0:
+            bits.append("[not filled]")
+        out.append("  ".join(b for b in bits if b))
+    return out
+
+
+def skip_reasons(rows, since):
+    """{reason-kind: count} of leader fills we chose NOT to copy since `since`."""
+    out = {}
+    for r in rows:
+        if r.get("status") != "skipped" or str(r.get("at", "")) < since:
+            continue
+        k = str(r.get("reason") or "?").split(" (")[0].split(":")[0]
+        k = "price outside band" if "outside" in k else k
+        out[k] = out.get(k, 0) + 1
+    return out
+
+
 def print_report(rep):
     live, why = ct.armed()
     cfg = ct.load_config()
@@ -383,6 +437,16 @@ def print_report(rep):
               f"{p['markets']:>8} {p['settled']:>8} {p['wins']:>5}")
     for L, v in rep["performance"]["by_leader"].items():
         print(f"    by leader: {L:<24} {v['total_usd']:+.2f} on {v['markets']} market(s)")
+    rows = ct.ledger_rows()
+    lines = explain_copies(rows)
+    print("  orders sent (latest 15; price = cost of the side bought, $1 payout each):")
+    for ln in lines or ["(none yet)"]:
+        print(f"    {ln}")
+    since = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
+    skips = skip_reasons(rows, since)
+    if skips:
+        print("  leader fills NOT copied in the last 24h: " +
+              ", ".join(f"{k} x{v}" for k, v in sorted(skips.items(), key=lambda x: -x[1])))
 
 
 def main(argv=None):

@@ -33769,6 +33769,60 @@ class TestKalshiCopytradeCannotOverspendOrMisfire(unittest.TestCase):
                       "leader", self._cfg(), 0.0, now=self.NOW)
         self.assertEqual((d["side"], d["price"], d["count"]), ("ask", 0.58, 11))
 
+    def test_one_leader_order_filled_in_pieces_cannot_stack_past_the_per_trade_cap(self):
+        """2026-11-06: heforgotpoland's one order filled in three pieces and we
+        copied each piece at the full $1 cap, putting $2.55 into one market.
+        per_trade_usd caps the MARKET, summed over every copy, fees included."""
+        import kalshi_copytrade as ct
+        sent = []
+        with tempfile.TemporaryDirectory() as td:
+            orig = (ct.LEDGER_FILE, ct.HALT_FILE)
+            ct.LEDGER_FILE, ct.HALT_FILE = Path(td) / "l.jsonl", Path(td) / "h"
+            try:
+                state = {"seen": {"Leader": ["x"]}, "initialised": ["Leader"]}
+                feed = {"trades": [self._trade(trade_id=f"f{i}", price_dollars="0.2000")
+                                   for i in range(5)]}
+                def fill(**k):
+                    sent.append(k)
+                    return {"order_id": f"o{len(sent)}", "fill_count": str(k["count"])}
+                with patch.object(ct, "armed", return_value=(True, "")):
+                    rows = ct.poll_once(self._cfg(leaders=["Leader"], per_trade_usd=1.0,
+                                                  per_day_usd=3.0),
+                                        state, now=self.NOW, fetch=lambda n: feed,
+                                        place=fill)
+            finally:
+                ct.LEDGER_FILE, ct.HALT_FILE = orig
+        spent = sum(r.get("cost_usd") or 0 for r in rows if r["status"] == "placed")
+        self.assertLessEqual(spent, 1.0, f"5 fills of one order spent ${spent:.2f}")
+        self.assertEqual(len(sent), 1, "only the first piece fits a $1 market cap")
+        self.assertIn("per-market cap", rows[-1]["reason"])
+
+    def test_longshots_and_near_certainties_are_not_copied(self):
+        """A 6c YES (or a 94c YES copied as a 6c NO) is a lottery ticket: $2.55
+        buys a $42 payout. The band is on the price of the side we buy."""
+        import kalshi_copytrade as ct
+        for side, px in (("yes", "0.0600"), ("no", "0.9400"),
+                         ("yes", "0.9000"), ("no", "0.1000")):
+            d = ct.decide(self._trade(taker_side=side, price_dollars=px),
+                          "leader", self._cfg(), 0.0, now=self.NOW)
+            self.assertEqual(d["action"], "skip", (side, px, d))
+            self.assertIn("outside", d["reason"])
+        d = ct.decide(self._trade(taker_side="no", price_dollars="0.7000"),
+                      "leader", self._cfg(), 0.0, now=self.NOW)
+        self.assertEqual(d["action"], "order", "a 30c NO is inside the band")
+
+    def test_the_cap_includes_the_fee(self):
+        """$1 must mean $1 out of pocket: 2 contracts at 48c is $0.96 plus a
+        4c fee, which is $1.00 and fits; 2 at 49c would be $1.03 and must not."""
+        import kalshi_copytrade as ct
+        d = ct.decide(self._trade(price_dollars="0.4600"), "leader",
+                      self._cfg(per_trade_usd=1.0), 0.0, now=self.NOW)
+        self.assertLessEqual(d["cost_usd"], 1.0)
+        d = ct.decide(self._trade(price_dollars="0.4700"), "leader",
+                      self._cfg(per_trade_usd=1.0), 0.0, now=self.NOW)
+        self.assertEqual(d["count"], 1, d)
+        self.assertLessEqual(d["cost_usd"], 1.0)
+
     def test_exits_are_never_blocked_by_the_budget(self):
         """Blocking an exit costs money with no ceiling (single_writer's asymmetry)."""
         import kalshi_copytrade as ct
@@ -34025,6 +34079,22 @@ class TestKalshiCopytradeManagerCatchesWhatWentWrong(unittest.TestCase):
     was armed and sat on paper because KALSHI_ENV never reached it."""
 
     NOW = datetime(2026, 11, 20, 22, 0, 0, tzinfo=timezone.utc)
+
+    def test_report_explains_each_copy_in_plain_terms(self):
+        """2026-11-06: Jack asked why we bought a $2.55 bet paying $42 and the
+        report could not say. Each order line must name the leader, the side
+        (as YES/NO, not bid/ask), both prices, size, cost and payout."""
+        import kalshi_copytrade_manager as m
+        rows = [{"at": "2026-11-06T14:00:00+00:00", "leader": "heforgotpoland",
+                 "ticker": "KX-A", "side": "ask", "price": 0.93, "leader_price": 0.95,
+                 "count": 14, "fill_count": "14.00", "status": "placed"},
+                {"at": "2026-11-06T14:01:00+00:00", "status": "skipped",
+                 "reason": "per-market cap: $0.00 left buys no contract"}]
+        line = m.explain_copies(rows)[0]
+        for want in ("heforgotpoland", "KX-A", "buy NO", "they paid 0.05",
+                     "we paid <= 0.07", "x14", "cost $0.98", "pays $14"):
+            self.assertIn(want, line)
+        self.assertEqual(m.skip_reasons(rows, "2026-11-06"), {"per-market cap": 1})
 
     def _sandbox(self, td):
         import kalshi_copytrade as ct
