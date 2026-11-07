@@ -20066,6 +20066,16 @@ class TestAReconciliationHIGHReachesSomebody(unittest.TestCase):
                              (severity, reason)))
         w.start()
         self.addCleanup(w.stop)
+        # The sweep's canary block reads the LIVE canary via load_active_alert.
+        # On 2026-11-06 the VM's canary really was RED, so the sweep woke the
+        # board and test_a_high_does_not_wake_the_board (and 3 siblings) failed
+        # the slow gate in both zones: the test measured production, not the
+        # code. Pin the canary GREEN so these tests see only their own report.
+        import canary_agent
+        c = patch.object(canary_agent, "load_active_alert",
+                         lambda *a, **k: {"level": "GREEN"})
+        c.start()
+        self.addCleanup(c.stop)
 
     def _report(self, flags, age_h=0.0):
         ts = (datetime.now() - timedelta(hours=age_h)).isoformat()
@@ -33993,6 +34003,12 @@ class TestKalshiCopytradeCannotOverspendOrMisfire(unittest.TestCase):
     def test_the_copier_and_its_state_are_gitignored(self):
         """An arm file in git ships to every host on the next deploy."""
         root = Path(__file__).resolve().parent.parent
+        # The VM is rsynced, not cloned: there `git check-ignore` exits 128
+        # ("not a git repository") and this failed the slow gate in both zones
+        # every night from 2026-11-05. The guarantee is about what git would
+        # ship, so it can only be checked where git is.
+        if not (root / ".git").exists():
+            self.skipTest("not a git checkout (the VM is rsynced, not cloned)")
         for name in (".kalshi_copytrade_armed", ".kalshi_copytrade_halted",
                      "kalshi_copytrade_config.json", "kalshi_copytrade_state.json",
                      "kalshi_copytrade_ledger.jsonl"):
@@ -34263,6 +34279,51 @@ def kc_mod():
 def time_mod():
     import time
     return time
+
+
+class TestIRMBoardDoesNotHideACrashedSpecialist(unittest.TestCase):
+    """irm_review_agent._consult_irm_board logged a specialist's crash at DEBUG
+    and averaged the survivors, so three crashed analysts and one scoring 1
+    produced "LOW RISK — portfolio within acceptable parameters". Found by the
+    2026-11-07 investigator run while tracing IRM on a SPY -4.9% day."""
+
+    def _panel(self, behaviours):
+        import irm_review_agent as I
+        import irm_board
+
+        def make(name, b):
+            class S:
+                def __init__(self):
+                    self.name = name
+                def analyze(self, irm_context=None):
+                    if b == "crash":
+                        raise RuntimeError("boom")
+                    return {"risk_score": b, "red_flags": [], "key_findings": [],
+                            "recommendations": []}
+            return S
+        names = ("QuantRiskAnalyst", "BehavioralAnalyst", "MacroAnalyst",
+                 "PipelineOpsAnalyst")
+        with contextlib.ExitStack() as st:
+            for n, b in zip(names, behaviours):
+                st.enter_context(patch.object(irm_board, n, make(n, b)))
+            return I._consult_irm_board({})
+
+    def test_a_crashed_specialist_is_named_and_the_verdict_says_incomplete(self):
+        p = self._panel(["crash", "crash", "crash", 1])
+        self.assertEqual(["QuantRiskAnalyst", "BehavioralAnalyst", "MacroAnalyst"],
+                         [f["name"] for f in p["specialists_failed"]])
+        self.assertTrue(p["board_verdict"].startswith("INCOMPLETE — 3 of 4"),
+                        p["board_verdict"])
+
+    def test_all_crashed_is_not_an_empty_verdict(self):
+        p = self._panel(["crash"] * 4)
+        self.assertIn("No specialist produced a score", p["board_verdict"])
+
+    def test_POISON_PILL_a_clean_panel_is_unchanged(self):
+        p = self._panel([1, 1, 1, 1])
+        self.assertEqual([], p["specialists_failed"])
+        self.assertTrue(p["board_verdict"].startswith("LOW RISK"))
+
 
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly

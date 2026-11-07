@@ -1486,6 +1486,7 @@ def _consult_irm_board(irm_context: dict) -> dict:
         "combined_recommendations": [],
         "highest_risk_score":    0,
         "board_verdict":         "",
+        "specialists_failed":    [],
     }
 
     try:
@@ -1513,7 +1514,14 @@ def _consult_irm_board(irm_context: dict) -> dict:
                 board_panel["combined_recommendations"].extend(result.get("recommendations", [])[:1])
                 risk_scores.append(result.get("risk_score", 0))
             except Exception as e:
-                logger.debug(f"  [IRM Board] {specialist.name} analysis error: {e}")
+                # Was logger.debug: a crashed specialist vanished, and the
+                # survivors' max/avg still produced a confident verdict (one
+                # working analyst scoring 1 reads "LOW RISK"). Record it, and
+                # say so in the verdict below.
+                board_panel["specialists_failed"].append(
+                    {"name": getattr(specialist, "name", type(specialist).__name__),
+                     "error": f"{type(e).__name__}: {e}"[:200]})
+                logger.warning(f"  [IRM Board] {specialist.name} analysis error: {e}")
 
         if risk_scores:
             board_panel["highest_risk_score"] = max(risk_scores)
@@ -1526,9 +1534,15 @@ def _consult_irm_board(irm_context: dict) -> dict:
                 board_panel["board_verdict"] = "MODERATE RISK — IRM Board finds manageable concerns. Monitor closely."
             else:
                 board_panel["board_verdict"] = "LOW RISK — IRM Board finds portfolio within acceptable parameters."
+        failed = board_panel["specialists_failed"]
+        if failed:
+            board_panel["board_verdict"] = (
+                f"INCOMPLETE — {len(failed)} of {len(specialists)} IRM Board "
+                f"specialist(s) failed ({', '.join(f['name'] for f in failed)}). "
+                + (board_panel["board_verdict"] or "No specialist produced a score."))
 
     except Exception as e:
-        logger.debug(f"  [IRM Board] Board consultation error (non-fatal): {e}")
+        logger.warning(f"  [IRM Board] Board consultation error (non-fatal): {e}")
 
     return board_panel
 
