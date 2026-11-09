@@ -19464,6 +19464,45 @@ class TestQueueCompactionCannotForgeADrop(unittest.TestCase):
         self.fail("CLOSED_STATUSES is not defined in chairman_queue_compactor.py")
 
 
+class TestStaleReopenedRowsAreReclosedOnEvidence(unittest.TestCase):
+    """reclose_stale_reopened: 158 rows carried reopened_after_archive on
+    2026-11-09, many of them stale copies resurrected by the sync bug. Only a
+    row that IS the archived closed row (same id, same creation time) may be
+    re-closed; a new report of the same problem must stay open."""
+
+    def test_only_the_same_row_is_reclosed_and_a_recurrence_stays_open(self):
+        import reclose_stale_reopened as R
+        import chairman_queue as CQ
+        arch = [{"id": "a1", "ts": "2026-09-01T10:00:00", "status": "resolved",
+                 "resolved_at": "2026-09-05T00:00:00", "resolved_by": "Chairman",
+                 "archived_on": "2026-09-20T00:00:00+00:00"},
+                {"id": "b1", "ts": "2026-09-02T10:00:00", "status": "resolved",
+                 "archived_on": "2026-09-20T00:00:00+00:00"}]
+        rows = [
+            {"id": "a1", "ts": "2026-09-01T10:00:00", "status": "awaiting_chairman",
+             "reopened_after_archive": True},                 # stale copy
+            {"id": "b1", "ts": "2026-11-08T09:00:00", "status": "awaiting_chairman",
+             "reopened_after_archive": True},                 # same id, new report
+            {"id": "c1", "ts": "2026-11-08T09:00:00", "status": "awaiting_chairman",
+             "reopened_after_archive": True},                 # key match only
+            {"id": "d1", "ts": "2026-11-01T00:00:00", "status": "open"},   # unrelated
+        ]
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "q.json")
+            with open(p, "w") as fh:
+                json.dump(rows, fh)
+            closed = R.reclose(p, arch, now="2026-11-09T23:00:00+00:00")
+            again = R.reclose(p, arch)
+            out = {r["id"]: r for r in CQ._load(p)}
+        self.assertEqual([r["id"] for r in closed], ["a1"])
+        self.assertEqual(again, [], "re-running closed something twice")
+        self.assertEqual(out["a1"]["status"], "resolved")
+        self.assertIn("same row", out["a1"]["resolved_by"])
+        self.assertNotIn("reopened_after_archive", out["a1"])
+        for i in ("b1", "c1", "d1"):
+            self.assertIn(out[i]["status"], CQ.OPEN_STATUSES, i + " was closed without evidence")
+
+
 class TestArchivedRowsStayArchived(unittest.TestCase):
     """A compaction on one host must survive the two-host reconciler.
 
