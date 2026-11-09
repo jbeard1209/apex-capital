@@ -21,6 +21,13 @@ in [docs/POSTMORTEMS.md](docs/POSTMORTEMS.md) and in the memory index.
   board's verdict is stamped on the Chairman queue row (`board_verdict`).
 - `etf_pod_board.py` crashed printing fractional order quantities.
 
+### Changed
+- Board-approved changes no longer need the Chairman's sign-off unless crucial
+  (carve-out, CRITICAL, direction change, money/risk/irreversible, or flagged
+  `discuss_with_chairman`): `chairman_decision_categorizer.needs_signoff`.
+  Routine approvals are filed `approved_by_board` (owner CIT), off his inbox.
+  `reroute_board_approvals.py` applies the rule to rows already filed.
+
 ### Added
 - `job_failure_monitor.py` (VM, hourly :40): repeated crashes and swallowed
   errors in any job's log are emailed to the Chairman and filed to CIT.

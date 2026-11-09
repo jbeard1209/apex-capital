@@ -1543,7 +1543,16 @@ def _route_approved_cit_proposals(approved: list) -> None:
                 "queued_at":    now_iso,
             })
         else:
-            # Code-level or architectural change — needs Chairman review
+            # Code-level or architectural change. Until 2026-11-09 every one
+            # went to the Chairman as awaiting_chairman. Chairman directive
+            # that day: only crucial ones (see
+            # chairman_decision_categorizer.needs_signoff). The rest are the
+            # board's to approve: they are recorded as approved_by_board, owned
+            # by CIT, which is not an open status, so they never enter his
+            # inbox but stay counted as outstanding work by the coherence
+            # laws (an unrecognised status is outstanding, never terminal).
+            from chairman_decision_categorizer import needs_signoff
+            _signoff, _why = needs_signoff(prop)
             needs_chairman.append({
                 "id":           prop.get("id", ""),
                 "title":        title,
@@ -1551,7 +1560,10 @@ def _route_approved_cit_proposals(approved: list) -> None:
                 "category":     cat,
                 "description":  desc,
                 "confidence":   conf,
-                "status":       "awaiting_chairman",
+                "severity":     prop.get("severity"),
+                "status":       "awaiting_chairman" if _signoff else "approved_by_board",
+                "owner":        "Chairman" if _signoff else "CIT",
+                "signoff_reason": _why or "board approval is final (Chairman directive 2026-11-09)",
                 "times_approved": count + 1,
                 "queued_at":    now_iso,
             })
@@ -1656,7 +1668,7 @@ def _route_approved_cit_proposals(approved: list) -> None:
             action_rows = "".join(
                 f"<tr>"
                 f"<td style='padding:5px 8px;color:{'#3fb950' if a.get('status')=='fixed' else '#f0883e' if a.get('status') in _NEEDS_OWNER else '#58a6ff'};'>"
-                f"{'✅ Fixed' if a.get('status')=='fixed' else '⚙ Needs Owner' if a.get('status') in _NEEDS_OWNER else '👤 Needs You'}</td>"
+                f"{'✅ Fixed' if a.get('status')=='fixed' else '⚙ Needs Owner' if a.get('status') in _NEEDS_OWNER else '✔ Board approved (CIT)' if a.get('status')=='approved_by_board' else '👤 Needs You'}</td>"
                 f"<td style='padding:5px 8px;'>{a['title'][:65]}</td>"
                 f"<td style='padding:5px 8px;color:#8b949e;font-size:12px;'>{a.get('root_cause', a.get('description',''))[:60]}</td>"
                 f"</tr>"
@@ -1675,7 +1687,8 @@ def _route_approved_cit_proposals(approved: list) -> None:
   </table>
   <p style="color:#484f58;font-size:11px;margin-top:12px;">
     ✅ Fixed = already resolved in code · ⚙ Needs Owner = a producing agent stopped, assign it ·
-    👤 Needs You = requires Chairman review
+    ✔ Board approved = the board's call, CIT owns it ·
+    👤 Needs You = requires Chairman review (money, risk, protected files, direction)
   </p>
 </div>"""
             from email_sender import send_daily_report
@@ -1687,6 +1700,7 @@ def _route_approved_cit_proposals(approved: list) -> None:
                     "Total Approved": len(needs_chairman),
                     "Fixed":          sum(1 for a in needs_chairman if a.get("status") == "fixed"),
                     "Infrastructure": sum(1 for a in needs_chairman if a.get("status") in _NEEDS_OWNER),
+                    "Board Approved": sum(1 for a in needs_chairman if a.get("status") == "approved_by_board"),
                     "Needs You":      sum(1 for a in needs_chairman if a.get("status") == "awaiting_chairman"),
                 },
             )
