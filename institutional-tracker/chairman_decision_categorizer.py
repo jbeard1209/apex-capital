@@ -241,6 +241,61 @@ def is_carve_out(item: dict) -> bool:
     return not classify(item).board_may_ratify
 
 
+# ---------------------------------------------------------------------------
+# WHICH BOARD APPROVALS STILL NEED THE CHAIRMAN'S SIGN-OFF
+# ---------------------------------------------------------------------------
+# Chairman directive 2026-11-09, asked whether board-approved changes should
+# keep landing in his inbox: "only super crucial ones or ones that we will
+# talk about in the future". Before this, board_meeting's router filed EVERY
+# approved code-level proposal as awaiting_chairman, so draining the 12-week
+# vote backlog grew his inbox from 11 to 27 in one meeting.
+#
+# Crucial means:
+#   - a carve-out (arm gate, capital, HR, protected file), which the board
+#     has no authority over at all;
+#   - CRITICAL severity;
+#   - a change of direction (STRATEGY / VISION / NEW_FEATURE);
+#   - anything touching real money, risk limits, live orders, or that is
+#     hard to undo (SIGNOFF_NEEDLES);
+#   - anything flagged `discuss_with_chairman` ("ones we will talk about").
+# Erring toward the Chairman is the safe direction: a false positive costs
+# him one inbox row; a false negative lets the board act on money alone.
+SIGNOFF_CATEGORIES = frozenset({"STRATEGY", "VISION", "NEW_FEATURE"})
+# Deliberately broad: "risk" also catches "reconcile contradicting risk
+# signals", and that is fine. Anything that could change what the firm buys,
+# sells or holds, how much money it puts where, or its risk posture goes to
+# the Chairman. Rows with a dollar sign are money by definition.
+SIGNOFF_NEEDLES: tuple[str, ...] = (
+    "$", "capital", "budget", "allocation", "risk", "cro=", "cro ",
+    "stop-loss", "stop loss", "position", "sizing",
+    "buy", "sell", "trade", "trading", "order", "liquidat",
+    "suspend", "halt", "pause", "freeze", "unfreeze",
+    "kalshi", "alpaca", "real money", "real-money",
+    "circuit breaker", "kill", "irreversib", "cannot be undone",
+    "can't be undone", "delete ", "drop table", "wipe",
+)
+
+
+def needs_signoff(item: dict) -> "tuple[bool, str]":
+    """(True, why) when a board-approved item must still go to the Chairman."""
+    if not isinstance(item, dict):
+        return True, "unreadable item"
+    if item.get("discuss_with_chairman"):
+        return True, "flagged to discuss with the Chairman"
+    cat = classify(item)
+    if not cat.board_may_ratify:
+        return True, f"carve-out: {cat.name}"
+    if str(item.get("severity", "")).upper() == "CRITICAL":
+        return True, "CRITICAL severity"
+    if str(item.get("category", "")).upper() in SIGNOFF_CATEGORIES:
+        return True, f"direction change ({item.get('category')})"
+    hay = _haystack(item)
+    for n in SIGNOFF_NEEDLES:
+        if n in hay:
+            return True, f"touches money/risk/irreversible ({n.strip()!r})"
+    return False, ""
+
+
 def group(items: Iterable[dict]) -> dict:
     """Group items by category name. Returns {name: [item, ...]}. Order
     of the dict follows CATEGORIES so the inbox prints carve-outs first."""

@@ -1323,6 +1323,93 @@ class TestOneApprovalIsOneLedgerRow(unittest.TestCase):
         self.assertFalse(any("PERSISTENT" in m for m in logs.output), logs.output)
 
 
+class TestOnlyCrucialBoardApprovalsReachTheChairman(unittest.TestCase):
+    """Chairman directive 2026-11-09: board-approved changes go ahead; "only
+    super crucial ones or ones that we will talk about in the future" still
+    need his sign-off. The router had filed every approval as
+    awaiting_chairman (inbox 11 -> 27 in one meeting)."""
+
+    def test_needs_signoff_rules(self):
+        from chairman_decision_categorizer import needs_signoff
+        yes = [
+            {"title": "improve error handling", "proposed_fix": "edit alpaca_trader.py"},
+            {"title": "x", "severity": "CRITICAL"},
+            {"title": "x", "category": "STRATEGY"},
+            {"title": "Decide on idle pod capital: $30,000"},
+            {"title": "Raise the stop-loss to 12%"},
+            {"title": "x", "discuss_with_chairman": True},
+        ]
+        for item in yes:
+            self.assertTrue(needs_signoff(item)[0], item)
+        no = [{"title": "wakeup_recovery.py missing logic_team.py catchup",
+               "category": "INTEGRATION", "severity": "MEDIUM"},
+              {"title": "Sweep: 1 finding(s) — agents never reviewed by HR",
+               "category": "IMPROVEMENT", "severity": "LOW"}]
+        for item in no:
+            self.assertFalse(needs_signoff(item)[0], item)
+
+    def _route(self, props):
+        import board_meeting as bm
+        orig = os.getcwd()
+        with tempfile.TemporaryDirectory() as d:
+            os.makedirs(os.path.join(d, "data"))
+            os.chdir(d)
+            try:
+                with patch("email_buffer.buffer_email", MagicMock()), \
+                     patch("email_sender.send_daily_report", MagicMock()):
+                    bm._route_approved_cit_proposals(props)
+                return json.loads(Path(d, "data", "chairman_action_required.json").read_text())
+            finally:
+                os.chdir(orig)
+
+    def test_router_files_routine_approvals_as_board_approved(self):
+        rows = self._route([
+            {"id": "a", "title": "wakeup_recovery.py missing logic_team.py catchup",
+             "category": "INTEGRATION", "severity": "MEDIUM", "description": "x"},
+            {"id": "b", "title": "Suspend ML-driven buys", "category": "IMPROVEMENT",
+             "severity": "HIGH", "description": "x"},
+        ])
+        by = {r["id"]: r for r in rows}
+        self.assertEqual(by["a"]["status"], "approved_by_board")
+        self.assertEqual(by["a"]["owner"], "CIT")
+        self.assertEqual(by["b"]["status"], "awaiting_chairman")
+        from chairman_queue import OPEN_STATUSES
+        self.assertNotIn("approved_by_board", OPEN_STATUSES)
+
+    def test_reroute_migration_moves_only_routine_router_rows(self):
+        import reroute_board_approvals as rr
+        rows = [
+            {"id": "r1", "title": "wakeup_recovery.py missing logic_team.py catchup",
+             "category": "INTEGRATION", "status": "awaiting_chairman",
+             "times_approved": 1, "queued_at": "2026-11-09T17:22"},
+            {"id": "r2", "title": "Decide on idle pod capital: $30,000",
+             "status": "awaiting_chairman", "times_approved": 1, "queued_at": "t"},
+            {"id": "o1", "title": "wiring gap", "status": "awaiting_chairman",
+             "source": "some_other_producer"},
+        ]
+        with tempfile.TemporaryDirectory() as d:
+            f = Path(d) / "chairman_action_required.json"
+            f.write_text(json.dumps(rows))
+            out = rr.apply(f, now=datetime(2026, 11, 9, 22, 0))
+            after = {r["id"]: r for r in json.loads(f.read_text())}
+            self.assertTrue(Path(out["backup"]).exists())
+        self.assertEqual(out["moved"], 1)
+        self.assertEqual(after["r1"]["status"], "approved_by_board")
+        self.assertEqual(after["r2"]["status"], "awaiting_chairman")
+        self.assertEqual(after["o1"]["status"], "awaiting_chairman")
+
+    def test_inbox_mirror_closes_when_the_board_approval_is_final(self):
+        import chairman_decision_sla as sla
+        with tempfile.TemporaryDirectory() as d:
+            up = Path(d) / "car.json"
+            up.write_text(json.dumps([{"id": "r1", "status": "approved_by_board"}]))
+            with patch.object(sla, "CHAIR_ACTION", up), \
+                 patch.object(sla, "ARCHIVE_PATH", Path(d) / "arch.json"):
+                q = {"r1": {"id": "r1", "status": "awaiting_chairman"}}
+                self.assertEqual(sla._close_resolved_upstream(q), 1)
+        self.assertEqual(q["r1"]["status"], "resolved_upstream")
+
+
 class TestBackupRetentionCountsOnlySnapshots(unittest.TestCase):
     """cit_director writes data/backups/cit_inline/; the pruner counted it as a
     snapshot and, sorting after "2026-...", never pruned it — so prod kept
