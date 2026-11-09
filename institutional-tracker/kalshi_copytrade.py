@@ -436,6 +436,21 @@ def ledger_rows():
     return out
 
 
+def _in_mode(r, live):
+    """Does this ledger row count toward the caps of the mode being run?
+    live=True counts only real orders, live=False only paper rows, None both
+    (reports and the backtest).
+
+    2026-11-09: the desk was halted from 15:15 to ~20:00 UTC, and the copier
+    kept writing paper copies meanwhile. Those paper rows were charged to the
+    real-money $3 daily cap, so when trading resumed only $0.43 was left and
+    no live order could be placed for the rest of the day. Paper money is not
+    spent money; nor does a paper position give a live exit anything to sell."""
+    if live is None:
+        return True
+    return r.get("status") == ("placed" if live else "paper")
+
+
 def _opening_cost(r):
     """Dollars one ledger row committed to opening a position. Live rows count
     what filled; a live row with no fill count is charged in full, because an
@@ -451,20 +466,20 @@ def _opening_cost(r):
     return 0.0
 
 
-def spent_today(rows=None, now=None):
-    """Dollars committed to OPENING orders today (UTC)."""
+def spent_today(rows=None, now=None, live=None):
+    """Dollars committed to OPENING orders today (UTC). See _in_mode for live."""
     day = (now or datetime.now(timezone.utc)).strftime("%Y-%m-%d")
     return round(sum(_opening_cost(r) for r in (ledger_rows() if rows is None else rows)
-                     if str(r.get("at", ""))[:10] == day), 2)
+                     if str(r.get("at", ""))[:10] == day and _in_mode(r, live)), 2)
 
 
-def market_contracts(ticker, rows=None):
+def market_contracts(ticker, rows=None, live=None):
     """Contracts ever opened in one market (filled live, or paper), which is
     the most that market can pay us. Exits are not netted off: re-entering a
     market we exited still counts, which errs towards smaller positions."""
     n = 0.0
     for r in ledger_rows() if rows is None else rows:
-        if r.get("ticker") != ticker or r.get("reduce_only"):
+        if r.get("ticker") != ticker or r.get("reduce_only") or not _in_mode(r, live):
             continue
         if r.get("status") == "placed":
             f = kc.parse_size(r.get("fill_count"))
@@ -474,7 +489,7 @@ def market_contracts(ticker, rows=None):
     return n
 
 
-def net_position(ticker, rows=None):
+def net_position(ticker, rows=None, live=None):
     """The copier's own net YES contracts in one market, from the ledger: bids
     add, asks subtract, exits included. Live rows count what filled (the
     order's count if the fill is unknown, so an unknown fill errs towards
@@ -482,7 +497,7 @@ def net_position(ticker, rows=None):
     full, so paper mode exercises the same exits live would."""
     n = 0.0
     for r in ledger_rows() if rows is None else rows:
-        if r.get("ticker") != ticker:
+        if r.get("ticker") != ticker or not _in_mode(r, live):
             continue
         if r.get("status") == "placed":
             f = kc.parse_size(r.get("fill_count"))
@@ -495,12 +510,12 @@ def net_position(ticker, rows=None):
     return n
 
 
-def market_spent(ticker, rows=None):
+def market_spent(ticker, rows=None, live=None):
     """Dollars ever committed to opening positions in one market. This is
     what per_trade_usd caps, so a leader order that fills in five pieces (or
     five leaders piling into one market) cannot stack five full-size copies."""
     return round(sum(_opening_cost(r) for r in (ledger_rows() if rows is None else rows)
-                     if r.get("ticker") == ticker), 2)
+                     if r.get("ticker") == ticker and _in_mode(r, live)), 2)
 
 
 # ------------------------------------------------------------------- loop --
@@ -534,9 +549,11 @@ def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order):
                 continue
             now_ = now or datetime.now(timezone.utc)
             rows_ = ledger_rows()
-            dec = decide(t, leader, cfg, spent_today(rows_, now=now_), now=now_,
-                         market_spent=market_spent(t.get("ticker"), rows_),
-                         market_contracts=market_contracts(t.get("ticker"), rows_))
+            dec = decide(t, leader, cfg, spent_today(rows_, now=now_, live=is_live),
+                         now=now_,
+                         market_spent=market_spent(t.get("ticker"), rows_, live=is_live),
+                         market_contracts=market_contracts(t.get("ticker"), rows_,
+                                                           live=is_live))
             if dec["action"] == "order" and not dec.get("reduce_only"):
                 dec = settle_check(dec, cfg, now_,
                                    settle_time(dec["ticker"], settle_cache))
@@ -544,7 +561,7 @@ def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order):
                     # the record settle_time just read; no second request
                     dec = venue_check(dec, cfg, settle_cache.get(("market", dec["ticker"])))
             elif dec["action"] == "order":
-                dec = exit_check(dec, net_position(dec["ticker"], rows_))
+                dec = exit_check(dec, net_position(dec["ticker"], rows_, live=is_live))
             row = {"at": now_.isoformat(), "leader": leader,
                    "leader_trade_id": t["trade_id"], "leader_ts": t.get("create_date"),
                    "leader_side": t.get("taker_side"), "leader_action": t.get("taker_action"),
