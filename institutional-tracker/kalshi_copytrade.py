@@ -121,6 +121,7 @@ DEFAULTS = {
     "poll_s": 3.0,
     "max_payout_usd": 16.0,   # most one market can ever pay us; see payout_cap()
     "max_days_to_settle": 30.0,   # skip opening a market that settles later; see settle_time()
+    "exchange_indexes": [0],      # exchange shards we hold cash on; see venue_check()
 }
 HARD_MAX_PER_TRADE = 25.0
 HARD_MAX_PER_DAY = 100.0
@@ -168,6 +169,11 @@ def load_config():
     cfg["max_payout_usd"] = min(cfg["max_payout_usd"], HARD_MAX_PAYOUT)
     cfg["max_days_to_settle"] = min(cfg["max_days_to_settle"], HARD_MAX_DAYS_TO_SETTLE)
     cfg["poll_s"] = max(cfg["poll_s"], 1.0)
+    try:
+        idx = [int(x) for x in cfg.get("exchange_indexes") or []]
+    except (TypeError, ValueError):
+        idx = []
+    cfg["exchange_indexes"] = idx or list(DEFAULTS["exchange_indexes"])
     return cfg
 
 
@@ -303,6 +309,48 @@ def decide(trade, leader, cfg, spent_today, now=None, market_spent=0.0,
             "cost_usd": round(n * per_contract + fee, 2), **base}
 
 
+def market_info(ticker, cache):
+    """The exchange's market record (dict), or None if it cannot be read.
+    Only answers are cached, so a failed lookup is retried next time."""
+    key = ("market", ticker)
+    if key in cache:
+        return cache[key]
+    try:
+        m = kc._get(f"/markets/{urllib.parse.quote(str(ticker))}").get("market") or None
+    except Exception:
+        return None
+    if m:
+        cache[key] = m
+    return m
+
+
+def venue_check(dec, cfg, market):
+    """An opening order -> the same order, or a skip if the market trades on an
+    exchange shard we hold no cash on. Exits are never blocked.
+
+    Live, 2026-11-09 15:15 UTC: Kalshi now splits its exchange into shards
+    (`exchange_index`: 0 Default, 1 Combos, 2 Crypto & Commodities, 3 Tennis,
+    Baseball, Basketball), each with its own balance. Our cash is on shard 0.
+    tikis.101 bought a BTC 15-minute market (shard 2); the exchange answered
+    every copy with HTTP 404 "insufficient_shard_balance ... Exchange user not
+    found", three rejections in a row tripped the copier's halt, and the whole
+    desk stopped for a market it could never have traded. A market whose
+    record lacks the field is treated as shard 0, the only shard that existed
+    before the split, so a dropped field cannot silently stop all copying."""
+    if dec["action"] != "order" or dec.get("reduce_only"):
+        return dec
+    idx = (market or {}).get("exchange_index")
+    try:
+        idx = 0 if idx is None else int(idx)
+    except (TypeError, ValueError):
+        idx = 0
+    if idx in cfg.get("exchange_indexes", DEFAULTS["exchange_indexes"]):
+        return dec
+    keep = {k: v for k, v in dec.items() if k in ("ticker", "leader_price", "lag_s")}
+    return {"action": "skip", "reason": f"market is on exchange shard {idx}; we hold "
+            f"cash only on {cfg.get('exchange_indexes')}", **keep}
+
+
 def settle_time(ticker, cache):
     """When a market is expected to settle (datetime), or None if unknown.
 
@@ -314,10 +362,7 @@ def settle_time(ticker, cache):
     are cached, so a failed lookup is retried next time instead of remembered."""
     if ticker in cache:
         return cache[ticker]
-    try:
-        m = kc._get(f"/markets/{urllib.parse.quote(str(ticker))}").get("market") or {}
-    except Exception:
-        return None
+    m = market_info(ticker, cache) or {}     # also leaves the record for venue_check
     ts = _parse_ts(m.get("expected_expiration_time") or m.get("close_time") or "")
     if ts is not None:
         cache[ticker] = ts
@@ -495,6 +540,9 @@ def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order):
             if dec["action"] == "order" and not dec.get("reduce_only"):
                 dec = settle_check(dec, cfg, now_,
                                    settle_time(dec["ticker"], settle_cache))
+                if dec["action"] == "order":
+                    # the record settle_time just read; no second request
+                    dec = venue_check(dec, cfg, settle_cache.get(("market", dec["ticker"])))
             elif dec["action"] == "order":
                 dec = exit_check(dec, net_position(dec["ticker"], rows_))
             row = {"at": now_.isoformat(), "leader": leader,
