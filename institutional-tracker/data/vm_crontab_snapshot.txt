@@ -147,6 +147,10 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 0 2 13-21 6 * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 pregenerate_lessons.py --batch 12 >> logs/lesson_pregen_$(date +\%Y\%m\%d).log 2>&1
 0 21 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 irm_review_agent.py >> logs/irm_daily_$(date +\%Y\%m\%d).log 2>&1
 15 7-21 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 freshness_sentinel.py >> logs/sentinel_$(date +\%Y\%m\%d).log 2>&1
+# Job failure monitor (2026-11-09): any job whose log shows the same crash or
+# swallowed error on 2+ days (or 3+ times) is emailed to the Chairman and filed
+# to CIT. Hourly at :40. Board vote crashed silently Aug 18 - Nov 9 without it.
+40 * * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 job_failure_monitor.py >> logs/job_failure_$(date +\%Y\%m\%d).log 2>&1
 
 # ── Governance + monitoring (added 2026-07-02 — were in new_crontab.txt but never installed) ──
 0 12 * * 1 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 strategy_council.py >> logs/council_$(date +\%Y\%m\%d).log 2>&1

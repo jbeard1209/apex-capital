@@ -286,6 +286,40 @@ def _close_resolved_upstream(queue_by_id):
     return closed
 
 
+BOARD_VERDICTS = DATA / "board_sla_verdicts.json"   # written by board_meeting._record_sla_verdicts
+
+
+def _apply_board_verdicts(queue_by_id) -> int:
+    """Stamp the board's vote onto each escalated row it decided.
+
+    2026-11-09: rows went `escalated_to_board` and nothing ever came back. The
+    board's vote had been crashing since ~2026-08-18, so nobody noticed that even
+    a working vote had no path into this queue: the Chairman could see that an
+    item had left his inbox, but not whether anyone had decided it. Status stays
+    `escalated_to_board` (the compactor and the sync already treat it as
+    terminal); the row gains `board_verdict` / `board_voted_at` /
+    `board_vote_reason`, so a row WITHOUT them is visibly still waiting on the
+    board. Returns the number of rows stamped this run.
+    """
+    verdicts = _load(BOARD_VERDICTS, [])
+    if not isinstance(verdicts, list):
+        return 0
+    stamped = 0
+    for v in verdicts:
+        if not isinstance(v, dict):
+            continue
+        item = queue_by_id.get(v.get("queue_id"))
+        if not item or item.get("status") != "escalated_to_board":
+            continue
+        if item.get("board_voted_at") == v.get("voted_at"):
+            continue
+        item["board_verdict"] = v.get("verdict")
+        item["board_voted_at"] = v.get("voted_at")
+        item["board_vote_reason"] = v.get("reason")
+        stamped += 1
+    return stamped
+
+
 def run(write: bool = True) -> dict:
     queue = _load(QUEUE_PATH, [])
     if not isinstance(queue, list):
@@ -297,6 +331,7 @@ def run(write: bool = True) -> dict:
     # closed must never be handed to the board. Ingest runs first so a row that
     # is re-raised and closed in the same window is still seen.
     resolved_upstream = _close_resolved_upstream(queue_by_id)
+    board_verdicts = _apply_board_verdicts(queue_by_id)
 
     # Backfill category on rows ingested before this stamp existed, and refresh
     # on every run so a categorizer rule change flows to the queue without
@@ -339,6 +374,10 @@ def run(write: bool = True) -> dict:
         "generated_at": _iso(now),
         "ingested": ingested,
         "resolved_upstream": resolved_upstream,
+        "board_verdicts_stamped": board_verdicts,
+        "awaiting_board_vote": sum(1 for q in queue_by_id.values()
+                                   if q.get("status") == "escalated_to_board"
+                                   and not q.get("board_verdict")),
         "pending_for_chairman": pending_items,
         "escalated_to_board": escalated,
         "chairman_only_overdue": chairman_only_overdue,
