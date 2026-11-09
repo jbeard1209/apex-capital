@@ -31,9 +31,9 @@ WHAT IT CHECKS (every 15 minutes)
                       2026-11-04: "if one person goes private it should find
                       another profitable user").
   SCOUT_STALE         the daily scout has not run in 30h.
-  LOSING              P&L on copies opened in the last 7 days -- settled
-                      AND still-open positions, marked at the last trade price
-                      -- is below -LOSS_LIMIT_DAYS x the daily cap. Until
+  LOSING              P&L on every still-open copy (marked at the last trade
+                      price, whatever its age) plus copies settled in the last
+                      7 days is below -LOSS_LIMIT_DAYS x the daily cap. Until
                       2026-11-09 only SETTLED losses counted, and most copies
                       sit in 2027-28 election markets, so the book was -84%
                       (-$7.28 of $8.66) while the breaker read -$2.88 and never
@@ -194,11 +194,16 @@ def _age_s(path, now):
         return None
 
 
-def breaker_window_start(now):
-    """Copies opened at or after this count toward the breaker: the last 7
-    days, or since `--reset-breaker` was last run if that is more recent."""
+def breaker_reset_at():
     raw = ct._read_json(ct.CONFIG_FILE, {})
-    reset = ct._parse_ts(raw.get("breaker_reset_at")) if isinstance(raw, dict) else None
+    return ct._parse_ts(raw.get("breaker_reset_at")) if isinstance(raw, dict) else None
+
+
+def breaker_window_start(now):
+    """Settled copies opened at or after this count toward the breaker: the
+    last 7 days, or since `--reset-breaker` if that is more recent. Open
+    positions count regardless of age (only a reset drops them)."""
+    reset = breaker_reset_at()
     week_ago = now - timedelta(days=7)
     return max(week_ago, reset) if reset else week_ago
 
@@ -287,14 +292,31 @@ def check_health(now=None, rows=None, balance=None, market=None, fetch=None):
     cache = {}
     market = market or (lambda t: _market(t, cache))
     real7 = 0.0
+    reset = breaker_reset_at()
+    unreadable = []
     for t, b in books(rows).items():
-        if (ct._parse_ts(b["opened_at"]) or now) >= since:
-            realised, unrealised, _settled = value_book(b, market(t))
+        opened = ct._parse_ts(b["opened_at"]) or now
+        if reset and opened < reset:
+            continue
+        mk = market(t)
+        if not mk:
+            unreadable.append(t)
+            continue
+        realised, unrealised, settled = value_book(b, mk)
+        # an OPEN position's loss counts for as long as it is open, however
+        # old: a 2028 market must not age out of the breaker after a week
+        # (the first version of this did; caught before deploy, 2026-11-09).
+        # Settled losses count for 7 days, so one bad week does not pause
+        # copying forever.
+        if not settled or opened >= since:
             real7 += realised + unrealised
+    if unreadable:
+        add("MARKS_UNREADABLE", f"could not price {len(unreadable)} market(s) "
+            f"({', '.join(unreadable[:3])}); the loss breaker cannot see them", "MEDIUM")
     limit = LOSS_LIMIT_DAYS * cfg["per_day_usd"]
     if real7 < -limit:
-        add("LOSING", f"copies opened since {since:%b %d %H:%M} UTC are down "
-            f"${-real7:.2f} (settled plus open, at last price), past the "
+        add("LOSING", f"down ${-real7:.2f} on open copies plus copies settled "
+            f"since {since:%b %d %H:%M} UTC (open marked at last price), past the "
             f"-${limit:.2f} limit; circuit breaker tripped, copying paused")
     return findings, hidden, real7
 

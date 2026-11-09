@@ -34433,6 +34433,30 @@ class TestKalshiCopytradeManagerCatchesWhatWentWrong(unittest.TestCase):
             self.assertLess(pnl7, -6.0)
             self.assertIn("LOSING", {x["kind"] for x in f})
 
+    def test_an_old_open_loss_does_not_age_out_of_the_breaker(self):
+        """A 2028 market opened 10 days ago and marked down must still count;
+        an old SETTLED loss must not pause copying forever."""
+        with tempfile.TemporaryDirectory() as td:
+            ct, km = self._sandbox(td)
+            old = "2026-11-10T10:00:00+00:00"
+            rows = [self._row("bid", 0.60, 10, ticker=f"O{i}", at=old) for i in range(3)]
+            open_m = lambda t: {"result": "", "last_price_dollars": "0.1000"}
+            f, _, pnl = km.check_health(now=self.NOW, rows=rows, balance=10.0,
+                                        market=open_m, fetch=lambda n: {"trades": []})
+            self.assertIn("LOSING", {x["kind"] for x in f}, pnl)
+            f, _, pnl = km.check_health(now=self.NOW, rows=rows, balance=10.0,
+                                        market=lambda t: {"result": "no"},
+                                        fetch=lambda n: {"trades": []})
+            self.assertNotIn("LOSING", {x["kind"] for x in f}, pnl)
+
+    def test_an_unpriceable_market_is_named_not_counted_as_zero(self):
+        with tempfile.TemporaryDirectory() as td:
+            ct, km = self._sandbox(td)
+            f, _, _ = km.check_health(now=self.NOW, rows=[self._row("bid", 0.6, 10)],
+                                      balance=10.0, market=lambda t: None,
+                                      fetch=lambda n: {"trades": []})
+            self.assertIn("MARKS_UNREADABLE", {x["kind"] for x in f})
+
     def test_reset_breaker_starts_a_fresh_window_and_clears_only_its_own_pause(self):
         with tempfile.TemporaryDirectory() as td:
             ct, km = self._sandbox(td)
