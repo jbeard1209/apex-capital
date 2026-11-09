@@ -1263,12 +1263,64 @@ class TestJobFailureMonitorCatchesSwallowedCrashes(unittest.TestCase):
                 jfm.run(log_dir=logs, now=now, baseline=True)
                 self.assertEqual(jfm.run(log_dir=logs, now=now, write=False)["status"], "OK")
 
+    def test_baseline_report_is_green_for_the_sentinel(self):
+        import job_failure_monitor as jfm
+        with tempfile.TemporaryDirectory() as d:
+            logs = Path(d) / "logs"; logs.mkdir()
+            for day in ("20261108", "20261109"):
+                (logs / f"board_{day}.log").write_text(self.VOTE_LINE)
+            with patch.object(jfm, "STATUS_FILE_NAMES", {}), \
+                 patch.object(jfm, "STATE_PATH", Path(d) / "s.json"), \
+                 patch.object(jfm, "REPORT_PATH", Path(d) / "r.json"):
+                jfm.run(log_dir=logs, now=datetime(2026, 11, 9, 17, 0), baseline=True)
+                written = json.loads((Path(d) / "r.json").read_text())
+        self.assertIs(written["ok"], True)
+        self.assertEqual(written["n_known"], 1)
+
     def test_monitor_and_vote_status_are_watched_and_scheduled(self):
         import freshness_sentinel as fs
         for rel in ("data/board_vote_status.json", "data/job_failure_report.json"):
             self.assertEqual(fs.MANIFEST[rel].get("verdict_key"), "ok", rel)
         snap = (Path(__file__).parent / "data" / "vm_crontab_snapshot.txt").read_text()
         self.assertRegex(snap, r"(?m)^[^#].*job_failure_monitor\.py")
+
+
+class TestOneApprovalIsOneLedgerRow(unittest.TestCase):
+    """First vote after the 2026-11-09 fix: 60 decisions wrote 100 ledger rows
+    (duplicate-id pending rows each moved, and the router re-appended what
+    clear_voted_proposals had just written), and the router then counted this
+    vote's own row as a prior approval: 12 false PERSISTENT alerts."""
+
+    def test_vote_then_route_records_each_approval_once_and_is_not_persistent(self):
+        import board_meeting as bm
+        import cit_director as cd
+        orig = os.getcwd()
+        with tempfile.TemporaryDirectory() as d:
+            data = Path(d) / "data"; data.mkdir()
+            pend, appr, rej = data / "cit_pending_proposals.json", \
+                data / "cit_approved_proposals.json", data / "cit_rejected_proposals.json"
+            row = {"id": "LTIA-1", "title": "Reconcile risk", "category": "IMPROVEMENT",
+                   "dedup_key": "ltia-risk", "description": "x", "confidence": 90}
+            pend.write_text(json.dumps([row, dict(row), {"id": "keep", "title": "k"}]))
+            appr.write_text("[]"); rej.write_text("[]")
+            os.chdir(d)
+            try:
+                with patch.object(cd, "CIT_PENDING", pend), \
+                     patch.object(cd, "CIT_APPROVED", appr), \
+                     patch.object(cd, "CIT_REJECTED", rej), \
+                     patch("email_buffer.buffer_email", MagicMock()), \
+                     patch("email_sender.send_daily_report", MagicMock()), \
+                     self.assertLogs("board_meeting", level="INFO") as logs:
+                    out = cd.clear_voted_proposals(["LTIA-1"], ["LTIA-1"])
+                    bm._route_approved_cit_proposals([dict(row)])
+                ledger = json.loads(appr.read_text())
+                remaining = json.loads(pend.read_text())
+            finally:
+                os.chdir(orig)
+        self.assertEqual(out["approved"], 1)
+        self.assertEqual([r["id"] for r in ledger], ["LTIA-1"])
+        self.assertEqual([r["id"] for r in remaining], ["keep"])
+        self.assertFalse(any("PERSISTENT" in m for m in logs.output), logs.output)
 
 
 class TestBackupRetentionCountsOnlySnapshots(unittest.TestCase):

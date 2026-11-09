@@ -5036,9 +5036,23 @@ def _clear_voted_locked(pending: list, voted_ids: list, approved_ids: list) -> d
 
     voted    = set(voted_ids or [])
     approved_set = set(approved_ids or [])
-    newly_approved = [p for p in pending if p.get("id") in approved_set]
+    # One ledger row per voted id. The pending file carries duplicate-id rows
+    # (8 on the VM, 2026-11-09); the vote decides each id once, and moving every
+    # copy made the first drain write 64 ledger rows for 60 decisions — and
+    # every extra copy counts as a prior approval in the board's PERSISTENT
+    # detector. Every copy still leaves pending (`remaining` filters by id).
+    _moved: set = set()
+
+    def _first(p):
+        pid = p.get("id")
+        if pid in _moved:
+            return False
+        _moved.add(pid)
+        return True
+    newly_approved = [p for p in pending if p.get("id") in approved_set and _first(p)]
     newly_rejected = [p for p in pending
-                      if p.get("id") in voted and p.get("id") not in approved_set]
+                      if p.get("id") in voted and p.get("id") not in approved_set
+                      and _first(p)]
     remaining      = [p for p in pending if p.get("id") not in voted]
 
     # Strip re-vote housekeeping flags before archiving — they're process state, not history

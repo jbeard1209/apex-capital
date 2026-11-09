@@ -317,7 +317,14 @@ def run(write: bool = True, log_dir: Path = LOG_DIR, now: datetime | None = None
             for f in repeated:
                 alerted[f["sig_id"]] = {"at": now.isoformat(), "days": f["days"],
                                         "baseline": True}
+                f["active"], f["new_days"] = False, []
             due = []
+            # The written report must say what the NEXT run will see. A baseline
+            # that saved its pre-baseline FAILING made the sentinel go RED on the
+            # 2026-11-09 deploy for a failure that had just been marked known.
+            report.update(n_active=0, n_known=len(repeated),
+                          status="CANNOT_TELL" if n_logs == 0 else "OK")
+            report["ok"] = report["status"] == "OK"
         elif due:
             for f in due:
                 _file_proposal(f)

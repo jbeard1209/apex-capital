@@ -1435,6 +1435,19 @@ def _route_approved_cit_proposals(approved: list) -> None:
     for p in existing_approved:
         t = _norm_key(p)
         title_counts[t] = title_counts.get(t, 0) + 1
+    # The row clear_voted_proposals wrote for THIS vote is not a prior approval.
+    # It is already in the ledger when this runs, so counting it made every
+    # approval its own 2nd sighting and "approved 3+ times" fired on the 2nd
+    # (12 PERSISTENT alerts on the first vote after the 2026-11-09 fix). Take
+    # exactly one row back per proposal routed now that is in the ledger; older
+    # approvals of the same finding still count. The persist step below skips
+    # these ids, so each approval is recorded once.
+    _ledger_ids = {p.get("id") for p in existing_approved if p.get("id")}
+    for p in approved:
+        if p.get("id") in _ledger_ids:
+            k = _norm_key(p)
+            if title_counts.get(k, 0) > 0:
+                title_counts[k] -= 1
 
     newly_actioned  = []
     needs_chairman  = []
@@ -1594,8 +1607,11 @@ def _route_approved_cit_proposals(approved: list) -> None:
     # write under one lock, so a deputy approval landing in the same minute is
     # not overwritten by the board's copy of the list.
     with aj.update(APPROVED_PROPOSALS_PATH, default=[], expect=list) as _appr:
+        _in_ledger = {r.get("id") for r in _appr if isinstance(r, dict) and r.get("id")}
         for p in approved:
             p["approved_at"] = datetime.now().isoformat()
+            if p.get("id") and p["id"] in _in_ledger:
+                continue          # clear_voted_proposals already recorded it
             _appr.append(p)
 
     logger.info(f"  [CIT Router] {len(newly_actioned)} approved proposal(s) routed.")
