@@ -19456,6 +19456,33 @@ class TestArchivedRowsStayArchived(unittest.TestCase):
                          "that is still open on one host")
         self.assertEqual(1, len(sup_after))
 
+    def test_a_close_on_one_host_beats_the_other_hosts_stale_copy(self):
+        """2026-11-09: the Chairman's HR KEEP closed 4 archived rows on the Mac
+        (10:55 CST) and on the VM (21:34Z); each time the other host's old open
+        copy of the SAME row won and was written back open to both. The same
+        id closed elsewhere is a stale copy, not a recurrence. A recurrence is
+        a new row (new id) and must still come back flagged."""
+        arch = [{"id": "x1", "title": "thing done", "status": "resolved",
+                 "archived_on": "2026-09-01T00:00:00+00:00"}]
+        ids, keys = self._tomb(arch)
+        mac_rows = [{"id": "x1", "title": "thing done", "status": "resolved"}]
+        vm_rows = [{"id": "x1", "title": "thing done", "status": "awaiting_chairman"}]
+        mac, _, _ = self.S.apply_tombstones(mac_rows, ids, keys,
+                                            closed_elsewhere=self.S.closed_ids(vm_rows))
+        vm, sup, reo = self.S.apply_tombstones(vm_rows, ids, keys,
+                                               closed_elsewhere=self.S.closed_ids(mac_rows))
+        merged = self.S.merge_actions(mac, vm)
+        self.assertFalse([m for m in merged if m.get("status") == "awaiting_chairman"],
+                         "the stale open copy reopened the Chairman's close")
+        self.assertEqual(reo, [])
+        self.assertEqual(len(sup), 1)
+
+        fresh = [{"id": "x1-2", "title": "thing done", "status": "awaiting_chairman"}]
+        kept, _, reo = self.S.apply_tombstones(fresh, ids, keys,
+                                               closed_elsewhere=self.S.closed_ids(mac_rows))
+        self.assertEqual(reo, ["x1-2"], "a real recurrence was swallowed")
+        self.assertEqual(len(kept), 1)
+
     def test_the_archive_union_is_shared_by_both_hosts_and_idempotent(self):
         mac = [{"id": "a", "archived_on": "2026-08-19T10:00:00+00:00"}]
         vm = [{"id": "a", "archived_on": "2026-08-18T10:00:00+00:00"},
