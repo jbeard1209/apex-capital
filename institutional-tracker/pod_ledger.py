@@ -224,7 +224,7 @@ def record_trade(
             raise ValueError(f"Cannot sell {qty} of {ticker}: only {held} held")
 
         proceeds = qty * price
-        pod["cash_balance"] = round(pod["cash_balance"] + proceeds, 6)
+        pod["cash_balance"] = round(_f(pod.get("cash_balance")) + proceeds, 6)
         # Realised P&L, kept so budgets can follow performance (2026-11-09).
         # Until then nothing recorded it: pnl_lifetime was 0.0 for every pod.
         realised = qty * (price - _f(pos.get("avg_entry"), price))
@@ -399,6 +399,71 @@ def attribution_map() -> Dict[str, str]:
     for sym, rec in (data.get("attribution") or {}).items():
         out.setdefault(str(sym).upper(), rec.get("pod", UNATTRIBUTED))
     return out
+
+
+def cap_buy_qty(qty: int, price: float, held_value: float, equity: float,
+                cap_pct: Optional[float] = None) -> tuple:
+    """(qty, reason): a pod BUY shrunk so the position stays within the firm's
+    single-name cap (config.MAX_POSITION_SIZE_PCT of equity). reason is "" when
+    the order fits as asked.
+
+    2026-11-09: Pod 3 split its $30k budget into ~$10k per ETF and bought TLT,
+    XLP and XLV at ~10.4% of a $96k account each. review_agent flags anything
+    over 7.7% for a TRIM, the Canary was ORANGE, and the manager turns a TRIM
+    into a full SELL on an ORANGE day: all three were sold two hours after they
+    filled, at a small loss plus the spread. A pod may not buy what the firm's
+    own risk rule will sell on its next review."""
+    if cap_pct is None:
+        try:
+            import config
+            cap_pct = float(config.MAX_POSITION_SIZE_PCT)
+        except Exception:
+            cap_pct = 0.07
+    qty, price, equity = int(qty), _f(price), _f(equity)
+    if qty <= 0 or price <= 0 or equity <= 0:
+        return 0, "cannot size: qty, price or equity is not positive"
+    room = cap_pct * equity - max(0.0, _f(held_value))
+    fit = max(0, int(room // price))
+    if fit >= qty:
+        return qty, ""
+    return fit, ("single-name cap %.0f%% of $%s equity leaves room for %d of %d"
+                 % (cap_pct * 100, format(round(equity), ","), fit, qty))
+
+
+def firm_buy_block(canary_level: str = "", cro_level: str = "",
+                   cvar_pct: float = 0.0, cvar_limit_pct: float = 5.0) -> Optional[str]:
+    """Why no pod may buy right now, or None. The same three gates the manager
+    applies to its own buys (manager_agent.run_manager: Canary ORANGE/RED,
+    CRO HIGH/CRITICAL, 1-day CVaR over 5% of the portfolio).
+
+    2026-11-09 13:45: the manager rejected XLP under the CVaR breaker ("All
+    BUY/ADD orders blocked this session"); at 13:54 Pod 3 bought XLP anyway,
+    because the ETF pod's orders never passed through any of these gates."""
+    if str(canary_level).upper() in ("ORANGE", "RED"):
+        return "Canary %s: new buys blocked" % str(canary_level).upper()
+    if str(cro_level).upper() in ("HIGH", "CRITICAL"):
+        return "CRO risk %s: new buys blocked" % str(cro_level).upper()
+    if _f(cvar_pct) > cvar_limit_pct:
+        return ("CVaR breaker: 1-day CVaR %.1f%% of portfolio exceeds %.0f%%"
+                % (_f(cvar_pct), cvar_limit_pct))
+    return None
+
+
+def holder(ticker: str) -> Optional[tuple]:
+    """(pod_id, qty) of the pod whose ledger holds a long in `ticker`, or None.
+
+    A sell must be booked to the pod that bought, not to whichever pod the
+    selling decision's source_agent name suggests. Until 2026-11-09 the manager
+    guessed the pod from source_agent, which defaults to pod1_rd: when it sold
+    Pod 3's TLT/XLP/XLV that day the ledger raised "No position in TLT to sell
+    in pod1_rd", the warning was swallowed, and Pod 3 kept the positions (and
+    not the cash) on paper."""
+    sym = str(ticker).upper().strip()
+    for pod_id, pod in (_load().get("pods") or {}).items():
+        for t, pos in (pod.get("positions") or {}).items():
+            if str(t).upper() == sym and _f(pos.get("qty")) > 0:
+                return pod_id, _f(pos.get("qty"))
+    return None
 
 
 def sync_from_broker(broker_positions: Dict[str, dict],
@@ -693,7 +758,11 @@ def reconcile_to_broker(
 # The fix is an identity, not a tuning: each pod's budget is what it already
 # holds plus a share of the cash the firm can actually deploy,
 #
-#     budget_i = deployed_i + weight_i * max(0, cash - floor_pct * equity)
+#     budget_i = deployed_i + weight_i * max(0, cash - |shorts| - floor_pct * equity)
+#
+# Short-sale proceeds sit in broker cash but are owed back: on 2026-11-09 cash
+# was $112,877 against $96,021 of equity because of $16,856 of ORCL/AVGO
+# shorts. Counting them as spendable would hand the pods money the firm owes.
 #
 # so the pods' combined headroom equals deployable cash exactly, and a board
 # can only size buys the broker will accept. Positions are never sold to make
@@ -752,7 +821,8 @@ def performance_weights(perf: Dict[str, dict]) -> Dict[str, float]:
 
 def rebalance_budgets(broker_equity: float, broker_cash: float,
                       floor_pct: Optional[float] = None,
-                      apply: bool = True) -> dict:
+                      apply: bool = True,
+                      short_value: float = 0.0) -> dict:
     """Set every pod's budget to deployed + its weighted share of deployable
     cash. Call after sync_from_broker, so deployed values are the broker's."""
     if floor_pct is None:
@@ -764,7 +834,8 @@ def rebalance_budgets(broker_equity: float, broker_cash: float,
     data = _load()
     pods = data.get("pods") or {}
     equity, cash = _f(broker_equity), _f(broker_cash)
-    deployable = round(max(0.0, cash - floor_pct * equity), 2)
+    shorts = abs(_f(short_value))
+    deployable = round(max(0.0, cash - shorts - floor_pct * equity), 2)
     perf = pod_performance(data)
     weights = performance_weights(perf)
     plan = {}
@@ -780,10 +851,11 @@ def rebalance_budgets(broker_equity: float, broker_cash: float,
             pod["budget_remaining"] = share
             pod["cash_balance"] = share
     report = {"as_of": _now_iso(), "equity": round(equity, 2), "cash": round(cash, 2),
+              "short_proceeds_excluded": round(shorts, 2),
               "floor_pct": floor_pct, "deployable_cash": deployable,
               "headroom_total": round(sum(v["headroom"] for v in plan.values()), 2),
               "pods": plan,
-              "rule": "budget = deployed + weight x max(0, cash - floor x equity); "
+              "rule": "budget = deployed + weight x max(0, cash - |shorts| - floor x equity); "
                       "weight from return on inception budget, floored "
                       f"{PERF_WEIGHT_FLOOR}, capped {PERF_WEIGHT_CAP}"}
     if apply:

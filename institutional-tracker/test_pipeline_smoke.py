@@ -6307,6 +6307,73 @@ class TestWrongfulRetirement(unittest.TestCase):
         self.assertEqual(late[0]["severity"], "HIGH", "an overdue review is not MEDIUM")
         self.assertIn("OVERDUE", late[0]["description"])
 
+    def test_the_chairmans_keep_answers_the_review_and_closes_its_row(self):
+        """A reinstatement review the Chairman answers must stay answered.
+
+        THE DEFECT (2026-11-09). Six REINSTATEMENT_REVIEW_DUE rows sat in the
+        Chairman inbox past their deadline, and his answer ("keep all of them")
+        had nowhere to go: no KEEP event existed in hr_history, and closing a
+        row by hand let this audit raise the same review on its next run,
+        because the agent was still under monitoring. `confirm_keep` records the
+        KEEP against the vacation it answers and closes the rows.
+
+        BAD      confirmed agent      -> leaves monitoring, its row is resolved
+                                         with the Chairman's note, re-run is a no-op.
+        CONTROL  unconfirmed agent    -> still monitored, its row stays open;
+                 a LATER vacation      -> reviewed afresh, the old KEEP is not reused.
+        """
+        import hr_retirement_audit as A
+        import chairman_queue as CQ
+        from unittest import mock
+
+        def vac(d, due="2026-09-29"):
+            return {"date": d, "event": "RETIREMENT_VACATED",
+                    "summary": "vacated", "monitoring_review_by": due}
+
+        hist = {"agent_records": {"Keep": {"events": [vac("2026-07-31")]},
+                                  "Other": {"events": [vac("2026-07-31")]}}}
+        today = date(2026, 11, 9)
+        with tempfile.TemporaryDirectory() as td:
+            hp, qp = os.path.join(td, "hr_history.json"), os.path.join(td, "q.json")
+            with open(hp, "w") as fh:
+                json.dump(hist, fh)
+            rows = [{"id": "hr-%s" % cn, "source": A.SOURCE,
+                     "status": "awaiting_chairman",
+                     "dedup_key": "REINSTATEMENT_REVIEW_DUE:%s" % cn}
+                    for cn in ("Keep", "Other")]
+            with open(qp, "w") as fh:
+                json.dump(rows, fh)
+
+            self.assertEqual(set(A._monitored(hist, today)), {"Keep", "Other"})
+            with mock.patch.object(A, "_reinstatement_reviews",
+                                   side_effect=lambda h, today=None: [
+                                       {"check": "REINSTATEMENT_REVIEW_DUE",
+                                        "class_name": cn, "severity": "HIGH"}
+                                       for cn in A._monitored(h, today)]):
+                res = A.confirm_keep(["Keep", "Nobody"], "Co-Chairman",
+                                     "Chairman KEEP", history_path=hp,
+                                     queue_path=qp, today=today)
+                again = A.confirm_keep(["Keep"], "Co-Chairman", "Chairman KEEP",
+                                       history_path=hp, queue_path=qp, today=today)
+
+            self.assertEqual(res["confirmed"], ["Keep"])
+            self.assertEqual([s[0] for s in res["skipped"]], ["Nobody"])
+            self.assertEqual(res["closed"], ["hr-Keep"])
+            self.assertEqual(res["still_open"], ["REINSTATEMENT_REVIEW_DUE:Other"])
+            self.assertEqual(again["confirmed"], [], "KEEP recorded twice")
+            self.assertEqual(again["closed"], [], "a resolved row was re-resolved")
+
+            saved = json.load(open(hp))
+            self.assertEqual(set(A._monitored(saved, today)), {"Other"})
+            q = {e["id"]: e for e in CQ._load(qp)}
+            self.assertNotIn(q["hr-Keep"]["status"], CQ.OPEN_STATUSES)
+            self.assertIn(q["hr-Other"]["status"], CQ.OPEN_STATUSES)
+
+            # A later retirement-and-vacation is a new promise: the old KEEP
+            # answers the old one only.
+            saved["agent_records"]["Keep"]["events"].append(vac("2026-12-01", "2027-01-30"))
+            self.assertIn("Keep", A._monitored(saved, today))
+
     def test_a_blocked_review_defers_then_escalates_to_the_chairman(self):
         """NOT_ASSESSABLE must never be where a promised review comes to rest.
 
@@ -23948,6 +24015,14 @@ class TestPodBudgetsAreBackedByCashAndFollowPerformance(unittest.TestCase):
         self.assertAlmostEqual(sum(p["budget_remaining"] for p in saved.values()),
                                5000.0, delta=0.05)
 
+    def test_short_sale_proceeds_are_not_spendable(self):
+        """2026-11-09: cash $112,877 vs equity $96,021, because $16,856 of
+        ORCL/AVGO short proceeds sat in cash. That money is owed back."""
+        r = self.P.rebalance_budgets(96020.96, 112876.92, floor_pct=0.20,
+                                     short_value=16855.96)
+        self.assertAlmostEqual(r["deployable_cash"], 112876.92 - 16855.96 - 19204.19,
+                               delta=0.02)
+
     def test_the_better_performer_gets_more_new_cash(self):
         r = self.P.rebalance_budgets(100000.0, 25000.0, floor_pct=0.20)["pods"]
         self.assertGreater(r["winner"]["headroom"], r["idle"]["headroom"])
@@ -23972,6 +24047,54 @@ class TestPodBudgetsAreBackedByCashAndFollowPerformance(unittest.TestCase):
         self.P.record_trade("winner", "A", 10, 210.0, "short", "test")
         saved = json.loads(self.path.read_text())["pods"]["winner"]
         self.assertEqual(saved["pnl_realised_lifetime"], 700.0)
+
+    def test_a_manager_sell_is_booked_to_the_pod_that_holds_it(self):
+        """2026-11-09 16:01: manager_agent sold Pod 3's TLT, XLP and XLV. It
+        booked the sale to pod1_rd (guessed from source_agent), the ledger
+        raised "No position in TLT to sell in pod1_rd", and the full exit was
+        recorded as qty 0 anyway, so no pod got its cash back."""
+        import manager_agent as M
+
+        class Trader:
+            def submit_sell(self, ticker, reason=""):
+                return {"id": "o1", "filled_avg_price": "120.0"}
+
+        dec = {"manager_action": "SELL", "ticker": "B", "current_price": 120.0,
+               "source_agent": "Review Agent"}           # names no pod -> pod1_rd guess
+        with patch.object(M, "_log_execution_quality", lambda *a, **k: None):
+            res = M.execute_decision(dec, Trader())
+        self.assertTrue(res["executed"], res)
+        saved = json.loads(self.path.read_text())["pods"]
+        self.assertNotIn("B", saved["loser"]["positions"], "the pod still holds the sold shares")
+        self.assertEqual(saved["loser"]["pnl_realised_lifetime"], -1000.0)   # 100 x (120-130)
+
+    def test_a_pod_buy_is_sized_under_the_firms_single_name_cap(self):
+        """2026-11-09: Pod 3 bought 122 TLT @ $81.92 (~$10k, 10.4% of a $96k
+        account) against a 7% cap; review_agent flagged it and the manager sold
+        it two hours later. The buy must be shrunk to what the cap allows."""
+        q, why = self.P.cap_buy_qty(122, 81.92, 0.0, 96020.96, cap_pct=0.07)
+        self.assertEqual(q, 82)                       # 0.07 * 96,021 / 81.92
+        self.assertLessEqual(q * 81.92, 0.07 * 96020.96)
+        self.assertIn("cap", why)
+        self.assertEqual(self.P.cap_buy_qty(10, 81.92, 0.0, 96020.96, 0.07), (10, ""))
+        self.assertEqual(self.P.cap_buy_qty(10, 81.92, 7000.0, 96020.96, 0.07)[0], 0,
+                         "a position already at the cap was allowed to grow")
+
+    def test_pod_buys_obey_the_managers_buy_gates(self):
+        """13:45 the manager's CVaR breaker blocked every buy; 13:54 Pod 3
+        bought XLP anyway."""
+        self.assertIsNone(self.P.firm_buy_block("GREEN", "MODERATE", 2.0))
+        self.assertIn("Canary", self.P.firm_buy_block("ORANGE", "", 0.0))
+        self.assertIn("CRO", self.P.firm_buy_block("GREEN", "HIGH", 0.0))
+        self.assertIn("CVaR", self.P.firm_buy_block("GREEN", "", 5.4))
+
+    def test_the_etf_pod_executor_calls_both_gates_before_it_buys(self):
+        src = (Path(__file__).parent / "main.py").read_text()
+        step = src[src.index("Step 4d: ETF Pod 3 orders"):src.index("Step 5: Get Portfolio Snapshot")]
+        submit = step.index("_etf_req = _ETFMOR2(")
+        for gate in ("_etf_pl.firm_buy_block(", "_etf_pl.cap_buy_qty("):
+            self.assertIn(gate, step[:submit], gate + " is not checked before the ETF order")
+        self.assertIn("_p3_own", step, "EMERGENCY_EXIT sells positions Pod 3 does not own")
 
 
 class TestAVerdictNamesTheLedgerItCouldNotRead(unittest.TestCase):

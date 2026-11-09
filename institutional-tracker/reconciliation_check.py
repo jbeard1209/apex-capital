@@ -217,7 +217,10 @@ def run_reconciliation() -> dict:
         # 2026-11-09). Runs here because this is where broker equity and cash
         # are in hand right after the sync; a failure must not stop the check.
         try:
-            _rb = pod_ledger.rebalance_budgets(portfolio_value, cash)
+            _shorts = sum(abs(v["qty"]) * v["price"] for v in broker_pos.values()
+                          if v["qty"] < 0)
+            _rb = pod_ledger.rebalance_budgets(portfolio_value, cash,
+                                               short_value=_shorts)
             logger.info(f"  Pod budgets rebalanced: deployable ${_rb['deployable_cash']:,.0f} "
                         + ", ".join(f"{k} ${v['headroom']:,.0f} (w {v['weight']:.2f})"
                                     for k, v in _rb["pods"].items()))
