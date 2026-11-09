@@ -39,7 +39,7 @@ opposite side of the person it follows.
     leader (taker)      our V2 order (YES book only)
     buy  yes        ->  bid, opens
     buy  no         ->  ask, opens        (selling YES = buying NO)
-    sell yes        ->  ask, reduce_only  (exit; does nothing if we hold none)
+    sell yes        ->  ask, reduce_only  (exit; only what WE hold, see exit_check)
     sell no         ->  bid, reduce_only
 
 Opening trades priced outside [MIN_PRICE, MAX_PRICE] are skipped: the visible
@@ -340,6 +340,35 @@ def settle_check(dec, cfg, now, settles_at):
     return dec
 
 
+def exit_check(dec, held):
+    """A leader's exit -> our exit, sized to what WE hold, or a skip.
+
+    Until 2026-11-09 every leader exit was sent as a reduce_only order whether
+    or not we held anything. Replaying 20 visible traders' last ~1000 fills
+    each under the live caps (kalshi_copytrade_backtest.py), 2,057 of the
+    2,064 exits the copier would have sent (99.7%) were for markets it never
+    entered: the $3 daily cap admits a few entries a day, but every exit a
+    leader makes was passed on. Each is a wasted order at best, and if the
+    exchange answers one with an error, three in a row halt the copier. At worst it
+    sells a position the Chairman holds BY HAND in the same market: reduce_only
+    only stops an order growing the account's position, it cannot tell the
+    copier's contracts from his. So an exit may close only what the ledger
+    says the copier itself opened.
+
+    `held` is the copier's net YES position in the ticker (see net_position):
+    positive is YES held, negative is NO held. Selling YES (ask) needs YES
+    held; selling NO (bid, buying YES back) needs NO held."""
+    if dec["action"] != "order" or not dec.get("reduce_only"):
+        return dec
+    have = held if dec["side"] == "ask" else -held
+    n = min(int(dec["count"]), math.floor(max(have, 0.0) + 1e-9))
+    if n < 1:
+        keep = {k: v for k, v in dec.items() if k in ("ticker", "leader_price", "lag_s")}
+        return {"action": "skip", "reason": "exit: the copier holds none of this side "
+                f"(net YES position {held:g})", **keep}
+    return dict(dec, count=n)
+
+
 # ----------------------------------------------------------------- ledger --
 
 def _append(row):
@@ -400,6 +429,27 @@ def market_contracts(ticker, rows=None):
     return n
 
 
+def net_position(ticker, rows=None):
+    """The copier's own net YES contracts in one market, from the ledger: bids
+    add, asks subtract, exits included. Live rows count what filled (the
+    order's count if the fill is unknown, so an unknown fill errs towards
+    believing we hold it and letting the exit through); paper rows count in
+    full, so paper mode exercises the same exits live would."""
+    n = 0.0
+    for r in ledger_rows() if rows is None else rows:
+        if r.get("ticker") != ticker:
+            continue
+        if r.get("status") == "placed":
+            f = kc.parse_size(r.get("fill_count"))
+            q = float(r.get("count") or 0) if f is None else f
+        elif r.get("status") == "paper":
+            q = float(r.get("count") or 0)
+        else:
+            continue
+        n += q if r.get("side") == "bid" else -q
+    return n
+
+
 def market_spent(ticker, rows=None):
     """Dollars ever committed to opening positions in one market. This is
     what per_trade_usd caps, so a leader order that fills in five pieces (or
@@ -445,6 +495,8 @@ def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order):
             if dec["action"] == "order" and not dec.get("reduce_only"):
                 dec = settle_check(dec, cfg, now_,
                                    settle_time(dec["ticker"], settle_cache))
+            elif dec["action"] == "order":
+                dec = exit_check(dec, net_position(dec["ticker"], rows_))
             row = {"at": now_.isoformat(), "leader": leader,
                    "leader_trade_id": t["trade_id"], "leader_ts": t.get("create_date"),
                    "leader_side": t.get("taker_side"), "leader_action": t.get("taker_action"),

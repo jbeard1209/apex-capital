@@ -34073,7 +34073,7 @@ class TestKalshiCopytradeSkipsMoneyLockedUpForMonths(unittest.TestCase):
 
     NOW = datetime(2026, 11, 9, 12, 0, 0, tzinfo=timezone.utc)
 
-    def _poll(self, settles, action="buy"):
+    def _poll(self, settles, action="buy", ledger=()):
         import kalshi_copytrade as ct
         fill = {"trade_id": "x", "ticker": "KXSENMAJ-27-CSCH", "price_dollars": "0.4000",
                 "count_fp": "10.00", "taker_side": "yes", "taker_action": action,
@@ -34085,6 +34085,7 @@ class TestKalshiCopytradeSkipsMoneyLockedUpForMonths(unittest.TestCase):
             return {"order_id": "1", "fill_count": str(kw["count"])}
         with tempfile.TemporaryDirectory() as td:
             saved, ct.LEDGER_FILE = ct.LEDGER_FILE, Path(td) / "l.jsonl"
+            ct.LEDGER_FILE.write_text("".join(json.dumps(r) + "\n" for r in ledger))
             cfg = {**ct.DEFAULTS, "leaders": ["L"], "per_trade_usd": 1.0, "per_day_usd": 3.0}
             try:
                 with patch.object(ct, "armed", return_value=(True, "")), \
@@ -34113,7 +34114,11 @@ class TestKalshiCopytradeSkipsMoneyLockedUpForMonths(unittest.TestCase):
         self.assertEqual(row["status"], "placed")
 
     def test_an_exit_is_never_blocked_by_the_settlement_limit(self):
-        placed, row = self._poll(None, action="sell")
+        # we hold 2 YES from an earlier copy (exits close only what the copier
+        # opened since 2026-11-09; see TestKalshiCopytradeExitsOnlyWhatItHolds)
+        held = [{"ticker": "KXSENMAJ-27-CSCH", "side": "bid", "status": "placed",
+                 "count": 2, "fill_count": 2.0, "price": 0.4, "at": "2026-11-01T00:00:00+00:00"}]
+        placed, row = self._poll(None, action="sell", ledger=held)
         self.assertEqual(len(placed), 1)
         self.assertTrue(placed[0]["reduce_only"])
 
@@ -34127,6 +34132,242 @@ class TestKalshiCopytradeSkipsMoneyLockedUpForMonths(unittest.TestCase):
             finally:
                 ct.CONFIG_FILE = saved
         self.assertEqual(cfg["max_days_to_settle"], ct.HARD_MAX_DAYS_TO_SETTLE)
+
+
+class TestKalshiCopytradeExitsOnlyWhatItHolds(unittest.TestCase):
+    """2026-11-09: the copier passed on EVERY leader exit as a reduce_only order.
+    Replayed under the live caps, 2,057 of 2,064 such exits were for markets it
+    never entered, and reduce_only cannot tell the copier's contracts from a
+    position the Chairman holds by hand in the same market. An exit may now
+    close only what the copier's own ledger says it opened."""
+
+    NOW = datetime(2026, 11, 9, 12, 0, 0, tzinfo=timezone.utc)
+    T = "KXNFLGAME-26NOV09-X"
+
+    def _row(self, side, n, status="placed", **kw):
+        r = {"ticker": self.T, "side": side, "status": status, "count": n,
+             "fill_count": float(n), "price": 0.4, "at": "2026-11-09T00:00:00+00:00"}
+        r.update(kw)
+        return r
+
+    def _poll(self, taker_side, ledger):
+        import kalshi_copytrade as ct
+        fill = {"trade_id": "x", "ticker": self.T, "price_dollars": "0.4000",
+                "count_fp": "10.00", "taker_side": taker_side, "taker_action": "sell",
+                "taker_nickname": "L", "maker_nickname": "",
+                "create_date": (self.NOW - timedelta(seconds=2)).isoformat()}
+        placed = []
+        def place(**kw):
+            placed.append(kw)
+            return {"order_id": "1", "fill_count": str(kw["count"])}
+        with tempfile.TemporaryDirectory() as td:
+            saved, ct.LEDGER_FILE = ct.LEDGER_FILE, Path(td) / "l.jsonl"
+            ct.LEDGER_FILE.write_text("".join(json.dumps(r) + "\n" for r in ledger))
+            cfg = {**ct.DEFAULTS, "leaders": ["L"], "per_trade_usd": 1.0, "per_day_usd": 3.0}
+            try:
+                with patch.object(ct, "armed", return_value=(True, "")):
+                    rows = ct.poll_once(cfg, {"initialised": ["L"], "seen": {"L": []}},
+                                        now=self.NOW, place=place,
+                                        fetch=lambda n: {"trades": [fill]})
+            finally:
+                ct.LEDGER_FILE = saved
+        return placed, rows[0]
+
+    def test_an_exit_from_a_market_we_never_entered_sends_no_order(self):
+        """Includes the Chairman's hand-held positions: the ledger never saw them."""
+        placed, row = self._poll("yes", [])
+        self.assertEqual(placed, [])
+        self.assertEqual(row["status"], "skipped")
+        self.assertIn("holds none", row["reason"])
+
+    def test_an_exit_is_sized_to_what_the_copier_holds_not_the_leader(self):
+        placed, row = self._poll("yes", [self._row("bid", 2)])
+        self.assertEqual([p["count"] for p in placed], [2])
+        self.assertTrue(placed[0]["reduce_only"])
+
+    def test_selling_no_needs_no_held_not_yes(self):
+        placed, _ = self._poll("no", [self._row("bid", 3)])     # we hold YES
+        self.assertEqual(placed, [])
+        placed, _ = self._poll("no", [self._row("ask", 3)])     # we hold NO
+        self.assertEqual([p["count"] for p in placed], [3])
+
+    def test_net_position_nets_exits_and_ignores_skips_and_errors(self):
+        import kalshi_copytrade as ct
+        rows = [self._row("bid", 5), self._row("ask", 2, reduce_only=True),
+                self._row("bid", 9, status="skipped"), self._row("bid", 9, status="error"),
+                self._row("bid", 4, fill_count=1.0), self._row("bid", 3, status="paper")]
+        self.assertEqual(ct.net_position(self.T, rows), 5 - 2 + 1 + 3)
+        self.assertEqual(ct.net_position("OTHER", rows), 0)
+
+    def test_an_entry_is_untouched_by_the_exit_rule(self):
+        import kalshi_copytrade as ct
+        dec = {"action": "order", "reduce_only": False, "side": "bid", "count": 4}
+        self.assertIs(ct.exit_check(dec, 0.0), dec)
+
+
+class TestKalshiCopytradeBacktestUsesTheCopiersRules(unittest.TestCase):
+    """kalshi_copytrade_backtest replays a trader's fills through the copier's
+    own decide/settle_check/exit_check, so what it says a leader is worth is
+    what the live bot would have done with them, not a second opinion."""
+
+    T0 = datetime(2026, 11, 1, 12, 0, 0, tzinfo=timezone.utc)
+
+    def _fill(self, i, ticker, side="yes", action="buy", price="0.40", taker=True, n="5"):
+        return {"trade_id": f"f{i}", "ticker": ticker, "price_dollars": price, "count_fp": n,
+                "taker_side": side, "taker_action": action,
+                "taker_nickname": "L" if taker else "x", "maker_nickname": "" if taker else "L",
+                "create_date": (self.T0 + timedelta(minutes=i)).isoformat()}
+
+    def _mkt(self, result="", days=1, last="0.50"):
+        return {"result": result, "last_price_dollars": last,
+                "expected_expiration_time": (self.T0 + timedelta(days=days)).isoformat()}
+
+    def _cfg(self, **kw):
+        import kalshi_copytrade as ct
+        return {**ct.DEFAULTS, "per_trade_usd": 1.0, "per_day_usd": 3.0, **kw}
+
+    def test_winners_win_losers_lose_and_maker_fills_are_not_copied(self):
+        import kalshi_copytrade_backtest as bt
+        fills = [self._fill(0, "A"), self._fill(1, "B"), self._fill(2, "C", taker=False)]
+        mk = {"A": self._mkt("yes"), "B": self._mkt("no"), "C": self._mkt("yes")}
+        rows, skips = bt.replay("L", fills, mk, self._cfg(), unit=True)
+        self.assertEqual(sorted(r["ticker"] for r in rows), ["A", "B"])
+        self.assertEqual(skips, {"maker fill": 1})
+        p = bt.pnl(rows, mk)
+        # 1 YES at the 42c limit each, fee ceil(7% x .42 x .58) = 2c: +0.56 and -0.44
+        self.assertEqual((p["settled"], p["wins"], p["settled_pnl"]), (2, 1, 0.12))
+
+    def test_the_live_caps_bind_in_the_capped_replay(self):
+        import kalshi_copytrade_backtest as bt
+        fills = [self._fill(i, "A") for i in range(4)]
+        rows, _ = bt.replay("L", fills, {"A": self._mkt("yes")}, self._cfg())
+        self.assertLessEqual(sum(r["cost_usd"] for r in rows), 1.0)
+        self.assertGreaterEqual(len(rows), 1)
+
+    def test_markets_settling_past_the_window_or_unknown_are_skipped(self):
+        import kalshi_copytrade_backtest as bt
+        fills = [self._fill(0, "FAR"), self._fill(1, "GONE")]
+        rows, skips = bt.replay("L", fills, {"FAR": self._mkt("yes", days=400)},
+                                self._cfg(), unit=True)
+        self.assertEqual(rows, [])
+        self.assertEqual(sum(skips.values()), 2)
+
+    def test_exits_close_only_replayed_holdings(self):
+        import kalshi_copytrade_backtest as bt
+        fills = [self._fill(0, "A", action="sell"),                  # nothing held
+                 self._fill(1, "A"), self._fill(2, "A", action="sell")]
+        rows, skips = bt.replay("L", fills, {"A": self._mkt("yes")}, self._cfg(), unit=True)
+        self.assertEqual([(r["side"], r["reduce_only"]) for r in rows],
+                         [("bid", False), ("ask", True)])
+        self.assertEqual(sum(v for k, v in skips.items() if k.startswith("exit")), 1)
+
+    def test_buying_no_that_settles_no_is_a_win_on_the_yes_book(self):
+        import kalshi_copytrade_backtest as bt
+        rows, _ = bt.replay("L", [self._fill(0, "A", side="no", price="0.60")],
+                            {"A": self._mkt("no")}, self._cfg(), unit=True)
+        p = bt.pnl(rows, {"A": self._mkt("no")})
+        self.assertGreater(p["settled_pnl"], 0)
+
+    def test_open_markets_are_kept_out_of_settled_pnl(self):
+        import kalshi_copytrade_backtest as bt
+        rows, _ = bt.replay("L", [self._fill(0, "A")], {"A": self._mkt("")}, self._cfg(), unit=True)
+        p = bt.pnl(rows, {"A": self._mkt("", last="0.90")})
+        self.assertEqual((p["settled"], p["settled_pnl"], p["settled_roi"]), (0, 0.0, None))
+        self.assertGreater(p["open_pnl"], 0)
+
+    def test_history_follows_the_cursor_and_keeps_a_partial_read(self):
+        import kalshi_copytrade_backtest as bt
+        pages = {"trades?nickname=L": {"trades": [{"trade_id": "1"}], "cursor": "c1",
+                                       "visibility_state": "visible"},
+                 "trades?nickname=L&cursor=c1": {"trades": [{"trade_id": "2"}], "cursor": "c2"}}
+        def get(path, retries=3):
+            if path in pages:
+                return pages[path]
+            raise OSError("page 3 down")
+        fills, vis = bt.fetch_history("L", pages=10, get=get)
+        self.assertEqual(([f["trade_id"] for f in fills], vis), (["1", "2"], "visible"))
+
+    def test_t_stat_needs_five_markets_and_has_the_right_sign(self):
+        import kalshi_copytrade_backtest as bt
+        self.assertIsNone(bt.t_stat([1, 2, 3, 4]))
+        self.assertGreater(bt.t_stat([1, 2, 1, 2, 1]), 2)
+        self.assertLess(bt.t_stat([-1, -2, -1, -2, -1]), -2)
+
+
+class TestKalshiScoutGatesOnTheBacktest(unittest.TestCase):
+    """2026-11-09: the scout ranked traders by THEIR P&L. Four visible traders
+    up this month would have lost us 11-57% per dollar copied. A trader whose
+    replayed copies lose over >= 10 settled markets is now rejected, and
+    backtest-proven traders outrank unproven ones."""
+
+    NOW = datetime(2026, 11, 9, 12, 0, 0, tzinfo=timezone.utc)
+
+    def _fills(self, nick, n=12):
+        return [{"trade_id": f"{nick}{i}", "ticker": f"{nick}-M{i}", "price_dollars": "0.40",
+                 "count_fp": "5", "taker_side": "yes", "taker_action": "buy",
+                 "taker_nickname": nick, "maker_nickname": "",
+                 "create_date": (self.NOW - timedelta(hours=1, minutes=i)).isoformat()}
+                for i in range(n)]
+
+    def _run(self, profiles, results, monthly, cfg=None, markets_fail=False):
+        """profiles: nick -> fills; results: nick -> 'yes'/'no' for all their markets."""
+        import kalshi_copytrade as ct
+        import kalshi_copytrade_scout as sc
+        def get(path, retries=3):
+            if path.startswith("leaderboard"):
+                if "projected_pnl" in path and "monthly" in path:
+                    return {"rank_list": [{"nickname": n, "value": v} for n, v in monthly.items()]}
+                return {"rank_list": []}
+            nick = path.split("nickname=")[1].split("&")[0]
+            if path.startswith("trades"):
+                return {"trades": profiles[nick], "visibility_state": "visible"}
+            return {"metrics": {"pnl": 1e5 * 10000}}
+        def fetch_markets(tickers, cache=None, get=None):
+            if markets_fail:
+                raise OSError("exchange down")
+            exp = (self.NOW + timedelta(days=1)).isoformat()
+            return {t: {"result": results[t.split("-")[0]], "expected_expiration_time": exp}
+                    for t in tickers if t}
+        with tempfile.TemporaryDirectory() as td:
+            orig = (ct.CONFIG_FILE, ct.LEDGER_FILE, sc.REPORT_FILE)
+            ct.CONFIG_FILE, ct.LEDGER_FILE = Path(td) / "c.json", Path(td) / "l.jsonl"
+            sc.REPORT_FILE = Path(td) / "r.json"
+            ct.CONFIG_FILE.write_text(json.dumps(cfg or {"leaders": []}))
+            ct.LEDGER_FILE.write_text("")
+            sc._MARKETS.clear()
+            try:
+                with patch.object(sc, "_get", get), \
+                     patch.object(sc.bt, "fetch_markets", fetch_markets):
+                    rep = sc.scout(now=self.NOW)
+                return rep, json.loads(ct.CONFIG_FILE.read_text())
+            finally:
+                ct.CONFIG_FILE, ct.LEDGER_FILE, sc.REPORT_FILE = orig
+
+    def test_a_profitable_trader_whose_copies_lose_is_rejected(self):
+        rep, cfg = self._run({"hot": self._fills("hot"), "steady": self._fills("steady")},
+                             {"hot": "no", "steady": "yes"},
+                             {"hot": 9e5, "steady": 1e3})
+        self.assertEqual(cfg["leaders"], ["steady"])
+        why = [r for r in rep["rejected"] if r["nickname"] == "hot"][0]["fails"]
+        self.assertTrue(any("backtest" in f and "lost" in f for f in why), why)
+
+    def test_a_backtest_that_cannot_run_leaves_the_trader_unproven_not_failed(self):
+        rep, cfg = self._run({"a": self._fills("a")}, {"a": "no"}, {"a": 5e3},
+                             markets_fail=True)
+        self.assertEqual(cfg["leaders"], ["a"])
+        self.assertIn("error", rep["eligible"][0]["backtest"])
+
+    def test_backtest_proven_traders_outrank_bigger_unproven_ones(self):
+        rep, cfg = self._run({"proven": self._fills("proven"), "big": self._fills("big", n=3)},
+                             {"proven": "yes", "big": "yes"},
+                             {"proven": 1e3, "big": 9e5})
+        self.assertEqual([g["nickname"] for g in rep["eligible"]], ["proven", "big"])
+
+    def test_a_trader_with_almost_nothing_copyable_fails_on_a_real_sample(self):
+        import kalshi_copytrade_scout as sc
+        b = {"fills": 1000, "copy_rate": 0.001, "settled": 0, "pnl_usd": 0.0, "roi": None}
+        self.assertTrue(any("only" in f for f in sc.backtest_fails(b)))
+        self.assertEqual(sc.backtest_fails({**b, "fills": 50}), [])
 
 
 class TestKalshiReportNeverReachesAPublicRepo(unittest.TestCase):
