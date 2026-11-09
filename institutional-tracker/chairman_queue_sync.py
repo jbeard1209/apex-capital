@@ -403,7 +403,15 @@ def archive_backing(archived: list):
     return ids, keys
 
 
-def apply_tombstones(items: list, arch_ids: set, arch_keys: set):
+def closed_ids(items: list) -> set:
+    """Ids this host holds CLOSED."""
+    return {it.get("id") for it in items or []
+            if isinstance(it, dict) and it.get("id")
+            and str(it.get("status") or "").lower() in CLOSED_STATUSES}
+
+
+def apply_tombstones(items: list, arch_ids: set, arch_keys: set,
+                     closed_elsewhere: set = frozenset()):
     """(kept, suppressed, reopened_ids) for ONE host's own rows.
 
     Deliberately applied per-host and BEFORE the merge. The merge's status
@@ -435,6 +443,17 @@ def apply_tombstones(items: list, arch_ids: set, arch_keys: set):
             suppressed.append(it)
             continue
         if PLS.derived_subject(it):
+            suppressed.append(it)
+            continue
+        # The SAME row (same id) closed on the other host is not a recurrence:
+        # this host's copy is just behind. A real recurrence is a new row with
+        # a new id. Until 2026-11-09 this branch kept the stale open copy,
+        # while the other host's closed copy was suppressed above, so every
+        # close of an archived row lost to the other host's old copy and was
+        # written back open to both. The Chairman's HR "keep all of them" was
+        # reopened twice that way (Mac 10:55 CST, VM 21:34Z), and ~90 rows
+        # carried reopened_after_archive, many of them this effect.
+        if it.get("id") in closed_elsewhere:
             suppressed.append(it)
             continue
         it["reopened_after_archive"] = True
@@ -635,8 +654,11 @@ def sync(write: bool = True, local_only: bool = False) -> dict:
 
     # Per-host, pre-merge. See apply_tombstones' docstring for why not after.
     n_in = (len(loc_act), len(rem_act))   # what each host actually held
-    loc_act, sup_loc, reo_loc = apply_tombstones(loc_act, arch_ids, arch_keys)
-    rem_act, sup_rem, reo_rem = apply_tombstones(rem_act, arch_ids, arch_keys)
+    loc_closed, rem_closed = closed_ids(loc_act), closed_ids(rem_act)
+    loc_act, sup_loc, reo_loc = apply_tombstones(loc_act, arch_ids, arch_keys,
+                                                 closed_elsewhere=rem_closed)
+    rem_act, sup_rem, reo_rem = apply_tombstones(rem_act, arch_ids, arch_keys,
+                                                 closed_elsewhere=loc_closed)
     suppressed = sup_loc + sup_rem
 
     recovered = _recoverable_titles()

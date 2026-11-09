@@ -19543,6 +19543,33 @@ class TestArchivedRowsStayArchived(unittest.TestCase):
                          "that is still open on one host")
         self.assertEqual(1, len(sup_after))
 
+    def test_a_close_on_one_host_beats_the_other_hosts_stale_copy(self):
+        """2026-11-09: the Chairman's HR KEEP closed 4 archived rows on the Mac
+        (10:55 CST) and on the VM (21:34Z); each time the other host's old open
+        copy of the SAME row won and was written back open to both. The same
+        id closed elsewhere is a stale copy, not a recurrence. A recurrence is
+        a new row (new id) and must still come back flagged."""
+        arch = [{"id": "x1", "title": "thing done", "status": "resolved",
+                 "archived_on": "2026-09-01T00:00:00+00:00"}]
+        ids, keys = self._tomb(arch)
+        mac_rows = [{"id": "x1", "title": "thing done", "status": "resolved"}]
+        vm_rows = [{"id": "x1", "title": "thing done", "status": "awaiting_chairman"}]
+        mac, _, _ = self.S.apply_tombstones(mac_rows, ids, keys,
+                                            closed_elsewhere=self.S.closed_ids(vm_rows))
+        vm, sup, reo = self.S.apply_tombstones(vm_rows, ids, keys,
+                                               closed_elsewhere=self.S.closed_ids(mac_rows))
+        merged = self.S.merge_actions(mac, vm)
+        self.assertFalse([m for m in merged if m.get("status") == "awaiting_chairman"],
+                         "the stale open copy reopened the Chairman's close")
+        self.assertEqual(reo, [])
+        self.assertEqual(len(sup), 1)
+
+        fresh = [{"id": "x1-2", "title": "thing done", "status": "awaiting_chairman"}]
+        kept, _, reo = self.S.apply_tombstones(fresh, ids, keys,
+                                               closed_elsewhere=self.S.closed_ids(mac_rows))
+        self.assertEqual(reo, ["x1-2"], "a real recurrence was swallowed")
+        self.assertEqual(len(kept), 1)
+
     def test_the_archive_union_is_shared_by_both_hosts_and_idempotent(self):
         mac = [{"id": "a", "archived_on": "2026-08-19T10:00:00+00:00"}]
         vm = [{"id": "a", "archived_on": "2026-08-18T10:00:00+00:00"},
@@ -24423,6 +24450,24 @@ class TestPodBudgetsAreBackedByCashAndFollowPerformance(unittest.TestCase):
         self.P.record_trade("winner", "A", 10, 210.0, "short", "test")
         saved = json.loads(self.path.read_text())["pods"]["winner"]
         self.assertEqual(saved["pnl_realised_lifetime"], 700.0)
+
+    def test_an_idle_pod_gets_no_new_cash_until_it_trades(self):
+        """2026-11-09 21:33: the first live rebalance gave the idle ML pod a
+        third ($25,569) of deployable cash it will never spend."""
+        data = json.loads(self.path.read_text())
+        data["pods"]["pod2_ml"] = {"budget": 30000.0, "budget_inception": 30000.0,
+                                   "deployed_value": 0.0, "positions": {}}
+        self.path.write_text(json.dumps(data))
+        r = self.P.rebalance_budgets(100000.0, 25000.0, floor_pct=0.20)
+        self.assertEqual(r["pods"]["pod2_ml"]["headroom"], 0.0)
+        self.assertIn("pod2_ml", r["idle_pods"])
+        self.assertAlmostEqual(r["headroom_total"], 5000.0, delta=0.05,
+                               msg="the idle pod's share was not given to the active pods")
+        # Un-idling is a data change, and the pod is back in the split.
+        data["pods"]["pod2_ml"]["idle"] = False
+        self.path.write_text(json.dumps(data))
+        r = self.P.rebalance_budgets(100000.0, 25000.0, floor_pct=0.20)
+        self.assertGreater(r["pods"]["pod2_ml"]["headroom"], 0.0)
 
     def test_a_manager_sell_is_booked_to_the_pod_that_holds_it(self):
         """2026-11-09 16:01: manager_agent sold Pod 3's TLT, XLP and XLV. It
@@ -34845,6 +34890,73 @@ class TestKalshiCopytradeSkipsShardsWeCannotTrade(unittest.TestCase):
         rows, skips = bt.replay("L", [fill], mk, dict(ct.DEFAULTS), unit=True)
         self.assertEqual(rows, [])
         self.assertTrue(any("shard" in k for k in skips), skips)
+
+
+class TestKalshiPaperCopiesDoNotSpendTheLiveCap(unittest.TestCase):
+    """2026-11-09: paper copies written while the desk was halted were charged
+    to the real-money $3 daily cap; when it resumed only $0.43 was left and no
+    live order could be placed. Paper rows must not count toward live caps,
+    and a paper position must not give a live exit anything to sell."""
+
+    NOW = datetime(2026, 11, 9, 21, 32, 0, tzinfo=timezone.utc)
+    T = "KXTEST-26NOV10-X"
+
+    def _poll(self, ledger, live, action="buy"):
+        import kalshi_copytrade as ct
+        import kalshi_client as kc
+        fill = {"trade_id": "y", "ticker": self.T, "price_dollars": "0.5000",
+                "count_fp": "4.00", "taker_side": "no", "taker_action": action,
+                "taker_nickname": "L", "maker_nickname": "",
+                "create_date": (self.NOW - timedelta(seconds=2)).isoformat()}
+        rec = {"exchange_index": 0,
+               "expected_expiration_time": (self.NOW + timedelta(days=1)).isoformat()}
+        placed = []
+        def place(**kw):
+            placed.append(kw)
+            return {"order_id": "1", "fill_count": str(kw["count"])}
+        with tempfile.TemporaryDirectory() as td:
+            saved, ct.LEDGER_FILE = ct.LEDGER_FILE, Path(td) / "l.jsonl"
+            ct.LEDGER_FILE.write_text("".join(json.dumps(r) + "\n" for r in ledger))
+            cfg = ct.load_config()
+            cfg.update(leaders=["L"], per_trade_usd=1.0, per_day_usd=3.0)
+            try:
+                with patch.object(ct, "armed", return_value=(live, "" if live else "not armed")), \
+                     patch.object(kc, "_get", return_value={"market": rec}):
+                    rows = ct.poll_once(cfg, {"initialised": ["L"], "seen": {"L": []}},
+                                        now=self.NOW, place=place,
+                                        fetch=lambda n: {"trades": [fill]})
+            finally:
+                ct.LEDGER_FILE = saved
+        return placed, rows[0]
+
+    def _paper(self, cost=1.0, n=3):
+        return [{"at": "2026-11-09T17:%02d:00+00:00" % i, "ticker": "OTHER-%d" % i,
+                 "side": "ask", "status": "paper", "count": 2, "cost_usd": cost}
+                for i in range(n)]
+
+    def test_paper_spend_leaves_the_live_daily_cap_untouched(self):
+        placed, row = self._poll(self._paper(), live=True)
+        self.assertEqual(len(placed), 1, row)
+        self.assertEqual(row["status"], "placed")
+
+    def test_paper_mode_still_obeys_its_own_daily_cap(self):
+        placed, row = self._poll(self._paper(), live=False)
+        self.assertEqual(placed, [])
+        self.assertEqual(row["status"], "skipped")
+        self.assertIn("daily cap", row["reason"])
+
+    def test_live_spend_still_counts_against_the_live_cap(self):
+        live = [dict(r, status="placed", fill_count=2.0) for r in self._paper()]
+        placed, row = self._poll(live, live=True)
+        self.assertEqual(placed, [])
+        self.assertIn("daily cap", row["reason"])
+
+    def test_a_paper_position_gives_a_live_exit_nothing_to_sell(self):
+        held = [{"at": "2026-11-09T17:00:00+00:00", "ticker": self.T, "side": "ask",
+                 "status": "paper", "count": 2, "cost_usd": 1.0}]
+        placed, row = self._poll(held, live=True, action="sell")
+        self.assertEqual(placed, [])
+        self.assertEqual(row["status"], "skipped")
 
 
 class TestKalshiCopytradeBacktestUsesTheCopiersRules(unittest.TestCase):

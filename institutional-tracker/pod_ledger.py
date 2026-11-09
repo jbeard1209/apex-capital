@@ -797,6 +797,23 @@ def pod_performance(data: Optional[dict] = None) -> Dict[str, dict]:
     return out
 
 
+# Pods that take no share of new cash until they trade. A pod's own "idle"
+# field (true/false) overrides this default, so un-idling is a data change.
+IDLE_PODS = {"pod2_ml": "idle by Chairman decision 2026-07-03 "
+                        "(ML model below the 0.57 AUC live gate)"}
+
+
+def is_idle(pod_id: str, pod: dict) -> bool:
+    """2026-11-09: the first rebalance gave the idle ML pod a third of the
+    firm's deployable cash ($25.6k) that it will never spend, leaving the two
+    pods that trade a third each. Idle pods keep what they hold (budget =
+    deployed) and get no new cash."""
+    flag = (pod or {}).get("idle")
+    if isinstance(flag, bool):
+        return flag
+    return pod_id in IDLE_PODS
+
+
 def performance_weights(perf: Dict[str, dict]) -> Dict[str, float]:
     """Raw score max(FLOOR, 1 + return), normalised, then no pod above CAP
     (excess shared out pro rata among the rest)."""
@@ -837,7 +854,8 @@ def rebalance_budgets(broker_equity: float, broker_cash: float,
     shorts = abs(_f(short_value))
     deployable = round(max(0.0, cash - shorts - floor_pct * equity), 2)
     perf = pod_performance(data)
-    weights = performance_weights(perf)
+    idle = sorted(p for p, pod in pods.items() if is_idle(p, pod))
+    weights = performance_weights({p: v for p, v in perf.items() if p not in idle})
     plan = {}
     for pod_id, pod in pods.items():
         dep = _f(pod.get("deployed_value"), _f(pod.get("positions_value")))
@@ -845,7 +863,8 @@ def rebalance_budgets(broker_equity: float, broker_cash: float,
         plan[pod_id] = {"deployed": round(dep, 2), "weight": weights.get(pod_id, 0.0),
                         "return": perf.get(pod_id, {}).get("return"),
                         "budget_before": _f(pod.get("budget"), _f(pod.get("budget_inception"))),
-                        "budget": round(dep + share, 2), "headroom": share}
+                        "budget": round(dep + share, 2), "headroom": share,
+                        "idle": pod_id in idle}
         if apply:
             pod["budget"] = plan[pod_id]["budget"]
             pod["budget_remaining"] = share
@@ -854,7 +873,7 @@ def rebalance_budgets(broker_equity: float, broker_cash: float,
               "short_proceeds_excluded": round(shorts, 2),
               "floor_pct": floor_pct, "deployable_cash": deployable,
               "headroom_total": round(sum(v["headroom"] for v in plan.values()), 2),
-              "pods": plan,
+              "pods": plan, "idle_pods": idle,
               "rule": "budget = deployed + weight x max(0, cash - |shorts| - floor x equity); "
                       "weight from return on inception budget, floored "
                       f"{PERF_WEIGHT_FLOOR}, capped {PERF_WEIGHT_CAP}"}
