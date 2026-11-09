@@ -62,7 +62,9 @@ into ONE MARKET, fees included, summed over every copy we make in it — not a
 cap per leader fill. Until 2026-11-06 it was checked per fill, and one leader
 order that filled in three pieces was copied three times at ~$0.85 each:
 $2.55 into one 6c market under a "$1 per trade" cap. Both are and are clipped to HARD_MAX_* in code so a
-typo in that file cannot authorise $5,000. Exits are always allowed: blocking
+typo in that file cannot authorise $5,000. max_days_to_settle (default 30, clipped to HARD_MAX_DAYS_TO_SETTLE) skips
+opening any market expected to settle further out, or whose date cannot be
+read. Exits are always allowed: blocking
 an exit costs money with no ceiling (same asymmetry as single_writer.py).
 Three consecutive order errors write data/.kalshi_copytrade_halted and stop
 all copying until the Chairman deletes it.
@@ -118,10 +120,12 @@ DEFAULTS = {
     "slippage": 0.02,      # dollars of YES price we'll pay past the leader's fill
     "poll_s": 3.0,
     "max_payout_usd": 16.0,   # most one market can ever pay us; see payout_cap()
+    "max_days_to_settle": 30.0,   # skip opening a market that settles later; see settle_time()
 }
 HARD_MAX_PER_TRADE = 25.0
 HARD_MAX_PER_DAY = 100.0
 HARD_MAX_PAYOUT = 50.0
+HARD_MAX_DAYS_TO_SETTLE = 365.0
 PAYOUT_MULTIPLE = 5.0      # payout cap = this x per_trade_usd, under max_payout_usd
 MIN_PRICE = 0.15   # was 0.05 until 2026-11-06; see the module docstring
 MAX_PRICE = 0.85
@@ -152,7 +156,7 @@ def load_config():
         cfg.update({k: v for k, v in raw.items() if k in DEFAULTS})
     cfg["leaders"] = [str(x) for x in (cfg.get("leaders") or []) if str(x).strip()]
     for k in ("per_trade_usd", "per_day_usd", "max_age_s", "slippage", "poll_s",
-              "max_payout_usd"):
+              "max_payout_usd", "max_days_to_settle"):
         try:
             cfg[k] = float(cfg[k])
         except (TypeError, ValueError):
@@ -162,6 +166,7 @@ def load_config():
     cfg["per_trade_usd"] = min(cfg["per_trade_usd"], HARD_MAX_PER_TRADE)
     cfg["per_day_usd"] = min(cfg["per_day_usd"], HARD_MAX_PER_DAY)
     cfg["max_payout_usd"] = min(cfg["max_payout_usd"], HARD_MAX_PAYOUT)
+    cfg["max_days_to_settle"] = min(cfg["max_days_to_settle"], HARD_MAX_DAYS_TO_SETTLE)
     cfg["poll_s"] = max(cfg["poll_s"], 1.0)
     return cfg
 
@@ -298,6 +303,43 @@ def decide(trade, leader, cfg, spent_today, now=None, market_spent=0.0,
             "cost_usd": round(n * per_contract + fee, 2), **base}
 
 
+def settle_time(ticker, cache):
+    """When a market is expected to settle (datetime), or None if unknown.
+
+    Chairman, 2026-11-09: with ~$3 in the account, a copy into a market that
+    settles in 2027 locks that money up for a year (three of our first four
+    copies did exactly that: KXSENMAJ-27, KXCLOSESTSENATE-27, governor-27).
+    `expected_expiration_time` is when the event resolves (a game's date, an
+    election's); `close_time` is the backstop, often much later. Only answers
+    are cached, so a failed lookup is retried next time instead of remembered."""
+    if ticker in cache:
+        return cache[ticker]
+    try:
+        m = kc._get(f"/markets/{urllib.parse.quote(str(ticker))}").get("market") or {}
+    except Exception:
+        return None
+    ts = _parse_ts(m.get("expected_expiration_time") or m.get("close_time") or "")
+    if ts is not None:
+        cache[ticker] = ts
+    return ts
+
+
+def settle_check(dec, cfg, now, settles_at):
+    """An opening order -> the same order, or a skip if the market settles too
+    far out OR its date is unknown (an unknown date must not pass a limit that
+    exists to keep money from being locked up). Exits are never blocked."""
+    if dec["action"] != "order" or dec.get("reduce_only"):
+        return dec
+    keep = {k: v for k, v in dec.items() if k in ("ticker", "leader_price", "lag_s")}
+    if settles_at is None:
+        return {"action": "skip", "reason": "settlement date unknown", **keep}
+    days = (settles_at - now).total_seconds() / 86400
+    if days > cfg["max_days_to_settle"]:
+        return {"action": "skip", "reason": f"settles in {days:.0f} days "
+                f"(max {cfg['max_days_to_settle']:.0f})", **keep}
+    return dec
+
+
 # ----------------------------------------------------------------- ledger --
 
 def _append(row):
@@ -371,6 +413,7 @@ def market_spent(ticker, rows=None):
 def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order):
     """One pass over every leader. Mutates `state` (seen ids). Returns rows written."""
     written = []
+    settle_cache = {}
     is_live, why_not = armed()
     for leader in cfg["leaders"]:
         try:
@@ -399,6 +442,9 @@ def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order):
             dec = decide(t, leader, cfg, spent_today(rows_, now=now_), now=now_,
                          market_spent=market_spent(t.get("ticker"), rows_),
                          market_contracts=market_contracts(t.get("ticker"), rows_))
+            if dec["action"] == "order" and not dec.get("reduce_only"):
+                dec = settle_check(dec, cfg, now_,
+                                   settle_time(dec["ticker"], settle_cache))
             row = {"at": now_.isoformat(), "leader": leader,
                    "leader_trade_id": t["trade_id"], "leader_ts": t.get("create_date"),
                    "leader_side": t.get("taker_side"), "leader_action": t.get("taker_action"),

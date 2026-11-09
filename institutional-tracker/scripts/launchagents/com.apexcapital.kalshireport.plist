@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- Apex Capital: pushes the VM's Kalshi copy-trade report to a PRIVATE repo
+       every hour so Claude in the project can read it. Refuses a public repo;
+       see kalshi_report_publish.py. launchd, not a Claude scheduled task, for
+       the reason in com.apexcapital.vmstate.plist. -->
+
+  <key>Label</key>
+  <string>com.apexcapital.kalshireport</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/python3</string>
+    <string>/Users/jackbeard/Claude investment strategy/institutional-tracker/kalshi_report_publish.py</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/jackbeard/Claude investment strategy/institutional-tracker</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>StartInterval</key>
+  <integer>3600</integer>
+
+  <key>StandardOutPath</key>
+  <string>/Users/jackbeard/Claude investment strategy/institutional-tracker/logs/kalshireport_launchd.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/jackbeard/Claude investment strategy/institutional-tracker/logs/kalshireport_launchd.log</string>
+
+  <key>ThrottleInterval</key>
+  <integer>300</integer>
+
+</dict>
+</plist>
