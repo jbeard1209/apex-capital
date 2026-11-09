@@ -153,6 +153,17 @@ def write(path, data) -> None:
         fd, tmp = tempfile.mkstemp(dir=_dirname(path),
                                    prefix="." + os.path.basename(str(path)) + ".",
                                    suffix=".tmp")
+        # mkstemp creates 0600. Without this, every write silently tightened
+        # the file to owner-only (the VM's chairman_action_required.json went
+        # 644 -> 600 on 2026-11-09). Keep the old file's mode; a new file gets
+        # what open() would have given it under the current umask.
+        try:
+            mode = os.stat(str(path)).st_mode & 0o777
+        except FileNotFoundError:
+            um = os.umask(0)
+            os.umask(um)
+            mode = 0o666 & ~um
+        os.chmod(tmp, mode)
         with os.fdopen(fd, "w") as f:
             json.dump(data, f, indent=2, default=str)
             f.flush()
