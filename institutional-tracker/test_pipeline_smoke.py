@@ -23911,6 +23911,69 @@ class TestArchivedIsNotDecided(unittest.TestCase):
         self.assertNotIn("archived", why)
 
 
+class TestPodBudgetsAreBackedByCashAndFollowPerformance(unittest.TestCase):
+    """investigator-20261010-etf-pod-budget-unbacked, Chairman 2026-11-09:
+    "balance the budget yourself, by the past performances". Pod headroom
+    summed to $70,767 against ~$770 of cash the broker would let us spend, so
+    Pod 3 was refused on every buy. The pods' combined headroom must equal
+    deployable cash, and the better-performing pod must get more of it."""
+
+    def setUp(self):
+        import pod_ledger
+        self.P = pod_ledger
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.path = Path(self.tmp.name) / "pod_allocations.json"
+        p = patch.object(pod_ledger, "_ALLOCATIONS_PATH", self.path)
+        p.start()
+        self.addCleanup(p.stop)
+        pos = lambda q, a, c: {"qty": q, "avg_entry": a, "current_price": c, "side": "long"}
+        self.path.write_text(json.dumps({"pods": {
+            "winner": {"budget": 30000.0, "budget_inception": 30000.0,
+                       "deployed_value": 20000.0, "cash_balance": 10000.0,
+                       "positions": {"A": pos(100, 140.0, 200.0)}},   # +$6,000
+            "loser": {"budget": 30000.0, "budget_inception": 30000.0,
+                      "deployed_value": 10000.0,
+                      "positions": {"B": pos(100, 130.0, 100.0)}},    # -$3,000
+            "idle": {"budget": 30000.0, "budget_inception": 30000.0,
+                     "deployed_value": 0.0, "positions": {}}},
+            "reserve": {"balance": 10000.0}, "last_updated": ""}))
+
+    def test_headroom_sums_to_exactly_the_cash_the_broker_allows(self):
+        # equity 100k, cash 25k, floor 20% -> $5,000 deployable
+        r = self.P.rebalance_budgets(100000.0, 25000.0, floor_pct=0.20)
+        self.assertEqual(r["deployable_cash"], 5000.0)
+        self.assertAlmostEqual(r["headroom_total"], 5000.0, delta=0.05)
+        saved = json.loads(self.path.read_text())["pods"]
+        self.assertAlmostEqual(sum(p["budget_remaining"] for p in saved.values()),
+                               5000.0, delta=0.05)
+
+    def test_the_better_performer_gets_more_new_cash(self):
+        r = self.P.rebalance_budgets(100000.0, 25000.0, floor_pct=0.20)["pods"]
+        self.assertGreater(r["winner"]["headroom"], r["idle"]["headroom"])
+        self.assertGreater(r["idle"]["headroom"], r["loser"]["headroom"])
+        self.assertGreater(r["loser"]["headroom"], 0.0, "a weight floor, never starved")
+
+    def test_cash_below_the_floor_means_no_pod_may_buy(self):
+        r = self.P.rebalance_budgets(100000.0, 15000.0, floor_pct=0.20)
+        self.assertEqual(r["deployable_cash"], 0.0)
+        saved = json.loads(self.path.read_text())["pods"]
+        self.assertTrue(all(p["budget_remaining"] == 0.0 for p in saved.values()))
+        ok, why = self.P.can_trade("idle", "SPY", 1, 500.0, "long")
+        self.assertFalse(ok, why)
+
+    def test_no_pod_takes_more_than_the_cap(self):
+        w = self.P.performance_weights({"a": {"return": 5.0}, "b": {"return": 0.0},
+                                        "c": {"return": 0.0}})
+        self.assertLessEqual(max(w.values()), self.P.PERF_WEIGHT_CAP + 1e-6)
+        self.assertAlmostEqual(sum(w.values()), 1.0, places=5)
+
+    def test_a_sell_records_realised_pnl(self):
+        self.P.record_trade("winner", "A", 10, 210.0, "short", "test")
+        saved = json.loads(self.path.read_text())["pods"]["winner"]
+        self.assertEqual(saved["pnl_realised_lifetime"], 700.0)
+
+
 class TestAVerdictNamesTheLedgerItCouldNotRead(unittest.TestCase):
     """SILENT_DROP asserts "no decision was recorded". That is only as strong as
     the ledgers consulted, and `_load` returns [] for a file that does not exist

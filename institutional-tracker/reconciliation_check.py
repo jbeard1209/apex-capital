@@ -213,6 +213,16 @@ def run_reconciliation() -> dict:
                     "price": float(_p.get("current_price", 0) or 0),
                 }
         recon = pod_ledger.reconcile_to_broker(broker_pos, portfolio_value, cash)
+        # Budgets follow real deployable cash and pod performance (Chairman,
+        # 2026-11-09). Runs here because this is where broker equity and cash
+        # are in hand right after the sync; a failure must not stop the check.
+        try:
+            _rb = pod_ledger.rebalance_budgets(portfolio_value, cash)
+            logger.info(f"  Pod budgets rebalanced: deployable ${_rb['deployable_cash']:,.0f} "
+                        + ", ".join(f"{k} ${v['headroom']:,.0f} (w {v['weight']:.2f})"
+                                    for k, v in _rb["pods"].items()))
+        except Exception as _rb_e:
+            logger.warning(f"  Pod budget rebalance failed: {_rb_e}")
         deployed = recon["pod_deployed_total"]
         book = recon["broker_positions_value"]
         unattr_pct = recon["unattributed_pct_of_book"]

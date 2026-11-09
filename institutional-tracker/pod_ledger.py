@@ -225,6 +225,11 @@ def record_trade(
 
         proceeds = qty * price
         pod["cash_balance"] = round(pod["cash_balance"] + proceeds, 6)
+        # Realised P&L, kept so budgets can follow performance (2026-11-09).
+        # Until then nothing recorded it: pnl_lifetime was 0.0 for every pod.
+        realised = qty * (price - _f(pos.get("avg_entry"), price))
+        pod["pnl_realised_lifetime"] = round(
+            _f(pod.get("pnl_realised_lifetime")) + realised, 2)
 
         remaining = held - qty
         if remaining <= 1e-9:
@@ -671,6 +676,120 @@ def reconcile_to_broker(
         "firm_value_source": "broker equity — the pod ledger does not compute it",
         "causes": causes,
     }
+
+
+# ---------------------------------------------------------------------------
+# Budgets that are backed by cash and follow performance (2026-11-09)
+# ---------------------------------------------------------------------------
+#
+# Chairman, 2026-11-09, on investigator-20261010-etf-pod-budget-unbacked:
+# "balance the budget yourself, by the past performances over the past
+# months/years". The defect: each pod had a fixed $30k budget, so the pods'
+# combined headroom ($70,767 on 10-10) bore no relation to the cash the broker
+# would actually let the firm spend (~$770 above the 20% floor). Pod 3 was
+# refused at the broker on every buy, its board re-approved the same buys four
+# times a day, and its health check read OK because it counted queued orders.
+#
+# The fix is an identity, not a tuning: each pod's budget is what it already
+# holds plus a share of the cash the firm can actually deploy,
+#
+#     budget_i = deployed_i + weight_i * max(0, cash - floor_pct * equity)
+#
+# so the pods' combined headroom equals deployable cash exactly, and a board
+# can only size buys the broker will accept. Positions are never sold to make
+# room (option (b) was not chosen), and a pod above its new budget keeps what
+# it holds: budget_remaining is clamped at zero, the same as sync_from_broker.
+#
+# weight_i follows each pod's return on its inception budget: realised P&L
+# (recorded by record_trade from 2026-11-09 on; nothing recorded it before)
+# plus unrealised P&L on what it holds now. A pod that never traded scores 0
+# and gets a neutral weight. Weights are floored at PERF_WEIGHT_FLOOR so one
+# bad stretch cannot starve a pod of capital forever, and no pod can take more
+# than PERF_WEIGHT_CAP of new cash.
+
+PERF_WEIGHT_FLOOR = 0.25
+PERF_WEIGHT_CAP = 0.60
+
+
+def pod_performance(data: Optional[dict] = None) -> Dict[str, dict]:
+    """{pod_id: {realised, unrealised, return}} from the ledger itself."""
+    data = _load() if data is None else data
+    out = {}
+    for pod_id, pod in (data.get("pods") or {}).items():
+        unreal = 0.0
+        for pos in (pod.get("positions") or {}).values():
+            q = abs(_f(pos.get("qty")))
+            unreal += q * (_f(pos.get("current_price"), _f(pos.get("avg_entry")))
+                           - _f(pos.get("avg_entry")))
+        real = _f(pod.get("pnl_realised_lifetime"))
+        base = _f(pod.get("budget_inception"), 30000.0) or 30000.0
+        out[pod_id] = {"realised": round(real, 2), "unrealised": round(unreal, 2),
+                       "return": round((real + unreal) / base, 4)}
+    return out
+
+
+def performance_weights(perf: Dict[str, dict]) -> Dict[str, float]:
+    """Raw score max(FLOOR, 1 + return), normalised, then no pod above CAP
+    (excess shared out pro rata among the rest)."""
+    raw = {p: max(PERF_WEIGHT_FLOOR, 1.0 + _f(v.get("return"))) for p, v in perf.items()}
+    tot = sum(raw.values())
+    if not raw or tot <= 0:
+        return {}
+    w = {p: r / tot for p, r in raw.items()}
+    for _ in range(len(w)):
+        over = {p: x for p, x in w.items() if x > PERF_WEIGHT_CAP + 1e-12}
+        if not over or len(w) * PERF_WEIGHT_CAP < 1.0:
+            break
+        excess = sum(x - PERF_WEIGHT_CAP for x in over.values())
+        rest = {p: x for p, x in w.items() if p not in over}
+        rt = sum(rest.values())
+        for p in over:
+            w[p] = PERF_WEIGHT_CAP
+        for p, x in rest.items():
+            w[p] = x + excess * (x / rt if rt else 1.0 / len(rest))
+    return {p: round(x, 6) for p, x in w.items()}
+
+
+def rebalance_budgets(broker_equity: float, broker_cash: float,
+                      floor_pct: Optional[float] = None,
+                      apply: bool = True) -> dict:
+    """Set every pod's budget to deployed + its weighted share of deployable
+    cash. Call after sync_from_broker, so deployed values are the broker's."""
+    if floor_pct is None:
+        try:
+            import config
+            floor_pct = float(config.MIN_CASH_FLOOR_PCT)
+        except Exception:
+            floor_pct = 0.20
+    data = _load()
+    pods = data.get("pods") or {}
+    equity, cash = _f(broker_equity), _f(broker_cash)
+    deployable = round(max(0.0, cash - floor_pct * equity), 2)
+    perf = pod_performance(data)
+    weights = performance_weights(perf)
+    plan = {}
+    for pod_id, pod in pods.items():
+        dep = _f(pod.get("deployed_value"), _f(pod.get("positions_value")))
+        share = round(deployable * weights.get(pod_id, 0.0), 2)
+        plan[pod_id] = {"deployed": round(dep, 2), "weight": weights.get(pod_id, 0.0),
+                        "return": perf.get(pod_id, {}).get("return"),
+                        "budget_before": _f(pod.get("budget"), _f(pod.get("budget_inception"))),
+                        "budget": round(dep + share, 2), "headroom": share}
+        if apply:
+            pod["budget"] = plan[pod_id]["budget"]
+            pod["budget_remaining"] = share
+            pod["cash_balance"] = share
+    report = {"as_of": _now_iso(), "equity": round(equity, 2), "cash": round(cash, 2),
+              "floor_pct": floor_pct, "deployable_cash": deployable,
+              "headroom_total": round(sum(v["headroom"] for v in plan.values()), 2),
+              "pods": plan,
+              "rule": "budget = deployed + weight x max(0, cash - floor x equity); "
+                      "weight from return on inception budget, floored "
+                      f"{PERF_WEIGHT_FLOOR}, capped {PERF_WEIGHT_CAP}"}
+    if apply:
+        data["budget_rebalance"] = report
+        _save(data)
+    return report
 
 
 def _drift_causes(residual: float,
