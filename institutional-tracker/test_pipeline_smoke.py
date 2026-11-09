@@ -28464,21 +28464,21 @@ class TestAtomicWriteKeepsTheFileMode(unittest.TestCase):
             p = os.path.join(td, "q.json")
             with open(p, "w") as fh:
                 fh.write("[]")
-            os.chmod(p, 0o644)
+            os.chmod(p, 0o640)
             aj.write(p, [1])
-            self.assertEqual(os.stat(p).st_mode & 0o777, 0o644)
+            self.assertEqual(os.stat(p).st_mode & 0o777, 0o640)
             self.assertEqual(json.load(open(p)), [1])
 
     def test_a_new_file_follows_the_umask_not_0600(self):
         import atomic_json as aj
         with tempfile.TemporaryDirectory() as td:
             p = os.path.join(td, "new.json")
-            old = os.umask(0o022)
+            old = os.umask(0o027)
             try:
                 aj.write(p, {})
             finally:
                 os.umask(old)
-            self.assertEqual(os.stat(p).st_mode & 0o777, 0o644)
+            self.assertEqual(os.stat(p).st_mode & 0o777, 0o640)
 
 
 class TestTheManagerReadsTheBulletinsCvar(unittest.TestCase):
