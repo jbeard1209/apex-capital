@@ -1060,6 +1060,16 @@ def execute_decision(decision: dict, trader, dry_run: bool = False) -> dict:
     # SELL/TRIM are always allowed (reducing exposure) — only BUY-side orders are gated.
     _pod_id        = _resolve_pod_id(decision)
     _signal_source = decision.get("source_agent") or "manager_agent"
+    _held          = None
+    if _POD_LEDGER_AVAILABLE and action in ("SELL", "TRIM"):
+        # A sell belongs to the pod that holds the position, not the pod the
+        # decision's source_agent name suggests (see pod_ledger.holder).
+        try:
+            _held = _pod_ledger.holder(ticker)
+        except Exception as _pl_e:
+            logger.warning(f"  [POD LEDGER] holder() error: {_pl_e}")
+        if _held:
+            _pod_id = _held[0]
     if _POD_LEDGER_AVAILABLE and action in ("BUY_NEW", "ADD"):
         try:
             _est_price = float(decision.get("current_price") or 0)
@@ -1098,9 +1108,13 @@ def execute_decision(decision: dict, trader, dry_run: bool = False) -> dict:
                 if _POD_LEDGER_AVAILABLE:
                     try:
                         _fp = result.get("fill_price") or decision.get("current_price") or 0
-                        _pod_ledger.record_trade(
-                            _pod_id, ticker, 0, float(_fp), "short", _signal_source
-                        )
+                        # A full exit closes the pod's whole position. This
+                        # recorded qty 0 until 2026-11-09, which removed nothing
+                        # and returned no cash to the pod.
+                        if _held:
+                            _pod_ledger.record_trade(
+                                _pod_id, ticker, _held[1], float(_fp), "short",
+                                _signal_source)
                     except Exception as _pl_e:
                         logger.warning(f"  [POD LEDGER] record_trade (SELL) error: {_pl_e}")
             else:
@@ -1130,9 +1144,10 @@ def execute_decision(decision: dict, trader, dry_run: bool = False) -> dict:
                 if _POD_LEDGER_AVAILABLE:
                     try:
                         _trim_price = float(decision.get("current_price") or 0)
-                        _pod_ledger.record_trade(
-                            _pod_id, ticker, trim_qty, _trim_price, "short", _signal_source
-                        )
+                        if _held:
+                            _pod_ledger.record_trade(
+                                _pod_id, ticker, min(trim_qty, _held[1]), _trim_price,
+                                "short", _signal_source)
                     except Exception as _pl_e:
                         logger.warning(f"  [POD LEDGER] record_trade (TRIM) error: {_pl_e}")
             else:

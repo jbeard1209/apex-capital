@@ -291,6 +291,8 @@ def _monitored(history, today=None):
     for cn, rec in sorted((history.get("agent_records") or {}).items()):
         vac = vac_due = None
         defers = []
+        confirmed = [str(ev.get("confirms_vacation") or "") for ev in rec.get("events") or []
+                     if ev.get("event") == "REINSTATEMENT_CONFIRMED"]
         for ev in rec.get("events") or []:
             kind = ev.get("event")
             if kind not in ("RETIREMENT_VACATED", "REINSTATEMENT_REVIEW_DEFERRED"):
@@ -305,6 +307,11 @@ def _monitored(history, today=None):
             else:
                 defers.append((due, ev))
         if vac is None:
+            continue
+        # The Chairman has answered this reinstatement's review (KEEP): the
+        # promise is kept and the agent leaves monitoring. Tied to the vacation
+        # it confirms, so a LATER retirement-and-vacation is reviewed afresh.
+        if str(vac.get("date") or "") in confirmed:
             continue
         mine = [(d, e) for d, e in defers
                 if e.get("granted_under") == vac.get("date")]
@@ -1291,6 +1298,58 @@ def vacate(class_names, review_by, authority, reason, registry_path=REGISTRY_PAT
     return {"vacated": done, "skipped": skipped, "review_by": str(review_by)[:10]}
 
 
+def confirm_keep(class_names, authority, reason, history_path=HR_HISTORY_PATH,
+                 queue_path=chairman_queue.DEFAULT_PATH, today=None):
+    """Record the Chairman's KEEP on a reinstatement review, and close the rows.
+
+    Until 2026-11-09 there was no way to answer REINSTATEMENT_REVIEW_DUE: the
+    queue had no decision command, hr_history had no KEEP event, and closing a
+    row by hand let this audit raise it again on its next run. Chairman,
+    2026-11-09, on all six HR rows: "keep all of them" - including the two
+    agents HR had graded TERMINATE.
+
+    Writes one REINSTATEMENT_CONFIRMED event per agent, tied to the vacation it
+    answers (`_monitored` then stops watching it), re-runs the review in
+    process, and closes this audit's open REINSTATEMENT_REVIEW_* rows that the
+    re-run no longer produces. Closing on absence is safe here only because the
+    check that would produce them has just run (see chairman_queue.resolve).
+    Idempotent."""
+    today = today or dt.date.today()
+    history = _load(history_path, {})
+    watched = _monitored(history, today)
+    done, skipped = [], []
+    for cn in class_names:
+        if cn not in watched:
+            skipped.append((cn, "not under reinstatement monitoring"))
+            continue
+        _due, vac, _n = watched[cn]
+        history["agent_records"][cn].setdefault("events", []).append({
+            "event": "REINSTATEMENT_CONFIRMED",
+            "date": today.isoformat(),
+            "authority": authority,
+            "decision": "KEEP",
+            "confirms_vacation": vac.get("date"),
+            "summary": reason,
+        })
+        done.append(cn)
+    if done:
+        _write_json(history_path, history)
+
+    still = {"%s:%s" % (f["check"], f["subject"])
+             for f in _as_decisions(_reinstatement_reviews(_load(history_path, {}),
+                                                           today=today))}
+    open_keys = [str(e.get("dedup_key")) for e in chairman_queue._load(queue_path)
+                 if e.get("source") == SOURCE
+                 and e.get("status") in chairman_queue.OPEN_STATUSES
+                 and str(e.get("dedup_key", "")).startswith("REINSTATEMENT_REVIEW")]
+    clear = [k for k in open_keys if k not in still]
+    closed = chairman_queue.resolve(
+        clear, SOURCE, path=queue_path,
+        note="Chairman decision %s: KEEP (%s)" % (today.isoformat(), reason)) if clear else []
+    return {"confirmed": done, "skipped": skipped,
+            "closed": [e.get("id") for e in closed], "still_open": sorted(still)}
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--report", action="store_true",
@@ -1307,10 +1366,24 @@ def main():
     ap.add_argument("--authority", default="Co-Chairman",
                     help="who authorised the vacation")
     ap.add_argument("--reason", default="", help="grounds for the vacation")
+    ap.add_argument("--confirm-keep", nargs="+", metavar="CLASS",
+                    help="record the Chairman's KEEP on these agents' reinstatement "
+                         "review and close the queue rows it answers")
     args = ap.parse_args()
 
     logging.basicConfig(level=logging.INFO,
                         format="%(asctime)s  %(levelname)-8s %(name)s -- %(message)s")
+
+    if args.confirm_keep:
+        res = confirm_keep(args.confirm_keep, args.authority,
+                           args.reason or "Chairman KEEP")
+        for cn, why in res["skipped"]:
+            logger.warning("  %s: %s", cn, why)
+        logger.info("KEEP recorded for %s; closed %d row(s): %s; still open: %s",
+                    ", ".join(res["confirmed"]) or "(none)", len(res["closed"]),
+                    ", ".join(map(str, res["closed"])) or "(none)",
+                    ", ".join(res["still_open"]) or "(none)")
+        return 0
 
     if args.vacate:
         if not args.review_by:

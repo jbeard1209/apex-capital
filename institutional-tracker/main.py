@@ -1489,9 +1489,18 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                     if _p3_positions is not None and not _p3_positions.empty:
                         from alpaca.trading.requests import MarketOrderRequest as _ETFMOR
                         from alpaca.trading.enums import OrderSide as _ETFOS, TimeInForce as _ETFTIF
+                        # Pod 3's own holdings only. This looped over EVERY
+                        # broker position until 2026-11-09, so a Pod 3 emergency
+                        # would have sold the other pods' stocks and, by SELLing
+                        # abs(qty) of a short, doubled every short.
+                        _p3_own = {str(t).upper() for t in
+                                   ((_etf_pl._load().get("pods") or {}).get("pod3_macro") or {})
+                                   .get("positions", {})}
                         for _, _p3row in _p3_positions.iterrows():
                             _p3tk  = _p3row["ticker"]
-                            _p3qty = abs(int(float(_p3row["qty"])))
+                            _p3qty = int(float(_p3row["qty"]))
+                            if str(_p3tk).upper() not in _p3_own or _p3qty <= 0:
+                                continue
                             if _p3qty > 0:
                                 try:
                                     _etf_req = _ETFMOR(
@@ -1517,6 +1526,29 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                 from alpaca.trading.requests import MarketOrderRequest as _ETFMOR2
                 from alpaca.trading.enums import OrderSide as _ETFOS2, TimeInForce as _ETFTIF2
                 _etf_changed = False
+                # The firm's own buy gates and single-name cap apply to Pod 3
+                # too (see pod_ledger.firm_buy_block / cap_buy_qty, 2026-11-09).
+                # Read once; if either read fails, Pod 3 does not buy this run.
+                _etf_block, _etf_equity, _etf_held = None, 0.0, {}
+                try:
+                    try:
+                        with open(Path(__file__).parent / "data" / "risk_bulletin.json") as _rb_f:
+                            _etf_rb = json.load(_rb_f) or {}
+                    except FileNotFoundError:
+                        _etf_rb = {}
+                    _etf_equity = float(trader.get_account().get("portfolio_value") or 0)
+                    _etf_cvar = float((_etf_rb.get("var_context") or {}).get("cvar_95") or 0)
+                    _etf_block = _etf_pl.firm_buy_block(
+                        canary_level=(canary_alert or {}).get("level", "GREEN")
+                        if isinstance(canary_alert, dict) else "GREEN",
+                        cro_level=_etf_rb.get("risk_level", ""),
+                        cvar_pct=(_etf_cvar / _etf_equity * 100) if _etf_equity > 0 else 0.0)
+                    _etf_pos = trader.get_positions()
+                    if _etf_pos is not None and not _etf_pos.empty:
+                        for _, _ep in _etf_pos.iterrows():
+                            _etf_held[str(_ep["ticker"]).upper()] = float(_ep.get("market_value") or 0)
+                except Exception as _etf_gate_e:
+                    _etf_block = f"risk gate unreadable ({_etf_gate_e}): buys blocked"
                 for _etf_ord in _etf_orders:
                     if _etf_ord.get("action") not in ("BUY", "SELL"):
                         continue
@@ -1528,6 +1560,22 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                     _etf_side  = "long" if _etf_ord["action"] == "BUY" else "short"
                     if not _etf_tk or _etf_qty <= 0:
                         continue
+                    if _etf_ord["action"] == "BUY":
+                        # Left pending, not rejected: a block is today's
+                        # condition, and the board re-approves its buys anyway.
+                        if _etf_block:
+                            logger.warning(f"  [ETF POD 3] BUY {_etf_tk} held: {_etf_block}")
+                            continue
+                        _etf_qty, _etf_cap_why = _etf_pl.cap_buy_qty(
+                            _etf_qty, _etf_price, _etf_held.get(_etf_tk.upper(), 0.0),
+                            _etf_equity)
+                        if _etf_cap_why:
+                            logger.warning(f"  [ETF POD 3] BUY {_etf_tk}: {_etf_cap_why}")
+                            _etf_ord["cap_note"] = _etf_cap_why
+                            _etf_changed = True
+                        if _etf_qty <= 0:
+                            _etf_ord["status"] = "cap_rejected"
+                            continue
                     # Budget check
                     try:
                         _etf_can, _etf_why = _etf_pl.can_trade(
