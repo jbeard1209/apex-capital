@@ -33722,6 +33722,13 @@ class TestKalshiCopytradeCannotOverspendOrMisfire(unittest.TestCase):
 
     NOW = datetime(2026, 11, 4, 22, 0, 0, tzinfo=timezone.utc)
 
+    def setUp(self):
+        import kalshi_copytrade as ct
+        p = patch.object(ct, "settle_time",
+                         return_value=self.NOW + timedelta(days=1))
+        p.start()
+        self.addCleanup(p.stop)
+
     def _trade(self, **kw):
         t = {"trade_id": "t1", "ticker": "KXTEST-1", "price_dollars": "0.4000",
              "count_fp": "50.00", "taker_side": "yes", "taker_action": "buy",
@@ -34044,7 +34051,8 @@ class TestKalshiCopytradeRepeatFillsCostOneMarketCap(unittest.TestCase):
             cfg = {**ct.DEFAULTS, "leaders": ["L"], "per_trade_usd": 1.0, "per_day_usd": 3.0}
             state = {"initialised": ["L"], "seen": {"L": []}}
             try:
-                with patch.object(ct, "armed", return_value=(True, "")):
+                with patch.object(ct, "armed", return_value=(True, "")), \
+                     patch.object(ct, "settle_time", return_value=now + timedelta(hours=3)):
                     ct.poll_once(cfg, state, now=now, place=place,
                                  fetch=lambda n: {"trades": fills})
                 spent = ct.market_spent(ticker)
@@ -34055,6 +34063,70 @@ class TestKalshiCopytradeRepeatFillsCostOneMarketCap(unittest.TestCase):
         self.assertLessEqual(spent, 1.0)
         self.assertEqual([r["status"] for r in rows], ["placed", "skipped", "skipped"])
         self.assertIn("per-market cap", rows[1]["reason"])
+
+
+class TestKalshiCopytradeSkipsMoneyLockedUpForMonths(unittest.TestCase):
+    """Chairman, 2026-11-09: skip markets that settle more than ~30 days out.
+    Three of the first four copies went into 2027-28 election markets, tying up
+    most of a ~$3 account for a year. An unknown date must skip too, and an
+    exit must never be blocked by this."""
+
+    NOW = datetime(2026, 11, 9, 12, 0, 0, tzinfo=timezone.utc)
+
+    def _poll(self, settles, action="buy"):
+        import kalshi_copytrade as ct
+        fill = {"trade_id": "x", "ticker": "KXSENMAJ-27-CSCH", "price_dollars": "0.4000",
+                "count_fp": "10.00", "taker_side": "yes", "taker_action": action,
+                "taker_nickname": "L", "maker_nickname": "",
+                "create_date": (self.NOW - timedelta(seconds=2)).isoformat()}
+        placed = []
+        def place(**kw):
+            placed.append(kw)
+            return {"order_id": "1", "fill_count": str(kw["count"])}
+        with tempfile.TemporaryDirectory() as td:
+            saved, ct.LEDGER_FILE = ct.LEDGER_FILE, Path(td) / "l.jsonl"
+            cfg = {**ct.DEFAULTS, "leaders": ["L"], "per_trade_usd": 1.0, "per_day_usd": 3.0}
+            try:
+                with patch.object(ct, "armed", return_value=(True, "")), \
+                     patch.object(ct, "settle_time", return_value=settles):
+                    rows = ct.poll_once(cfg, {"initialised": ["L"], "seen": {"L": []}},
+                                        now=self.NOW, place=place,
+                                        fetch=lambda n: {"trades": [fill]})
+            finally:
+                ct.LEDGER_FILE = saved
+        return placed, rows[0]
+
+    def test_a_market_settling_in_2028_is_skipped(self):
+        placed, row = self._poll(datetime(2028, 1, 3, 15, tzinfo=timezone.utc))
+        self.assertEqual(placed, [])
+        self.assertEqual(row["status"], "skipped")
+        self.assertIn("settles in", row["reason"])
+
+    def test_an_unknown_settlement_date_is_skipped(self):
+        placed, row = self._poll(None)
+        self.assertEqual(placed, [])
+        self.assertIn("unknown", row["reason"])
+
+    def test_a_market_settling_this_week_is_copied(self):
+        placed, row = self._poll(self.NOW + timedelta(days=3))
+        self.assertEqual(len(placed), 1)
+        self.assertEqual(row["status"], "placed")
+
+    def test_an_exit_is_never_blocked_by_the_settlement_limit(self):
+        placed, row = self._poll(None, action="sell")
+        self.assertEqual(len(placed), 1)
+        self.assertTrue(placed[0]["reduce_only"])
+
+    def test_the_limit_cannot_be_configured_past_a_year(self):
+        import kalshi_copytrade as ct
+        with tempfile.TemporaryDirectory() as td:
+            saved, ct.CONFIG_FILE = ct.CONFIG_FILE, Path(td) / "c.json"
+            ct.CONFIG_FILE.write_text(json.dumps({"max_days_to_settle": 9999}))
+            try:
+                cfg = ct.load_config()
+            finally:
+                ct.CONFIG_FILE = saved
+        self.assertEqual(cfg["max_days_to_settle"], ct.HARD_MAX_DAYS_TO_SETTLE)
 
 
 class TestKalshiReportNeverReachesAPublicRepo(unittest.TestCase):
@@ -34346,6 +34418,38 @@ class TestKalshiCopytradeManagerCatchesWhatWentWrong(unittest.TestCase):
                                           fetch=lambda n: {"trades": []})
             self.assertLess(real7, -6.0)
             self.assertIn("LOSING", {x["kind"] for x in f})
+
+    def test_open_losses_trip_the_breaker_not_just_settled_ones(self):
+        """2026-11-09: the book was -$7.28 of $8.66, mostly in 2027-28 markets
+        still open, and the realised-only breaker read -$2.88 and never moved."""
+        with tempfile.TemporaryDirectory() as td:
+            ct, km = self._sandbox(td)
+            # three 60c YES buys now trading at 10c, none settled: about -$15
+            rows = [self._row("bid", 0.60, 10, ticker=f"T{i}") for i in range(3)]
+            f, _, pnl7 = km.check_health(
+                now=self.NOW, rows=rows, balance=10.0,
+                market=lambda t: {"result": "", "last_price_dollars": "0.1000"},
+                fetch=lambda n: {"trades": []})
+            self.assertLess(pnl7, -6.0)
+            self.assertIn("LOSING", {x["kind"] for x in f})
+
+    def test_reset_breaker_starts_a_fresh_window_and_clears_only_its_own_pause(self):
+        with tempfile.TemporaryDirectory() as td:
+            ct, km = self._sandbox(td)
+            rows = [self._row("bid", 0.60, 10, ticker=f"T{i}") for i in range(3)]
+            losing = dict(rows=rows, balance=10.0, fetch=lambda n: {"trades": []},
+                          market=lambda t: {"result": "no"})
+            ct.HALT_FILE.write_text(json.dumps({"reason": "manager circuit breaker: x"}))
+            self.assertTrue(km.reset_breaker(now=self.NOW))
+            self.assertFalse(ct.HALT_FILE.exists())
+            f, _, pnl7 = km.check_health(now=self.NOW, **losing)
+            self.assertNotIn("LOSING", {x["kind"] for x in f},
+                             "copies opened before the reset must not count")
+            self.assertEqual(pnl7, 0.0)
+            # a copier halt for order errors is not the breaker's to clear
+            ct.HALT_FILE.write_text(json.dumps({"last_error": "HTTPError 400"}))
+            self.assertFalse(km.reset_breaker(now=self.NOW))
+            self.assertTrue(ct.HALT_FILE.exists())
 
     def test_period_pnl_is_yes_book_arithmetic(self):
         import kalshi_client as kc

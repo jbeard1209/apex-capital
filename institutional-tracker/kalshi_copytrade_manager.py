@@ -31,8 +31,14 @@ WHAT IT CHECKS (every 15 minutes)
                       2026-11-04: "if one person goes private it should find
                       another profitable user").
   SCOUT_STALE         the daily scout has not run in 30h.
-  LOSING              realised P&L over the last 7 days is below
-                      -LOSS_LIMIT_DAYS x the daily cap. The manager trips the
+  LOSING              P&L on copies opened in the last 7 days -- settled
+                      AND still-open positions, marked at the last trade price
+                      -- is below -LOSS_LIMIT_DAYS x the daily cap. Until
+                      2026-11-09 only SETTLED losses counted, and most copies
+                      sit in 2027-28 election markets, so the book was -84%
+                      (-$7.28 of $8.66) while the breaker read -$2.88 and never
+                      moved. `--reset-breaker` starts the window afresh (after
+                      a leader change, say) and clears a breaker pause. The manager trips the
                       circuit breaker (writes the halt file) and emails. Paused,
                       not disarmed: deleting the halt file resumes it. A
                       losing streak is a reason to stop and look, and the cost
@@ -55,6 +61,7 @@ Periods are by the date we OPENED the copy (UTC).
 Usage:
     python3 kalshi_copytrade_manager.py --check     # cron, every 15 min
     python3 kalshi_copytrade_manager.py --report    # health + performance
+    python3 kalshi_copytrade_manager.py --reset-breaker   # restart the loss window
 """
 
 import json
@@ -70,7 +77,7 @@ STATE_FILE = ct.DATA_DIR / "kalshi_copytrade_manager_state.json"
 
 STALE_COPIER_S = 600
 SCOUT_STALE_H = 30
-LOSS_LIMIT_DAYS = 2.0          # 7-day realised loss > 2 days' cap trips the breaker
+LOSS_LIMIT_DAYS = 2.0          # 7-day loss (settled + open) > 2 days' cap trips the breaker
 ALERT_COOLDOWN_H = 6
 URGENT = {"COPIER_NOT_RUNNING", "HALTED", "ARMED_BUT_PAPER", "KEY_FAILED",
           "LOSING", "NO_LEADERS"}
@@ -187,6 +194,31 @@ def _age_s(path, now):
         return None
 
 
+def breaker_window_start(now):
+    """Copies opened at or after this count toward the breaker: the last 7
+    days, or since `--reset-breaker` was last run if that is more recent."""
+    raw = ct._read_json(ct.CONFIG_FILE, {})
+    reset = ct._parse_ts(raw.get("breaker_reset_at")) if isinstance(raw, dict) else None
+    week_ago = now - timedelta(days=7)
+    return max(week_ago, reset) if reset else week_ago
+
+
+def reset_breaker(now=None):
+    """Chairman action: start the loss window now and clear a breaker pause.
+    A halt written by the copier for order errors is left alone."""
+    now = now or datetime.now(timezone.utc)
+    raw = ct._read_json(ct.CONFIG_FILE, {})
+    raw = raw if isinstance(raw, dict) else {}
+    raw["breaker_reset_at"] = now.isoformat()
+    ct._write_json(ct.CONFIG_FILE, raw)
+    h = ct._read_json(ct.HALT_FILE, None)
+    cleared = (isinstance(h, dict) and
+               str(h.get("reason", "")).startswith("manager circuit breaker"))
+    if cleared:
+        ct.HALT_FILE.unlink()
+    return cleared
+
+
 def check_health(now=None, rows=None, balance=None, market=None, fetch=None):
     """List of {"kind", "severity", "detail"}. Pure apart from the injected I/O."""
     now = now or datetime.now(timezone.utc)
@@ -251,17 +283,19 @@ def check_health(now=None, rows=None, balance=None, market=None, fetch=None):
         add("SCOUT_STALE", "the daily scout has not run in "
             f"{'ever' if s_age is None else f'{s_age / 3600:.0f}h'}", "MEDIUM")
 
-    week_ago = now - timedelta(days=7)
+    since = breaker_window_start(now)
     cache = {}
     market = market or (lambda t: _market(t, cache))
     real7 = 0.0
     for t, b in books(rows).items():
-        if (ct._parse_ts(b["opened_at"]) or now) >= week_ago:
-            real7 += value_book(b, market(t))[0]
+        if (ct._parse_ts(b["opened_at"]) or now) >= since:
+            realised, unrealised, _settled = value_book(b, market(t))
+            real7 += realised + unrealised
     limit = LOSS_LIMIT_DAYS * cfg["per_day_usd"]
     if real7 < -limit:
-        add("LOSING", f"realised ${real7:.2f} over 7 days, past the -${limit:.2f} "
-            "limit; circuit breaker tripped, copying paused")
+        add("LOSING", f"copies opened since {since:%b %d %H:%M} UTC are down "
+            f"${-real7:.2f} (settled plus open, at last price), past the "
+            f"-${limit:.2f} limit; circuit breaker tripped, copying paused")
     return findings, hidden, real7
 
 
@@ -326,7 +360,8 @@ def run_check(now=None, send_urgent=None, send_digest=None, rescout=None,
         return rep
     if any(f["kind"] == "LOSING" for f in findings) and not ct.HALT_FILE.exists():
         ct._write_json(ct.HALT_FILE, {"at": now.isoformat(), "reason":
-                                      f"manager circuit breaker: 7-day realised ${real7:.2f}"})
+                                      f"manager circuit breaker: recent copies ${real7:.2f} "
+                                      "(settled + open)"})
     if hidden:
         try:
             (rescout or __import__("kalshi_copytrade_scout").scout)()
@@ -457,8 +492,14 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--report", action="store_true")
+    ap.add_argument("--reset-breaker", action="store_true",
+                    help="count losses only from now on, and clear a breaker pause")
     a = ap.parse_args(argv)
-    if a.check:
+    if a.reset_breaker:
+        cleared = reset_breaker()
+        print("breaker window restarted now"
+              + ("; breaker pause cleared, copying resumes" if cleared else ""))
+    elif a.check:
         run_check()
     else:
         print_report(run_check(notify=False))
