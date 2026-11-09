@@ -17,8 +17,9 @@ EVIDENCE RULE. A row is a resurrected stale copy only if ALL of these hold:
   * that record has the SAME creation timestamp (`ts`, else `queued_at`), or,
     when the archived copy carries no creation time (197 of the VM's 365
     archive records on 2026-11-09), the open row was created BEFORE the
-    archived copy was resolved: a row cannot be a new report of a problem
-    that had not yet been closed, so it is the row that was closed.
+    archived copy was resolved (or, lacking resolved_at, archived): a row
+    cannot be a new report of a problem that had not yet been closed, so it
+    is the row that was closed.
     A genuine recurrence is filed as a new row, created after the close, and
     is left alone. So is any row without a creation time of its own.
 Rows that match the archive only by content key, or by id with a different
@@ -65,7 +66,11 @@ def _same_row(row, rec):
         return False
     if _created(rec):
         return _created(rec) == created
-    made, closed = _when(created), _when(rec.get("resolved_at"))
+    # resolved_at, else archived_on: 128 of the VM's archived copies carry
+    # neither ts nor resolved_at (2026-11-09). A row with this id that already
+    # existed when the closed copy was archived can only be that copy.
+    made = _when(created)
+    closed = _when(rec.get("resolved_at")) or _when(rec.get("archived_on"))
     return bool(made and closed and made < closed)
 
 
