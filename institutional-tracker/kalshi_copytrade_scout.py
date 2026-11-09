@@ -18,7 +18,10 @@ volume show their trades. Of the visible ones, two were bots trading 1c and
 them. So a trader must clear ALL of:
 
   visible        their trades endpoint is not "hidden"
-  profitable now on the MONTHLY projected-P&L board with value > 0
+  profitable now monthly P&L > 0. The board only lists the top 100, so anyone
+                 off it is looked up in profile/metrics. Until 2026-11-09, off
+                 the board counted as "not profitable": Scottaholic, +$97,928
+                 this month, was rejected $1,204 below the 100th place cutoff.
   profitable ever all-time P&L from profile/metrics > 0 (a hot month on top of
                  a losing career is the luck we are trying not to copy)
   active         a fill in the last ACTIVE_DAYS days
@@ -28,6 +31,11 @@ them. So a trader must clear ALL of:
   our own record once >= MIN_OWN_COPIES markets we copied them into have
                  settled, our realised copy P&L there must not be negative —
                  their profit is irrelevant if copying them loses ours.
+
+The search pool is the leaderboards plus a remembered watchlist: everyone seen
+showing their trades, and everyone we have ever copied. Visible traders are so
+rare (7 of 227 on 2026-11-09) that one must not be forgotten for slipping off a
+top-100 list.
 
 Survivors are ranked by monthly P&L. The top MAX_LEADERS are followed. A
 current leader is kept while still eligible and ranked inside 2 x MAX_LEADERS,
@@ -154,6 +162,18 @@ def own_copy_record(nick, rows=None, cache=None, result=market_result):
     return n_settled, round(pnl, 2)
 
 
+def monthly_pnl_lookup(nick):
+    """This month's P&L in dollars from the trader's own profile, or None if it
+    cannot be read. profile/metrics uses 1/10,000 of a dollar (heforgotpoland,
+    2026-11-09: 1220663193 here, $121,734 on the board, a few hours apart)."""
+    try:
+        m = _get("profile/metrics?time_period=monthly&nickname="
+                 f"{urllib.parse.quote(nick)}").get("metrics") or {}
+        return round(float(m.get("pnl")) / 10000.0, 2)
+    except Exception:
+        return None
+
+
 def evaluate(nick, monthly_pnl, now):
     """One trader -> {'eligible': bool, 'fails': [...], ...}."""
     out = {"nickname": nick, "monthly_pnl_usd": monthly_pnl, "fails": []}
@@ -177,11 +197,15 @@ def evaluate(nick, monthly_pnl, now):
         out["all_time_pnl_usd"] = round(float(m.get("pnl")) / 10000.0, 2)
     except Exception:
         out["all_time_pnl_usd"] = None
+    if monthly_pnl is None:
+        monthly_pnl = out["monthly_pnl_usd"] = monthly_pnl_lookup(nick)
     n_own, pnl_own = own_copy_record(nick, cache=_RESULTS)
     out.update(own_closed_copies=n_own, own_copy_pnl_usd=pnl_own)
 
-    if monthly_pnl is None or monthly_pnl <= 0:
-        out["fails"].append("not profitable on this month's board")
+    if monthly_pnl is None:
+        out["fails"].append("this month's P&L unreadable")
+    elif monthly_pnl <= 0:
+        out["fails"].append("not profitable this month")
     if out["all_time_pnl_usd"] is None or out["all_time_pnl_usd"] <= 0:
         out["fails"].append("all-time P&L not positive")
     if age is None or age > ACTIVE_DAYS:
@@ -201,6 +225,8 @@ def scout(dry_run=False, now=None):
     cfg_raw = cfg_raw if isinstance(cfg_raw, dict) else {}
     current = list(cfg_raw.get("leaders") or [])
     pinned = list(cfg_raw.get("pinned") or [])
+    watchlist = list(cfg_raw.get("watchlist") or [])
+    copied = sorted({r["leader"] for r in ct.ledger_rows() if r.get("leader")})
 
     monthly = {}
     pool = []
@@ -214,7 +240,7 @@ def scout(dry_run=False, now=None):
                 monthly[r["nickname"]] = float(r.get("value") or 0)
             if r["nickname"] not in pool:
                 pool.append(r["nickname"])
-    for n in current + pinned:
+    for n in current + pinned + watchlist + copied:
         if n not in pool:
             pool.append(n)
     if not monthly:
@@ -248,12 +274,19 @@ def scout(dry_run=False, now=None):
     report = {"at": now.isoformat(), "dry_run": dry_run, "pool_size": len(pool),
               "visible": sum(1 for g in graded if "trades hidden" not in g["fails"]),
               "eligible": [g for g in eligible],
+              # why each visible trader failed: without this, "0 pass" cannot be
+              # explained after the run without grading all of them again
+              "rejected": [{"nickname": g["nickname"], "fails": g["fails"]} for g in graded
+                           if not g["eligible"] and "trades hidden" not in g["fails"]],
               "leaders_before": current, "leaders_after": new, "changes": changes,
               "pinned_failing": [by[p] for p in pinned if p in by and not by[p]["eligible"]],
               "own_record_rule_active": any(g.get("own_closed_copies", 0) >= MIN_OWN_COPIES
                                             for g in graded)}
     if not dry_run:
         cfg_raw["leaders"] = new
+        cfg_raw["watchlist"] = sorted(set(watchlist) | {
+            g["nickname"] for g in graded if "trades hidden" not in g["fails"]
+            and "copyable_share" in g})
         ct._write_json(ct.CONFIG_FILE, cfg_raw)
     ct._write_json(REPORT_FILE, report)
     return report
@@ -270,6 +303,8 @@ def _print(r):
         print(f"    {g['nickname']:<26} month ${g['monthly_pnl_usd']:>11,.0f}  "
               f"all-time ${g['all_time_pnl_usd']:>11,.0f}  "
               f"copyable {g['copyable_share']:.0%}  last fill {g['last_fill_days']}d")
+    for g in r.get("rejected", []):
+        print(f"    rejected {g['nickname']:<26} {'; '.join(g['fails'])}")
     print(f"  following: {', '.join(r['leaders_after']) or '(nobody qualifies)'}")
     for c in r["changes"]:
         k = "added" if "added" in c else "removed"

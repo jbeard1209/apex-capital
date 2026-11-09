@@ -34017,6 +34017,104 @@ class TestKalshiCopytradeCannotOverspendOrMisfire(unittest.TestCase):
             self.assertEqual(r.returncode, 0, f"data/{name} is not gitignored")
 
 
+class TestKalshiCopytradeRepeatFillsCostOneMarketCap(unittest.TestCase):
+    """2026-11-07 16:11Z, occasional.ram5889: one order filled in three pieces and
+    we sent three copies, $2.88 into one market under a $1 cap. The code that
+    stops it was committed 11-06 but reached the VM 16 minutes AFTER these
+    orders. This replays those exact fills through poll_once, with real ledger
+    reads between them, because decide() alone cannot show the loop passes it
+    what the previous copy spent."""
+
+    def test_the_real_three_piece_fill_places_one_order(self):
+        import kalshi_copytrade as ct
+        now = datetime(2026, 11, 7, 16, 11, 28, tzinfo=timezone.utc)
+        ticker = "KXNCAAFGAME-26NOV07TEXMIZZ-MIZZ"
+        # the feed is newest-first; poll_once replays oldest-first
+        fills = [{"trade_id": str(i), "ticker": ticker, "price_dollars": "0.4400",
+                  "count_fp": size, "taker_side": "yes", "taker_action": "buy",
+                  "taker_nickname": "L", "maker_nickname": "",
+                  "create_date": "2026-11-07T16:11:13.734036Z"}
+                 for i, size in enumerate(("5479.27", "9170.17", "3128.15"))]
+        placed = []
+        def place(**kw):
+            placed.append(kw)
+            return {"order_id": str(len(placed)), "fill_count": str(kw["count"])}
+        with tempfile.TemporaryDirectory() as td:
+            saved, ct.LEDGER_FILE = ct.LEDGER_FILE, Path(td) / "l.jsonl"
+            cfg = {**ct.DEFAULTS, "leaders": ["L"], "per_trade_usd": 1.0, "per_day_usd": 3.0}
+            state = {"initialised": ["L"], "seen": {"L": []}}
+            try:
+                with patch.object(ct, "armed", return_value=(True, "")):
+                    ct.poll_once(cfg, state, now=now, place=place,
+                                 fetch=lambda n: {"trades": fills})
+                spent = ct.market_spent(ticker)
+                rows = ct.ledger_rows()
+            finally:
+                ct.LEDGER_FILE = saved
+        self.assertEqual(len(placed), 1, placed)
+        self.assertLessEqual(spent, 1.0)
+        self.assertEqual([r["status"] for r in rows], ["placed", "skipped", "skipped"])
+        self.assertIn("per-market cap", rows[1]["reason"])
+
+
+class TestKalshiReportNeverReachesAPublicRepo(unittest.TestCase):
+    """The hourly report is real-money trading activity, and apex-capital is
+    public. A public commit cannot be taken back, so only a 404 to an anonymous
+    caller permits publishing, and it is asked on every run."""
+
+    REMOTE = "git@github.com:someone/private-reports.git"
+
+    def test_only_an_anonymous_404_permits_publishing(self):
+        import kalshi_report_publish as kp
+        for code, ok in ((404, True), (200, False), (403, False), (500, False), (0, False)):
+            self.assertEqual(kp.visibility_verdict(self.REMOTE, lambda u: code)[0], ok, code)
+        self.assertFalse(kp.visibility_verdict("git@gitlab.com:a/b.git", lambda u: 404)[0])
+
+    def test_the_real_repo_url_forms_parse(self):
+        import kalshi_report_publish as kp
+        for url in (self.REMOTE, "https://github.com/someone/private-reports",
+                    "https://github.com/someone/private-reports.git"):
+            self.assertEqual(kp.parse_remote(url), ("someone", "private-reports"))
+
+    def _main(self, cfg, verdict=(True, "private"), fetch=None):
+        import io
+        import kalshi_report_publish as kp
+        pushed = []
+        with tempfile.TemporaryDirectory() as td:
+            cfg_path = Path(td) / "c.json"
+            if cfg is not None:
+                cfg_path.write_text(json.dumps(cfg))
+            with patch.object(kp, "CONFIG_FILE", cfg_path), \
+                    patch.object(kp, "visibility_verdict", return_value=verdict), \
+                    patch.object(kp, "fetch_report", fetch or (lambda: "report")), \
+                    patch.object(kp, "push", lambda r, t: pushed.append(t) or True), \
+                    patch("sys.stdout", new_callable=io.StringIO):
+                return kp.main([]), pushed
+
+    def test_public_failed_or_unconfigured_runs_push_nothing(self):
+        def boom():
+            raise RuntimeError("ssh exit 255")
+        self.assertEqual(self._main(None), (2, []))
+        self.assertEqual(self._main({"remote": self.REMOTE}, verdict=(False, "PUBLIC")), (1, []))
+        self.assertEqual(self._main({"remote": self.REMOTE}, fetch=boom), (1, []))
+        code, pushed = self._main({"remote": self.REMOTE})
+        self.assertEqual((code, len(pushed)), (0, 1))
+
+    def test_ssh_output_that_is_not_the_report_is_rejected(self):
+        import kalshi_report_publish as kp
+        class R:
+            returncode, stdout, stderr = 0, "Traceback (most recent call last)", ""
+        with self.assertRaises(RuntimeError):
+            kp.fetch_report(run=lambda a: R)
+
+    def test_an_identical_report_ignores_its_timestamp(self):
+        import kalshi_report_publish as kp
+        a = kp.render("body\n\nmore", datetime(2026, 11, 9, 1, tzinfo=timezone.utc))
+        b = kp.render("body\n\nmore", datetime(2026, 11, 9, 2, tzinfo=timezone.utc))
+        self.assertNotEqual(a, b)
+        self.assertEqual(kp._strip_stamp(a), kp._strip_stamp(b))
+
+
 class TestKalshiCopytradeScoutDropsBadLeaders(unittest.TestCase):
     """The scout decides who the copier follows. Chairman, 2026-11-04: "make sure
     the traders you do track are still optimal ... so that you don't follow a
@@ -34031,14 +34129,19 @@ class TestKalshiCopytradeScoutDropsBadLeaders(unittest.TestCase):
                  "taker_nickname": nick if taker else "", "maker_nickname": "" if taker else nick}
                 for i in range(n)]
 
-    def _api(self, boards, profiles):
-        """profiles: nick -> (visible, fills, all_time_pnl_usd)."""
+    def _api(self, boards, profiles, monthly=None):
+        """profiles: nick -> (visible, fills, all_time_pnl_usd). monthly: nick ->
+        this month's P&L in profile/metrics, for traders off the board."""
+        monthly = monthly or {}
         def get(path, retries=3):
             if path.startswith("leaderboard"):
                 q = dict(x.split("=") for x in path.split("?")[1].split("&"))
                 rows = boards.get((q["metric_name"], q["time_period"]), [])
                 return {"rank_list": [{"nickname": n, "value": v} for n, v in rows]}
             nick = path.split("nickname=")[1]
+            if "time_period=" in path:
+                return {"metrics": {"pnl": None if nick not in monthly
+                                    else monthly[nick] * 10000}}
             vis, fills, pnl = profiles[nick]
             if path.startswith("trades"):
                 return {"trades": fills if vis else [],
@@ -34046,7 +34149,7 @@ class TestKalshiCopytradeScoutDropsBadLeaders(unittest.TestCase):
             return {"metrics": {"pnl": pnl * 10000}}
         return get
 
-    def _run(self, boards, profiles, cfg):
+    def _run(self, boards, profiles, cfg, monthly=None, ledger=()):
         import kalshi_copytrade as ct
         import kalshi_copytrade_scout as sc
         with tempfile.TemporaryDirectory() as td:
@@ -34054,8 +34157,9 @@ class TestKalshiCopytradeScoutDropsBadLeaders(unittest.TestCase):
             ct.CONFIG_FILE, ct.LEDGER_FILE = Path(td) / "c.json", Path(td) / "l.jsonl"
             sc.REPORT_FILE = Path(td) / "r.json"
             ct.CONFIG_FILE.write_text(json.dumps(cfg))
+            ct.LEDGER_FILE.write_text("".join(json.dumps(r) + "\n" for r in ledger))
             try:
-                with patch.object(sc, "_get", self._api(boards, profiles)):
+                with patch.object(sc, "_get", self._api(boards, profiles, monthly)):
                     rep = sc.scout(now=self.NOW)
                 return rep, json.loads(ct.CONFIG_FILE.read_text())
             finally:
@@ -34093,6 +34197,38 @@ class TestKalshiCopytradeScoutDropsBadLeaders(unittest.TestCase):
         rep, cfg = self._run(boards, profiles, {"leaders": ["jacks"], "pinned": ["jacks"]})
         self.assertIn("jacks", cfg["leaders"])
         self.assertEqual([g["nickname"] for g in rep["pinned_failing"]], ["jacks"])
+
+    def test_a_profitable_trader_below_the_top_100_is_not_called_unprofitable(self):
+        """2026-11-08: the scout followed nobody while Scottaholic, +$97,928 this
+        month and $1,204 under the 100th place cutoff, passed every other check.
+        A list of the top 100 says nothing about whoever is not on it."""
+        boards = {("projected_pnl", "monthly"): [("hidden", 9e6)]}
+        profiles = {"hidden": (False, [], 1e6),
+                    "near": (True, self._fills("near"), 2e5),
+                    "loser": (True, self._fills("loser"), 2e5),
+                    "unknown": (True, self._fills("unknown"), 2e5)}
+        rep, cfg = self._run(boards, profiles, {"leaders": [],
+                                                "watchlist": ["near", "loser", "unknown"]},
+                             monthly={"near": 97928.0, "loser": -144648.0})
+        self.assertEqual(cfg["leaders"], ["near"])
+        fails = {g["nickname"]: g["fails"] for g in rep["rejected"]}
+        self.assertEqual(fails["loser"], ["not profitable this month"])
+        self.assertEqual(fails["unknown"], ["this month's P&L unreadable"],
+                         "an unreadable P&L must fail closed, and say so")
+
+    def test_a_trader_we_copied_is_regraded_after_leaving_every_board(self):
+        boards = {("projected_pnl", "monthly"): [("hidden", 9e6)]}
+        profiles = {"hidden": (False, [], 1e6), "old": (True, self._fills("old"), 2e5)}
+        rep, cfg = self._run(boards, profiles, {"leaders": []}, monthly={"old": 5e4},
+                             ledger=[{"leader": "old", "status": "skipped"}])
+        self.assertEqual(cfg["leaders"], ["old"])
+        self.assertEqual(cfg["watchlist"], ["old"], "visible traders must be remembered")
+
+    def test_a_hidden_trader_never_enters_the_watchlist_or_rejected_list(self):
+        boards = {("projected_pnl", "monthly"): [("hidden", 9e6)]}
+        rep, cfg = self._run(boards, {"hidden": (False, [], 1e6)}, {"leaders": []})
+        self.assertEqual(cfg["watchlist"], [])
+        self.assertEqual(rep["rejected"], [])
 
     def test_our_own_copy_pnl_is_yes_book_arithmetic(self):
         """Long YES 10 @ 0.40 settling YES = +6.00 less fees; short YES (long NO)
