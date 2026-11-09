@@ -1573,6 +1573,27 @@ def _apply_historical_context(rec: dict, trade_review: dict,
     return decision, exec_action
 
 
+def bulletin_cvar_95(bulletin) -> Optional[float]:
+    """The CRO bulletin's 1-day CVaR (95%) in dollars, or None if not measured.
+
+    risk_manager_agent writes it as top-level `cvar_95`; `var_context` is PROSE
+    ("1-day VaR 95% = $... CVaR 95% = $..."). run_manager did
+    `bulletin["var_context"].get("cvar_95")` and so raised AttributeError
+    ('str' object has no attribute 'get') on every run, before evaluating a
+    single recommendation, found 2026-11-09. canary_agent calls run_manager on
+    every ORANGE/RED alert, so the Canary's emergency defensive run died at
+    that line too. A dict var_context (older bulletins) is still read."""
+    if not isinstance(bulletin, dict):
+        return None
+    v = bulletin.get("cvar_95")
+    if v is None and isinstance(bulletin.get("var_context"), dict):
+        v = bulletin["var_context"].get("cvar_95")
+    try:
+        return None if v is None else float(v)
+    except (TypeError, ValueError):
+        return None
+
+
 def _load_cro_bulletin() -> dict:
     """
     Load the Chief Risk Officer's public risk bulletin.
@@ -1672,9 +1693,12 @@ def run_manager(dry_run: bool = False, skip_review: bool = False,
             )
         # ── CVaR CIRCUIT BREAKER — board-mandated (Special Session) ─────────
         # If 1-day CVaR exceeds 5% of portfolio value, all BUY/ADD blocked for session.
-        var_context = cro_bulletin.get("var_context", {})
-        cvar_1d     = var_context.get("cvar_95", 0)
+        cvar_1d     = bulletin_cvar_95(cro_bulletin)
         pv          = account.get("portfolio_value", 1)
+        if cvar_1d is None:
+            logger.warning("  [CVaR CIRCUIT BREAKER] risk_bulletin has no cvar_95 "
+                           "- breaker cannot evaluate this session")
+            cvar_1d = 0.0
         cvar_pct    = (cvar_1d / pv * 100) if pv > 0 else 0
         CVAR_CIRCUIT_BREAKER_PCT = 5.0
         if cvar_pct > CVAR_CIRCUIT_BREAKER_PCT:

@@ -28454,6 +28454,55 @@ class TestInterruptedWriteDetectorStillFires(unittest.TestCase):
         self.assertIn("3 json files examined", out[0])
 
 
+class TestAtomicWriteKeepsTheFileMode(unittest.TestCase):
+    """2026-11-09: mkstemp creates 0600, so every atomic write tightened the
+    VM's chairman_action_required.json from 644 to owner-only."""
+
+    def test_an_existing_files_mode_survives_a_write(self):
+        import atomic_json as aj
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "q.json")
+            with open(p, "w") as fh:
+                fh.write("[]")
+            os.chmod(p, 0o644)
+            aj.write(p, [1])
+            self.assertEqual(os.stat(p).st_mode & 0o777, 0o644)
+            self.assertEqual(json.load(open(p)), [1])
+
+    def test_a_new_file_follows_the_umask_not_0600(self):
+        import atomic_json as aj
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "new.json")
+            old = os.umask(0o022)
+            try:
+                aj.write(p, {})
+            finally:
+                os.umask(old)
+            self.assertEqual(os.stat(p).st_mode & 0o777, 0o644)
+
+
+class TestTheManagerReadsTheBulletinsCvar(unittest.TestCase):
+    """2026-11-09: run_manager did bulletin["var_context"].get("cvar_95"), but
+    var_context is prose, so every run (including the Canary's ORANGE/RED
+    emergency run) died with AttributeError before evaluating anything."""
+
+    def test_cvar_comes_from_the_top_level_field_and_prose_does_not_crash(self):
+        import manager_agent as M
+        b = {"var_context": "1-day VaR 95% = $3,000 (3.1% of portfolio). CVaR 95% = $4,100.",
+             "cvar_95": 4100.0}
+        self.assertEqual(M.bulletin_cvar_95(b), 4100.0)
+        self.assertIsNone(M.bulletin_cvar_95({"var_context": ""}))
+        self.assertEqual(M.bulletin_cvar_95({"var_context": {"cvar_95": 12}}), 12.0)
+        self.assertIsNone(M.bulletin_cvar_95("not a dict"))
+
+    def test_no_reader_calls_get_on_var_context(self):
+        for f in ("manager_agent.py", "main.py"):
+            src = (Path(__file__).parent / f).read_text()
+            self.assertNotRegex(src, r'get\("var_context"[^)]*\)\s*(or \{\}\))?\s*\.get\(',
+                                f + " treats the prose var_context as a dict")
+            self.assertNotIn('var_context.get(', src, f)
+
+
 class TestAtomicJsonIsActuallyAtomic(unittest.TestCase):
     """The helper the whole firm now routes shared-file writes through.
 

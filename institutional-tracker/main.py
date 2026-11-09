@@ -1537,7 +1537,8 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                     except FileNotFoundError:
                         _etf_rb = {}
                     _etf_equity = float(trader.get_account().get("portfolio_value") or 0)
-                    _etf_cvar = float((_etf_rb.get("var_context") or {}).get("cvar_95") or 0)
+                    from manager_agent import bulletin_cvar_95 as _etf_bcv
+                    _etf_cvar = _etf_bcv(_etf_rb) or 0.0
                     _etf_block = _etf_pl.firm_buy_block(
                         canary_level=(canary_alert or {}).get("level", "GREEN")
                         if isinstance(canary_alert, dict) else "GREEN",
