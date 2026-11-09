@@ -34205,6 +34205,86 @@ class TestKalshiCopytradeExitsOnlyWhatItHolds(unittest.TestCase):
         self.assertIs(ct.exit_check(dec, 0.0), dec)
 
 
+class TestKalshiCopytradeSkipsShardsWeCannotTrade(unittest.TestCase):
+    """Live, 2026-11-09 15:15 UTC: Kalshi splits its exchange into shards, each
+    with its own cash. A copy into a BTC 15-minute market (shard 2) was
+    rejected "insufficient_shard_balance" three times and halted the whole
+    desk. An opening order into a shard we hold no cash on is now skipped."""
+
+    NOW = datetime(2026, 11, 9, 15, 15, 0, tzinfo=timezone.utc)
+    T = "KXBTC15M-26NOV091030-30"
+
+    def _poll(self, market, action="buy", ledger=()):
+        import kalshi_copytrade as ct
+        import kalshi_client as kc
+        fill = {"trade_id": "x", "ticker": self.T, "price_dollars": "0.5000",
+                "count_fp": "4.00", "taker_side": "no", "taker_action": action,
+                "taker_nickname": "L", "maker_nickname": "",
+                "create_date": (self.NOW - timedelta(seconds=2)).isoformat()}
+        rec = dict(market, expected_expiration_time=(self.NOW + timedelta(minutes=15)).isoformat())
+        placed = []
+        def place(**kw):
+            placed.append(kw)
+            return {"order_id": "1", "fill_count": str(kw["count"])}
+        with tempfile.TemporaryDirectory() as td:
+            saved, ct.LEDGER_FILE = ct.LEDGER_FILE, Path(td) / "l.jsonl"
+            ct.LEDGER_FILE.write_text("".join(json.dumps(r) + "\n" for r in ledger))
+            cfg = ct.load_config()
+            cfg.update(leaders=["L"], per_trade_usd=1.0, per_day_usd=3.0)
+            try:
+                with patch.object(ct, "armed", return_value=(True, "")), \
+                     patch.object(kc, "_get", return_value={"market": rec}):
+                    rows = ct.poll_once(cfg, {"initialised": ["L"], "seen": {"L": []}},
+                                        now=self.NOW, place=place,
+                                        fetch=lambda n: {"trades": [fill]})
+            finally:
+                ct.LEDGER_FILE = saved
+        return placed, rows[0]
+
+    def test_a_market_on_a_shard_without_our_cash_is_skipped_not_sent(self):
+        placed, row = self._poll({"exchange_index": 2})
+        self.assertEqual(placed, [])
+        self.assertEqual(row["status"], "skipped")
+        self.assertIn("shard 2", row["reason"])
+
+    def test_the_default_shard_and_a_record_without_the_field_are_traded(self):
+        for market in ({"exchange_index": 0}, {}):
+            placed, row = self._poll(market)
+            self.assertEqual(len(placed), 1, market)
+            self.assertEqual(row["status"], "placed")
+
+    def test_an_exit_is_never_blocked_by_the_shard_rule(self):
+        held = [{"ticker": self.T, "side": "ask", "status": "placed", "count": 1,
+                 "fill_count": 1.0, "price": 0.5, "at": "2026-11-09T15:00:00+00:00"}]
+        placed, _ = self._poll({"exchange_index": 2}, action="sell", ledger=held)
+        self.assertEqual(len(placed), 1)
+        self.assertTrue(placed[0]["reduce_only"])
+
+    def test_the_shard_list_is_configurable_and_a_bad_value_falls_back(self):
+        import kalshi_copytrade as ct
+        with tempfile.TemporaryDirectory() as td:
+            saved, ct.CONFIG_FILE = ct.CONFIG_FILE, Path(td) / "c.json"
+            try:
+                ct.CONFIG_FILE.write_text(json.dumps({"exchange_indexes": [0, 2]}))
+                self.assertEqual(ct.load_config()["exchange_indexes"], [0, 2])
+                ct.CONFIG_FILE.write_text(json.dumps({"exchange_indexes": "lots"}))
+                self.assertEqual(ct.load_config()["exchange_indexes"], [0])
+            finally:
+                ct.CONFIG_FILE = saved
+
+    def test_the_backtest_skips_the_same_markets(self):
+        import kalshi_copytrade as ct
+        import kalshi_copytrade_backtest as bt
+        fill = {"trade_id": "a", "ticker": self.T, "price_dollars": "0.50", "count_fp": "1",
+                "taker_side": "yes", "taker_action": "buy", "taker_nickname": "L",
+                "create_date": self.NOW.isoformat()}
+        mk = {self.T: {"exchange_index": 2, "result": "yes",
+                       "expected_expiration_time": (self.NOW + timedelta(hours=1)).isoformat()}}
+        rows, skips = bt.replay("L", [fill], mk, dict(ct.DEFAULTS), unit=True)
+        self.assertEqual(rows, [])
+        self.assertTrue(any("shard" in k for k in skips), skips)
+
+
 class TestKalshiCopytradeBacktestUsesTheCopiersRules(unittest.TestCase):
     """kalshi_copytrade_backtest replays a trader's fills through the copier's
     own decide/settle_check/exit_check, so what it says a leader is worth is

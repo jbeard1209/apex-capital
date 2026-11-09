@@ -190,6 +190,7 @@ def replay(nick, fills, markets, cfg, lag_s=3.0, unit=False):
                             market_contracts=ct.market_contracts(ticker, rows))
         if dec["action"] == "order" and not dec.get("reduce_only"):
             dec = ct.settle_check(dec, cfg, now, settle_date(markets.get(ticker)))
+            dec = ct.venue_check(dec, cfg, markets.get(ticker))
         if dec["action"] == "order" and dec.get("reduce_only"):
             dec = ct.exit_check(dec, pos.get(ticker, 0.0))   # the copier's own rule
         if dec["action"] == "skip":
