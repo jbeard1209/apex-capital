@@ -28464,9 +28464,11 @@ class TestAtomicWriteKeepsTheFileMode(unittest.TestCase):
             p = os.path.join(td, "q.json")
             with open(p, "w") as fh:
                 fh.write("[]")
-            os.chmod(p, 0o640)
+            # 0700, not 0644: owner-only (CodeQL flags group/world modes) yet
+            # still distinct from mkstemp's 0600, so the old code fails here.
+            os.chmod(p, 0o700)
             aj.write(p, [1])
-            self.assertEqual(os.stat(p).st_mode & 0o777, 0o640)
+            self.assertEqual(os.stat(p).st_mode & 0o777, 0o700)
             self.assertEqual(json.load(open(p)), [1])
 
     def test_a_new_file_follows_the_umask_not_0600(self):
