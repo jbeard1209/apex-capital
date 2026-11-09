@@ -10,6 +10,24 @@ in [docs/POSTMORTEMS.md](docs/POSTMORTEMS.md) and in the memory index.
 
 ---
 
+## 2026-11-09
+
+### Fixed
+- Board CIT vote crashed every meeting since ~2026-08-18 on label confidence
+  (`"HIGH" >= 75`); nothing was saved. Shared parser with deputy_board, one bad
+  row can no longer abort the vote, tracebacks are logged, and the vote writes
+  `data/board_vote_status.json`. Backlog drains 60 rows per meeting, most severe first.
+- Approved SLA escalations no longer loop back to the Chairman's queue; the
+  board's verdict is stamped on the Chairman queue row (`board_verdict`).
+- `etf_pod_board.py` crashed printing fractional order quantities.
+
+### Added
+- `job_failure_monitor.py` (VM, hourly :40): repeated crashes and swallowed
+  errors in any job's log are emailed to the Chairman and filed to CIT.
+  See docs/POSTMORTEMS.md, "The board voted on nothing for 12 weeks".
+
+---
+
 ## 2026-10-01
 
 ### Added

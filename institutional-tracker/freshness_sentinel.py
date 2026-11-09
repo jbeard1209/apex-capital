@@ -127,6 +127,17 @@ MANIFEST = {
     # 30h gives a nightly cadence one full miss before firing.
     "data/slow_gate_report.json":        {"max_age_h": 30, "critical": False, "owner": VM,
                                           "fix": "slow_gate.py", "verdict_key": "ok"},
+    # Added 2026-11-09. The board's CIT vote crashed every meeting for ~12
+    # weeks while board_meeting_report.json stayed fresh, because the meeting
+    # itself finished. Freshness alone cannot see a job that runs and fails
+    # inside; the vote now reports ok=true/false about itself. Board meets
+    # weekdays 13:30 UTC, so 80h survives a weekend.
+    "data/board_vote_status.json":       {"max_age_h": 80, "critical": True, "owner": VM,
+                                          "verdict_key": "ok"},
+    # The monitor that reads every job's log for repeated crashes. Hourly; a
+    # monitor that stops running must not read as "no failures".
+    "data/job_failure_report.json":      {"max_age_h": 3, "critical": True, "owner": VM,
+                                          "verdict_key": "ok"},
 
     # ── Queues ─────────────────────────────────────────────────────────────
     # Added 2026-08-28. Until then this manifest watched 21 reports and exactly

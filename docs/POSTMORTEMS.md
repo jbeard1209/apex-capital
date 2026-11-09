@@ -11,6 +11,35 @@ wired.
 
 ---
 
+## The board voted on nothing for 12 weeks (Aug 18 – Nov 9 2026)
+
+**What happened.** Every board meeting from about 2026-08-18 crashed partway
+through Step 4c, the CIT proposal vote. The meeting itself finished, exited 0,
+wrote `board_meeting_report.json` and emailed its minutes, and the log printed
+"CIT APPROVED" lines, but the crash came before `clear_voted_proposals`, so no
+vote was ever saved. The board re-voted the same 21 rows every meeting while
+the queue grew to 386, including every Chairman item the 15-day SLA (and, on
+2026-11-09, the Chairman himself) had handed to the board. The Chairman's inbox
+showed those items as gone; nobody had decided them.
+
+**Root cause.** `board_issue_ledger` and `problem_lifecycle_sentinel` write
+`"confidence": "HIGH"` (a label); the vote did `conf >= 75`. TypeError. The
+`except` around Step 4c logged `CIT vote error (non-fatal)` as one WARNING with
+no traceback. The deputy board had the identical bug, fixed 2026-10-17, and the
+second reader of the same field was not checked. The line sat in four jobs'
+logs (board, cron, run, canary) for 12 weeks; every monitor asked "did it run?"
+or "is the file fresh?", and the answer to both was yes.
+
+**Guard.** `board_meeting._vote_confidence` (shared parser with the deputy
+board); per-row isolation in `_run_cit_proposal_vote`; `data/board_vote_status.json`
+(`ok` watched by `freshness_sentinel` via `verdict_key`); `job_failure_monitor.py`
+(hourly: any crash or swallowed error seen on 2+ days or 3+ times is emailed
+and filed to CIT); board verdicts on SLA items written back to the Chairman
+queue (`board_sla_verdicts.json`). Tests: `TestBoardVoteSurvivesLabelConfidence`,
+`TestBoardSlaVerdictsReachTheChairmanQueue`, `TestJobFailureMonitorCatchesSwallowedCrashes`.
+
+---
+
 ## VM ran stale code for a month
 
 **What happened.** The Mac dev host and the GCP VM

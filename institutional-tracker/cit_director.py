@@ -108,6 +108,7 @@ from pathlib import Path
 from typing import Optional
 
 import agent_lifecycle
+import atomic_json as aj
 
 logging.basicConfig(
     level=logging.INFO,
@@ -5018,7 +5019,18 @@ def clear_voted_proposals(voted_ids: list, approved_ids: list):
     no" and "we lost it" have to be different states, or the sentinel that
     exists to catch the second one can only cry wolf about the first.
     """
-    pending  = _load_json_list_safe(CIT_PENDING)
+    # 2026-11-09: this path had not completed once since ~2026-08-18 (the board
+    # vote crashed before reaching it), so its plain open("w") rewrite of the
+    # pending queue was never exercised against concurrent appenders. Pending is
+    # now read-modify-written under atomic_json's lock (the one deputy_board
+    # uses), and every file is replaced atomically, so a proposal appended
+    # mid-vote is neither lost nor torn.
+    with aj.update(str(CIT_PENDING), default=[], expect=list) as _pending:
+        result = _clear_voted_locked(_pending, voted_ids, approved_ids)
+    return result
+
+
+def _clear_voted_locked(pending: list, voted_ids: list, approved_ids: list) -> dict:
     approved = _load_json_list_safe(CIT_APPROVED)
     rejected = _load_json_list_safe(CIT_REJECTED)
 
@@ -5054,12 +5066,9 @@ def clear_voted_proposals(voted_ids: list, approved_ids: list):
     approved.extend(newly_approved)
     rejected.extend(newly_rejected)
 
-    with open(CIT_PENDING, "w") as f:
-        json.dump(remaining, f, indent=2, default=str)
-    with open(CIT_APPROVED, "w") as f:
-        json.dump(approved, f, indent=2, default=str)
-    with open(CIT_REJECTED, "w") as f:
-        json.dump(rejected, f, indent=2, default=str)
+    pending[:] = remaining          # written by the caller's aj.update on exit
+    aj.write(str(CIT_APPROVED), approved)
+    aj.write(str(CIT_REJECTED), rejected)
 
     return {"approved": len(newly_approved), "rejected": len(newly_rejected),
             "remaining": len(remaining)}

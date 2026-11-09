@@ -1315,7 +1315,7 @@ def _board_clarify_check(proposals: list) -> tuple:
     for prop in proposals:
         pid   = prop.get("id", "")
         cat   = prop.get("category", "")
-        conf  = prop.get("confidence", 0)
+        conf  = _vote_confidence(prop)   # was a raw .get(): "HIGH" < 80 raises
         desc  = prop.get("description", "")
         fix   = prop.get("proposed_fix", "")
         ev    = prop.get("evidence", "")
@@ -2511,48 +2511,160 @@ def _llm_board_vote(prop: dict) -> "tuple[str, str]":
         return None, None
 
 
+# Status of the most recent CIT vote, for job_failure_monitor.py and the
+# freshness sentinel. The vote used to report itself only through a log line.
+BOARD_VOTE_STATUS_PATH = "data/board_vote_status.json"
+
+
+def _vote_confidence(prop: dict) -> float:
+    """The proposal's confidence as a 0-100 number for the rule-based tally.
+
+    2026-11-09 POSTMORTEM. This read `conf = prop.get("confidence", 0)` and then
+    did `conf >= 75`. board_issue_ledger and problem_lifecycle_sentinel write
+    `"confidence": "HIGH"` (a label, not a percentage), and the first such
+    MEDIUM row raised TypeError. The except around Step 4c logged it as a one-line
+    "CIT vote error (non-fatal)" WARNING with no traceback, and the crash came
+    BEFORE clear_voted_proposals, so no vote was ever saved. From about
+    2026-08-18 the board re-voted the same 21 rows every meeting and threw the
+    result away, while the pending queue grew from ~290 to 386, including every
+    item the Chairman SLA (and the Chairman himself on 2026-11-09) handed to
+    the board. It was the deputy-board bug of 2026-10-17 again: deputy_board got
+    a `_confidence_pct` fix and this second reader of the same field did not.
+
+    The parser is shared with deputy_board, so the two readers cannot drift
+    again. A confidence that is not a number (a label, None, NaN) counts as 0:
+    it earns no rule-based votes, which lands MEDIUM/LOW rows on the borderline
+    and hands them to the LLM tie-breaker with the full text. Guessing "HIGH" = 80
+    would let a label approve on its own.
+    """
+    from deputy_board import _confidence_pct
+    v = _confidence_pct(prop, default=0)
+    return 0.0 if v is None else v
+
+
+def _is_sla_escalation(prop: dict) -> bool:
+    from problem_lifecycle_sentinel import SLA_ESCALATION_PREFIX
+    return str(prop.get("id", "")).startswith(SLA_ESCALATION_PREFIX)
+
+
+def _routable(approved: list) -> list:
+    """Approved proposals that _route_approved_cit_proposals may hand onward.
+
+    SLA escalations are excluded (2026-11-09). An `sla-escalation-*` row is the
+    board deciding ON THE CHAIRMAN'S BEHALF, because he did not answer in 15 days
+    or (2026-11-09) told the board to take it. The router's catch-all files every
+    approved non-stale proposal into chairman_action_required.json as
+    `awaiting_chairman`; chairman_decision_sla would ingest it as a NEW inbox
+    item, and 15 days later escalate it to the board again: a loop that returns
+    a delegated decision to the person who delegated it. The vote's record for
+    these lives in board_sla_verdicts.json (see _record_sla_verdicts).
+    """
+    return [p for p in approved if not _is_sla_escalation(p)]
+
+
+BOARD_SLA_VERDICTS_PATH = "data/board_sla_verdicts.json"
+
+
+def _record_sla_verdicts(voted_props: list, vote_result: dict) -> int:
+    """Append the board's verdict on each SLA-escalated item it just voted on.
+
+    Producer → consumer: chairman_decision_sla.py (the owner of
+    chairman_decision_queue.json) reads this ledger and stamps the verdict on
+    the queue row, so "who decided this?" has an answer in the Chairman's own
+    queue instead of only in a board log. Guarded by TestWiringContracts.
+    """
+    from problem_lifecycle_sentinel import SLA_ESCALATION_PREFIX
+    voted = set(vote_result.get("voted_ids") or [])
+    approved = set(vote_result.get("approved_ids") or [])
+    now = datetime.now().isoformat()
+    rows = []
+    for p in voted_props:
+        pid = str(p.get("id", ""))
+        if pid not in voted or not pid.startswith(SLA_ESCALATION_PREFIX):
+            continue
+        rows.append({
+            "proposal_id": pid,
+            "queue_id":    pid[len(SLA_ESCALATION_PREFIX):],
+            "verdict":     "APPROVE" if pid in approved else "REJECT",
+            "reason":      p.get("board_llm_reason") or "rule-based tally",
+            "voted_at":    now,
+            "voted_by":    "board_meeting",
+        })
+    if rows:
+        with aj.update(BOARD_SLA_VERDICTS_PATH, default=[], expect=list) as led:
+            led.extend(rows)
+        logger.info(f"  [SLA] recorded {len(rows)} board verdict(s) on escalated Chairman items")
+    return len(rows)
+
+
+# Most rows a single meeting votes on. Each borderline row costs one LLM call,
+# and on 2026-11-09 the queue held 386 rows (367 borderline) after ~12 weeks of
+# crashed votes. Draining it in one meeting would mean ~370 sequential LLM calls
+# and dumping every resulting approval on the Chairman's queue at once.
+BOARD_VOTE_BATCH = 60
+_SEV_RANK = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+
+
+def _vote_batch(proposals: list) -> "tuple[list, int]":
+    """De-duplicate by id, order by severity then age, cap at BOARD_VOTE_BATCH.
+
+    Rows beyond the cap are not touched: they stay pending for the next meeting.
+    Duplicate ids (8 on the VM on 2026-11-09) are voted once; clear_voted_proposals
+    clears by id, so every copy leaves the queue with that one verdict.
+    Returns (batch, n_held).
+    """
+    seen, uniq = set(), []
+    for p in proposals:
+        pid = p.get("id", "")
+        if pid and pid in seen:
+            continue
+        seen.add(pid)
+        uniq.append(p)
+    uniq.sort(key=lambda p: (_SEV_RANK.get(str(p.get("severity", "")).upper(), 4),
+                             str(p.get("ts") or p.get("created_at") or "")))
+    held = max(0, len(uniq) - BOARD_VOTE_BATCH)
+    if held:
+        logger.info(f"  CIT vote: {BOARD_VOTE_BATCH} of {len(uniq)} voted this meeting "
+                    f"(most severe, oldest first); {held} held for the next one.")
+    return uniq[:BOARD_VOTE_BATCH], held
+
+
+def _write_vote_status(status: dict) -> None:
+    try:
+        aj.write(BOARD_VOTE_STATUS_PATH, status)
+    except Exception as _e:   # status is advisory; never fail a meeting on it
+        logger.warning(f"  could not write {BOARD_VOTE_STATUS_PATH}: {_e}")
+
+
 def _run_cit_proposal_vote(proposals: list) -> dict:
     """
     Shared vote logic used by both the full board meeting (Step 4c) and the
-    quick clarification revote. Returns {voted, approved, rejected, approved_ids}.
+    quick clarification revote. Returns {voted, approved, rejected, approved_ids,
+    row_errors}.
+
+    One bad row can no longer sink the vote (2026-11-09, see _vote_confidence):
+    a row that raises is logged WITH its traceback, left pending (it is not in
+    voted_ids, so clear_voted_proposals keeps it), and counted in row_errors,
+    which board_vote_status.json carries to job_failure_monitor.py.
     """
     voted_ids    = []
     approved_ids = []
     n_approved   = 0
     n_rejected   = 0
+    row_errors   = []
 
     for prop in proposals:
-        cat  = prop.get("category", "")
-        sev  = prop.get("severity", "LOW")
-        conf = prop.get("confidence", 0)
+        try:
+            approved, llm_reason = _vote_one(prop)
+        except Exception as _row_e:
+            row_errors.append({"id": prop.get("id", ""),
+                               "error": f"{type(_row_e).__name__}: {_row_e}"})
+            logger.exception(f"  CIT vote FAILED on row {prop.get('id','?')!r} "
+                             f"(left pending)")
+            continue
 
-        requires_unanimous = cat in ("STRATEGY", "NEW_FEATURE", "VISION")
-
-        # Rule-based vote count
-        vote_yes = 0
-        if sev in ("CRITICAL", "HIGH"):
-            vote_yes = 4
-        elif sev == "MEDIUM" and conf >= 75:
-            vote_yes = 3
-        elif sev == "MEDIUM" and conf >= 60:
-            vote_yes = 3 if not requires_unanimous else 2
-        elif sev == "LOW" and conf >= 80:
-            vote_yes = 3
-        else:
-            vote_yes = 2
-
-        threshold = 4 if requires_unanimous else 3
-
-        # LLM tie-breaker for borderline proposals (vote_yes within 1 of threshold)
-        llm_vote, llm_reason = None, None
-        if abs(vote_yes - threshold) <= 1:
-            llm_vote, llm_reason = _llm_board_vote(prop)
-            if llm_vote == "APPROVE" and vote_yes < threshold:
-                vote_yes = threshold      # LLM tips it over the line
-            elif llm_vote == "REJECT" and vote_yes >= threshold:
-                vote_yes = threshold - 1  # LLM tips it below the line
-
-        approved = vote_yes >= threshold
+        cat = prop.get("category", "")
+        sev = prop.get("severity", "LOW")
         voted_ids.append(prop.get("id", ""))
 
         if llm_reason:
@@ -2568,13 +2680,53 @@ def _run_cit_proposal_vote(proposals: list) -> dict:
             _suffix = f" [LLM: {llm_reason[:50]}]" if llm_reason else ""
             logger.info(f"  ✗  CIT REJECTED [{cat}|{sev}]: {prop.get('title','')[:65]}{_suffix}")
 
+    if row_errors:
+        logger.error(f"  CIT vote: {len(row_errors)} row(s) FAILED and stay pending: "
+                     f"{', '.join(e['id'] for e in row_errors[:5])}")
+
     return {
         "voted":        len(voted_ids),
         "approved":     n_approved,
         "rejected":     n_rejected,
         "voted_ids":    voted_ids,
         "approved_ids": approved_ids,
+        "row_errors":   row_errors,
     }
+
+
+def _vote_one(prop: dict) -> "tuple[bool, Optional[str]]":
+    """Rule-based tally plus LLM tie-break for one proposal → (approved, llm_reason)."""
+    cat  = prop.get("category", "")
+    sev  = prop.get("severity", "LOW")
+    conf = _vote_confidence(prop)
+
+    requires_unanimous = cat in ("STRATEGY", "NEW_FEATURE", "VISION")
+
+    # Rule-based vote count
+    vote_yes = 0
+    if sev in ("CRITICAL", "HIGH"):
+        vote_yes = 4
+    elif sev == "MEDIUM" and conf >= 75:
+        vote_yes = 3
+    elif sev == "MEDIUM" and conf >= 60:
+        vote_yes = 3 if not requires_unanimous else 2
+    elif sev == "LOW" and conf >= 80:
+        vote_yes = 3
+    else:
+        vote_yes = 2
+
+    threshold = 4 if requires_unanimous else 3
+
+    # LLM tie-breaker for borderline proposals (vote_yes within 1 of threshold)
+    llm_vote, llm_reason = None, None
+    if abs(vote_yes - threshold) <= 1:
+        llm_vote, llm_reason = _llm_board_vote(prop)
+        if llm_vote == "APPROVE" and vote_yes < threshold:
+            vote_yes = threshold      # LLM tips it over the line
+        elif llm_vote == "REJECT" and vote_yes >= threshold:
+            vote_yes = threshold - 1  # LLM tips it below the line
+
+    return vote_yes >= threshold, llm_reason
 
 
 def run_board_clarification_revote() -> dict:
@@ -2643,6 +2795,7 @@ def run_board_clarification_revote() -> dict:
 
         vote_result = _run_cit_proposal_vote(revote_props)
         clear_voted_proposals(vote_result["voted_ids"], vote_result["approved_ids"])
+        _record_sla_verdicts(revote_props, vote_result)
 
         result["voted"]    = vote_result["voted"]
         result["approved"] = vote_result["approved"]
@@ -2654,12 +2807,12 @@ def run_board_clarification_revote() -> dict:
         )
 
         if vote_result["approved_ids"]:
-            _route_approved_cit_proposals(
+            _route_approved_cit_proposals(_routable(
                 [p for p in revote_props if p.get("id") in vote_result["approved_ids"]]
-            )
+            ))
 
     except Exception as _e:
-        logger.warning(f"  Board quick revote error: {_e}")
+        logger.exception(f"  Board quick revote error: {_e}")
 
     finally:
         try:
@@ -2898,6 +3051,10 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
     # The CIT queues proposals twice daily; the board reviews them at every meeting.
     # STRATEGY and NEW_FEATURE proposals require unanimous (4/4); others need majority (3/4).
     cit_vote_results = {"voted": 0, "approved": 0, "rejected": 0}
+    _vote_status = {"session": "board_meeting", "started_at": datetime.now().isoformat(),
+                    "ok": False, "stage": "load", "pending": 0, "deferred": 0,
+                    "voted": 0, "approved": 0, "rejected": 0,
+                    "row_errors": [], "fatal_error": None}
     try:
         from cit_director import get_pending_proposals, clear_voted_proposals
         cit_proposals = get_pending_proposals()
@@ -2914,25 +3071,48 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
             if not cit_proposals:
                 logger.info("  No proposals cleared the evidence gate this cycle.")
 
+            _vote_status["pending"] = len(cit_proposals) + len(_deferred_props)
+            _vote_status["deferred"] = len(_deferred_props)
+            _vote_status["stage"] = "vote"
+            cit_proposals, _held = _vote_batch(cit_proposals)
+            _vote_status["held_for_next_meeting"] = _held
             vote_result = _run_cit_proposal_vote(cit_proposals)
+            _vote_status["row_errors"] = vote_result["row_errors"]
+            _vote_status["stage"] = "persist"
             clear_voted_proposals(vote_result["voted_ids"], vote_result["approved_ids"])
+            _record_sla_verdicts(cit_proposals, vote_result)
 
             cit_vote_results["voted"]    = vote_result["voted"]
             cit_vote_results["approved"] = vote_result["approved"]
             cit_vote_results["rejected"] = vote_result["rejected"]
+            _vote_status.update(voted=vote_result["voted"],
+                                approved=vote_result["approved"],
+                                rejected=vote_result["rejected"])
 
             logger.info(f"  CIT vote complete: {cit_vote_results['approved']} approved, "
                         f"{cit_vote_results['rejected']} rejected.")
 
             # ── Route approved proposals for implementation ───────────────
+            _vote_status["stage"] = "route"
             if vote_result["approved_ids"]:
-                _route_approved_cit_proposals(
+                _route_approved_cit_proposals(_routable(
                     [p for p in cit_proposals if p.get("id") in vote_result["approved_ids"]]
-                )
+                ))
         else:
             logger.info("\n  Step 4c/6: CIT Proposal Vote — no pending proposals.")
+        _vote_status["stage"] = "done"
+        _vote_status["ok"] = not _vote_status["row_errors"]
     except Exception as _cit_e:
-        logger.warning(f"  CIT vote error (non-fatal): {_cit_e}")
+        # Still non-fatal to the meeting, but no longer silent: a traceback in
+        # the log, and ok=False in board_vote_status.json, which
+        # job_failure_monitor.py reads. Until 2026-11-09 this was a one-line
+        # WARNING, and it hid a crash on every meeting for ~12 weeks.
+        logger.exception(f"  CIT vote error at stage {_vote_status['stage']!r} "
+                         f"(meeting continues): {_cit_e}")
+        _vote_status["ok"] = False
+        _vote_status["fatal_error"] = f"{type(_cit_e).__name__}: {_cit_e}"
+    _vote_status["finished_at"] = datetime.now().isoformat()
+    _write_vote_status(_vote_status)
 
     # 4d. Capital Deployment Review
     # Board checks current deployment level against the firm's minimum target (50%).

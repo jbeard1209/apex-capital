@@ -1059,6 +1059,218 @@ class TestDeputyBoardSurvivesLabelConfidence(unittest.TestCase):
         self.assertNotEqual(result["votes"][0]["deputy"], "Deputy Board")
 
 
+class TestBoardVoteSurvivesLabelConfidence(unittest.TestCase):
+    """2026-11-09: board_meeting._run_cit_proposal_vote read the raw confidence
+    and did `conf >= 75`. The first MEDIUM row with `"confidence": "HIGH"` (from
+    board_issue_ledger / problem_lifecycle_sentinel) raised TypeError, the Step 4c
+    except logged a one-line "non-fatal" WARNING, and no vote was saved from
+    ~2026-08-18 on. Same bug as the deputy board's of 2026-10-17. Rows come from
+    the REAL producers so a producer that changes shape is exercised."""
+
+    def _rows(self):
+        return TestDeputyBoardSurvivesLabelConfidence._producer_rows(self)
+
+    def test_label_confidence_rows_are_voted_not_crashed(self):
+        import board_meeting as bm
+        rows = [dict(r, severity="MEDIUM") for r in self._rows()]
+        rows.append({"id": "num", "category": "BUG_FIX", "severity": "MEDIUM",
+                     "confidence": 80, "title": "numeric"})
+        self.assertTrue(any(isinstance(r.get("confidence"), str) for r in rows))
+        with patch.object(bm, "_llm_board_vote", return_value=(None, None)):
+            res = bm._run_cit_proposal_vote(rows)       # raised TypeError before
+        self.assertEqual(res["voted"], len(rows))
+        self.assertEqual(res["row_errors"], [])
+        self.assertIn("num", res["approved_ids"])
+
+    def test_label_confidence_earns_no_rule_votes(self):
+        import board_meeting as bm
+        self.assertEqual(bm._vote_confidence({"confidence": "HIGH"}), 0.0)
+        self.assertEqual(bm._vote_confidence({"confidence": "85%"}), 85.0)
+        self.assertEqual(bm._vote_confidence({}), 0.0)
+        with patch.object(bm, "_llm_board_vote", return_value=(None, None)):
+            approved, _ = bm._vote_one({"category": "INTEGRATION", "severity": "MEDIUM",
+                                        "confidence": "HIGH"})
+        self.assertFalse(approved, "a label must not approve on its own")
+
+    def test_clarify_check_survives_label_confidence(self):
+        import board_meeting as bm
+        with tempfile.TemporaryDirectory() as d, \
+             patch.object(bm, "BOARD_CLARIFY_PATH", os.path.join(d, "c.json")):
+            to_vote, deferred = bm._board_clarify_check(
+                [{"id": "s1", "category": "STRATEGY", "confidence": "HIGH",
+                  "title": "t", "description": "", "evidence": ""}])
+        self.assertEqual(len(to_vote) + len(deferred), 1)
+
+    def test_one_bad_row_does_not_sink_the_vote(self):
+        import board_meeting as bm
+        real = bm._vote_one
+
+        def boom(p):
+            if p["id"] == "bad":
+                raise ValueError("boom")
+            return real(p)
+        rows = [{"id": i, "category": "BUG_FIX", "severity": "HIGH", "confidence": 90}
+                for i in ("a", "bad", "c")]
+        with patch.object(bm, "_vote_one", side_effect=boom), \
+             patch.object(bm, "_llm_board_vote", return_value=(None, None)), \
+             self.assertLogs("board_meeting", level="ERROR"):
+            res = bm._run_cit_proposal_vote(rows)
+        self.assertEqual(res["voted_ids"], ["a", "c"])
+        self.assertEqual([e["id"] for e in res["row_errors"]], ["bad"])
+
+
+class TestBoardVoteBatchPacesTheBacklog(unittest.TestCase):
+    """386 rows piled up while the vote was broken. One meeting must not make
+    ~370 LLM calls and file every approval on the Chairman at once."""
+
+    def test_dedup_order_and_cap(self):
+        import board_meeting as bm
+        rows = [{"id": f"m{i}", "severity": "MEDIUM", "ts": f"2026-09-{i+1:02d}"} for i in range(5)]
+        rows += [{"id": "h1", "severity": "HIGH", "ts": "2026-10-01"},
+                 {"id": "h1", "severity": "HIGH", "ts": "2026-10-01"},
+                 {"id": "c1", "severity": "CRITICAL", "ts": "2026-11-01"}]
+        with patch.object(bm, "BOARD_VOTE_BATCH", 4):
+            batch, held = bm._vote_batch(rows)
+        self.assertEqual([p["id"] for p in batch], ["c1", "h1", "m0", "m1"])
+        self.assertEqual(held, 3)
+
+
+class TestBoardSlaVerdictsReachTheChairmanQueue(unittest.TestCase):
+    """An `sla-escalation-*` row is the board deciding for the Chairman. Before
+    2026-11-09 an approval was re-filed to chairman_action_required.json as
+    awaiting_chairman (a loop back to the person who delegated it), and no vote
+    outcome was ever written to chairman_decision_queue.json."""
+
+    def test_sla_rows_are_not_rerouted_to_the_chairman(self):
+        import board_meeting as bm
+        out = bm._routable([{"id": "sla-escalation-x"}, {"id": "cit-1"}])
+        self.assertEqual([p["id"] for p in out], ["cit-1"])
+
+    def test_verdict_ledger_round_trip(self):
+        import board_meeting as bm
+        import chairman_decision_sla as sla
+        with tempfile.TemporaryDirectory() as d:
+            led = Path(d) / "v.json"
+            with patch.object(bm, "BOARD_SLA_VERDICTS_PATH", str(led)), \
+                 patch.object(sla, "BOARD_VERDICTS", led):
+                n = bm._record_sla_verdicts(
+                    [{"id": "sla-escalation-q1"}, {"id": "sla-escalation-q2"}, {"id": "cit-9"}],
+                    {"voted_ids": ["sla-escalation-q1", "sla-escalation-q2", "cit-9"],
+                     "approved_ids": ["sla-escalation-q1"]})
+                self.assertEqual(n, 2)
+                q = {"q1": {"id": "q1", "status": "escalated_to_board"},
+                     "q2": {"id": "q2", "status": "escalated_to_board"},
+                     "q3": {"id": "q3", "status": "escalated_to_board"}}
+                self.assertEqual(sla._apply_board_verdicts(q), 2)
+                self.assertEqual(sla._apply_board_verdicts(q), 0, "idempotent")
+        self.assertEqual(q["q1"]["board_verdict"], "APPROVE")
+        self.assertEqual(q["q2"]["board_verdict"], "REJECT")
+        self.assertNotIn("board_verdict", q["q3"])
+
+
+class TestJobFailureMonitorCatchesSwallowedCrashes(unittest.TestCase):
+    """The board-vote crash sat in four jobs' logs for ~12 weeks as a WARNING.
+    job_failure_monitor must fire on exactly that line, stay quiet on clean
+    logs with a non-zero denominator, and never pass on zero logs."""
+
+    VOTE_LINE = ("13:30:08  WARNING     CIT vote error (non-fatal): '>=' not "
+                 "supported between instances of 'str' and 'int'\n")
+
+    def _run(self, files):
+        import job_failure_monitor as jfm
+        with tempfile.TemporaryDirectory() as d:
+            for name, text in files.items():
+                Path(d, name).write_text(text)
+            with patch.object(jfm, "STATUS_FILE_NAMES", {}), \
+                 patch.object(jfm, "STATE_PATH", Path(d) / "nostate.json"):
+                return jfm.run(write=False, log_dir=Path(d),
+                               now=datetime(2026, 11, 9, 16, 0))
+
+    def test_fires_on_the_board_vote_line_two_days_running(self):
+        rep = self._run({"board_20261106.log": "ok\n" + self.VOTE_LINE,
+                         "board_20261109.log": self.VOTE_LINE})
+        self.assertEqual(rep["status"], "FAILING")
+        self.assertEqual(rep["n_repeated"], 1)
+        self.assertIn("non-fatal", rep["failures"][0]["signature"])
+
+    def test_traceback_final_line_is_the_signature(self):
+        tb = ("Traceback (most recent call last):\n  File \"x.py\", line 1, in <module>\n"
+              "    f()\nValueError: Unknown format code 'd' for object of type 'float'\n")
+        rep = self._run({"etf_board_20261108.log": tb, "etf_board_20261109.log": tb})
+        self.assertTrue(rep["failures"][0]["repeated"])
+        self.assertTrue(rep["failures"][0]["signature"].startswith("ValueError"))
+
+    def test_quiet_on_clean_logs_with_a_denominator(self):
+        rep = self._run({"board_20261109.log": "13:30 INFO all good\n",
+                         "cron_20261109.log": "INFO fine\n"})
+        self.assertEqual(rep["status"], "OK")
+        self.assertEqual(rep["n_logs_examined"], 2)
+
+    def test_old_logs_are_outside_the_window(self):
+        rep = self._run({"board_20261001.log": self.VOTE_LINE * 5,
+                         "board_20261109.log": "INFO fine\n"})
+        self.assertEqual(rep["status"], "OK")
+
+    def test_zero_logs_is_cannot_tell(self):
+        self.assertEqual(self._run({})["status"], "CANNOT_TELL")
+
+    def test_status_file_two_failed_runs_is_repeated(self):
+        import job_failure_monitor as jfm
+        with tempfile.TemporaryDirectory() as d:
+            sf = Path(d) / "board_vote_status.json"
+            state = {}
+            for t in ("2026-11-06T13:30", "2026-11-09T13:30"):
+                sf.write_text(json.dumps({"ok": False, "finished_at": t,
+                                          "fatal_error": "TypeError: x"}))
+                found = jfm.scan_status_files(state, {"board_vote": sf})
+            rec = next(iter(found.values()))
+            self.assertTrue(jfm.is_repeated(rec))
+            sf.write_text(json.dumps({"ok": True, "finished_at": "2026-11-10T13:30"}))
+            self.assertEqual(jfm.scan_status_files(state, {"board_vote": sf}), {})
+
+    def test_alerts_once_then_again_only_when_it_recurs_on_a_new_day(self):
+        import job_failure_monitor as jfm
+        with tempfile.TemporaryDirectory() as d:
+            logs = Path(d) / "logs"; logs.mkdir()
+            for day in ("20261106", "20261109"):
+                (logs / f"board_{day}.log").write_text(self.VOTE_LINE)
+            sent = []
+            with patch.object(jfm, "STATUS_FILE_NAMES", {}), \
+                 patch.object(jfm, "STATE_PATH", Path(d) / "s.json"), \
+                 patch.object(jfm, "REPORT_PATH", Path(d) / "r.json"), \
+                 patch.object(jfm, "_file_proposal", lambda f: None), \
+                 patch.object(jfm, "_email", lambda due: sent.append(len(due)) or True):
+                t0 = datetime(2026, 11, 9, 17, 0)
+                r1 = jfm.run(log_dir=logs, now=t0)
+                r2 = jfm.run(log_dir=logs, now=t0 + timedelta(hours=2))
+                (logs / "board_20261110.log").write_text(self.VOTE_LINE)
+                r3 = jfm.run(log_dir=logs, now=datetime(2026, 11, 10, 14, 0))
+        self.assertEqual(sent, [1, 1], "first sighting and the new-day recurrence")
+        self.assertEqual((r1["status"], r2["status"], r3["status"]), ("FAILING", "OK", "FAILING"))
+        self.assertEqual(r2["n_known"], 1)
+
+    def test_baseline_marks_current_failures_known_without_email(self):
+        import job_failure_monitor as jfm
+        with tempfile.TemporaryDirectory() as d:
+            logs = Path(d) / "logs"; logs.mkdir()
+            for day in ("20261108", "20261109"):
+                (logs / f"board_{day}.log").write_text(self.VOTE_LINE)
+            with patch.object(jfm, "STATUS_FILE_NAMES", {}), \
+                 patch.object(jfm, "STATE_PATH", Path(d) / "s.json"), \
+                 patch.object(jfm, "REPORT_PATH", Path(d) / "r.json"), \
+                 patch.object(jfm, "_email", side_effect=AssertionError("emailed")):
+                now = datetime(2026, 11, 9, 17, 0)
+                jfm.run(log_dir=logs, now=now, baseline=True)
+                self.assertEqual(jfm.run(log_dir=logs, now=now, write=False)["status"], "OK")
+
+    def test_monitor_and_vote_status_are_watched_and_scheduled(self):
+        import freshness_sentinel as fs
+        for rel in ("data/board_vote_status.json", "data/job_failure_report.json"):
+            self.assertEqual(fs.MANIFEST[rel].get("verdict_key"), "ok", rel)
+        snap = (Path(__file__).parent / "data" / "vm_crontab_snapshot.txt").read_text()
+        self.assertRegex(snap, r"(?m)^[^#].*job_failure_monitor\.py")
+
+
 class TestBackupRetentionCountsOnlySnapshots(unittest.TestCase):
     """cit_director writes data/backups/cit_inline/; the pruner counted it as a
     snapshot and, sorting after "2026-...", never pruned it — so prod kept
@@ -1492,6 +1704,31 @@ def _hr_publishes(key: str) -> bool:
 
 
 class TestWiringContracts(unittest.TestCase):
+
+    def test_board_sla_verdicts_have_a_consumer_on_the_same_path(self):
+        """board_sla_verdicts.json: board_meeting._record_sla_verdicts ->
+        chairman_decision_sla._apply_board_verdicts (2026-11-09). Two paths
+        spelled separately would let the board write a ledger nobody reads."""
+        import board_meeting as bm
+        import chairman_decision_sla as sla
+        self.assertEqual(Path(bm.BOARD_SLA_VERDICTS_PATH).name, sla.BOARD_VERDICTS.name)
+        self.assertEqual(Path(bm.BOARD_SLA_VERDICTS_PATH).parent.name, sla.BOARD_VERDICTS.parent.name)
+        import problem_lifecycle_sentinel as pls
+        self.assertTrue(f"{pls.SLA_ESCALATION_PREFIX}x".startswith("sla-escalation-"))
+
+    def test_job_failure_proposals_reach_a_board_that_votes_on_them(self):
+        """job_failure_monitor files BUG_FIX proposals via submit_to_pod_queue;
+        the category must be one deputy_board handles and the route must land
+        on a queue with a consumer (main board's cit_pending_proposals.json)."""
+        import deputy_board as db
+        import cit_director as cd
+        src = (Path(__file__).parent / "job_failure_monitor.py").read_text()
+        self.assertIn('"category": "BUG_FIX"', src)
+        self.assertIn("BUG_FIX", db.DEPUTY_CATEGORIES | db.FULL_BOARD_ONLY_CATEGORIES
+                      | db.AUTO_IMPLEMENT_CATEGORIES)
+        pod = cd._effective_pod({"category": "BUG_FIX", "source": "job_failure_monitor",
+                                 "title": "[JOB FAILURE] x"})
+        self.assertIn(pod, ("main", "rd", "ml"))
 
     def test_the_risk_bulletin_carries_the_numeric_cvar_its_readers_get(self):
         """risk_bulletin.json: CRO producer -> main.py breaker, hr_agent.

@@ -1564,7 +1564,10 @@ if __name__ == "__main__":
             skipped = " [SKIPPED]" if order.get("skipped") else ""
             print(
                 f"  {order['action']:4s} {order['ticker']:4s} "
-                f"qty={order['qty']:3d} @ ${order['price']:7.2f} "
+                # qty is a float for fractional orders: `:3d` raised ValueError
+                # here on 11-04/11-05 (after the orders were already written),
+                # so each run ended in a Traceback. Format it either way.
+                f"qty={order['qty']!s:>6} @ ${order['price']:7.2f} "
                 f"= ${order['dollar_value']:8,.2f}{skipped}"
             )
         if result["risk_flags"]:
