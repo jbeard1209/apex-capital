@@ -19487,6 +19487,16 @@ class TestStaleReopenedRowsAreReclosedOnEvidence(unittest.TestCase):
              "reopened_after_archive": True},                 # key match only
             {"id": "d1", "ts": "2026-11-01T00:00:00", "status": "open"},   # unrelated
         ]
+        # Archived copies often carry no creation time (197 of 365 on the VM).
+        # Then: created before the archived copy was resolved => the same row.
+        arch += [{"id": "e1", "status": "resolved", "resolved_at": "2026-07-27T16:50:05",
+                  "archived_on": "2026-09-29T00:57:03Z"},
+                 {"id": "f1", "status": "resolved", "resolved_at": "2026-07-27T16:50:05",
+                  "archived_on": "2026-09-29T00:57:03Z"}]
+        rows += [{"id": "e1", "ts": "2026-07-27T04:16:15.586598",
+                  "status": "awaiting_chairman", "reopened_after_archive": True},
+                 {"id": "f1", "ts": "2026-10-02T09:00:00",     # filed after the close
+                  "status": "awaiting_chairman", "reopened_after_archive": True}]
         with tempfile.TemporaryDirectory() as td:
             p = os.path.join(td, "q.json")
             with open(p, "w") as fh:
@@ -19494,12 +19504,12 @@ class TestStaleReopenedRowsAreReclosedOnEvidence(unittest.TestCase):
             closed = R.reclose(p, arch, now="2026-11-09T23:00:00+00:00")
             again = R.reclose(p, arch)
             out = {r["id"]: r for r in CQ._load(p)}
-        self.assertEqual([r["id"] for r in closed], ["a1"])
+        self.assertEqual(sorted(r["id"] for r in closed), ["a1", "e1"])
         self.assertEqual(again, [], "re-running closed something twice")
         self.assertEqual(out["a1"]["status"], "resolved")
         self.assertIn("same row", out["a1"]["resolved_by"])
         self.assertNotIn("reopened_after_archive", out["a1"])
-        for i in ("b1", "c1", "d1"):
+        for i in ("b1", "c1", "d1", "f1"):
             self.assertIn(out[i]["status"], CQ.OPEN_STATUSES, i + " was closed without evidence")
 
 

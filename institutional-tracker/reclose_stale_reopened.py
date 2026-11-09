@@ -14,10 +14,13 @@ see. This script repairs them, with evidence, one row at a time.
 EVIDENCE RULE. A row is a resurrected stale copy only if ALL of these hold:
   * it is open now;
   * the archive holds a CLOSED record with the SAME id;
-  * that record has the SAME creation timestamp (`ts`, else `queued_at`).
-    So it is literally the same row that was closed and archived, not a new
-    report of the same problem. A genuine recurrence is filed as a new row,
-    with its own creation time, and is left alone.
+  * that record has the SAME creation timestamp (`ts`, else `queued_at`), or,
+    when the archived copy carries no creation time (197 of the VM's 365
+    archive records on 2026-11-09), the open row was created BEFORE the
+    archived copy was resolved: a row cannot be a new report of a problem
+    that had not yet been closed, so it is the row that was closed.
+    A genuine recurrence is filed as a new row, created after the close, and
+    is left alone. So is any row without a creation time of its own.
 Rows that match the archive only by content key, or by id with a different
 creation time, are reported as genuine recurrences and not touched.
 
@@ -46,6 +49,26 @@ def _created(row):
     return str(row.get("ts") or row.get("queued_at") or "")
 
 
+def _when(s):
+    """Naive datetime from an ISO string, or None. Offsets are dropped: hosts
+    write local time, so this is accurate to the hosts' offset (hours), which
+    is far below the days-to-months between a close and a resurrection."""
+    try:
+        return datetime.fromisoformat(str(s)[:26].replace("Z", "")).replace(tzinfo=None)
+    except (TypeError, ValueError):
+        return None
+
+
+def _same_row(row, rec):
+    created = _created(row)
+    if not created:
+        return False
+    if _created(rec):
+        return _created(rec) == created
+    made, closed = _when(created), _when(rec.get("resolved_at"))
+    return bool(made and closed and made < closed)
+
+
 def classify(rows, archived):
     """(stale, genuine): stale is a list of (row, archived_record)."""
     by_id = {}
@@ -59,9 +82,7 @@ def classify(rows, archived):
             continue
         if not r.get("reopened_after_archive") and r.get("id") not in by_id:
             continue
-        created = _created(r)
-        match = next((a for a in by_id.get(r.get("id"), [])
-                      if created and _created(a) == created), None)
+        match = next((a for a in by_id.get(r.get("id"), []) if _same_row(r, a)), None)
         (stale if match else genuine).append((r, match) if match else r)
     return stale, genuine
 
