@@ -3,10 +3,10 @@
 **Every recurring run reads this first and updates it last.**
 
 ## How a run picks its module
-1. If any module is `IN PROGRESS`, finish it first.
+1. If any module is `IN PROGRESS`, finish it first (it counts as one of the two).
 2. Otherwise take the first `TODO` row in the table, top to bottom (it is risk-ordered).
 3. Skip `BLOCKED` rows unless their blocker cleared, and note the reason in the run log.
-4. **One module per run.** Stop when its gates are done, even if budget remains.
+4. **Two modules per run** (the first pass has to finish in about a month). Do them in order. Stop after the second, even if budget remains. If the first one is large (Tier 1), do only that one and record why.
 
 ## How a run finishes
 1. Write or append `modules/<id>-<slug>.md` with each gate's command, quoted output, and
