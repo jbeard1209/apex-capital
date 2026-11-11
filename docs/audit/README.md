@@ -9,7 +9,7 @@ check that every feature Jack asked for actually does what it was meant to. The 
 to make sure every feature *announces* when it stops.
 
 **Chairman's mandate (2026-11-11, paraphrased).** Go line by line through the code, using
-function tests, backtests, and forward/live tests. Go slowly, over about a month (target: first full pass by ~2026-12-11), at roughly
+function tests, backtests, and forward/live tests. Go slowly, over about a year, at roughly
 30% of the weekly token budget. Use agents where needed. Write a lot of large files so
 nothing gets lost. Say so if there are better solutions.
 
@@ -51,5 +51,5 @@ nothing gets lost. Say so if there are better solutions.
    (a) fixed in a PR, (b) filed as a CIT proposal or chairman item, or (c) recorded here as
    accepted risk with Jack's sign-off. "Noted" is not a disposition.
 7. **Budget.** Aim for about 30% of the weekly token allowance across all runs in a week.
-   One recurring run covers two modules (about 10 runs × 2 = all 21 modules in a month). Stop when the module is done,
+   One recurring run is about 1–2 modules of focused work. Stop when the module is done,
    not when the context is full.

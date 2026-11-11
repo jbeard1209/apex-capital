@@ -3,10 +3,10 @@
 **Every recurring run reads this first and updates it last.**
 
 ## How a run picks its module
-1. If any module is `IN PROGRESS`, finish it first (it counts as one of the two).
+1. If any module is `IN PROGRESS`, finish it first.
 2. Otherwise take the first `TODO` row in the table, top to bottom (it is risk-ordered).
 3. Skip `BLOCKED` rows unless their blocker cleared, and note the reason in the run log.
-4. **Two modules per run** (the first pass has to finish in about a month). Do them in order. Stop after the second, even if budget remains. If the first one is large (Tier 1), do only that one and record why.
+4. **One module per run.** Stop when its gates are done, even if budget remains.
 
 ## How a run finishes
 1. Write or append `modules/<id>-<slug>.md` with each gate's command, quoted output, and
@@ -49,6 +49,18 @@ Status values: `TODO`, `IN PROGRESS`, `DONE` (all gates pass), `DONE-WITH-FINDIN
 The run order is M00 first, because every later module adds its heartbeat to the watcher.
 Then M01 onward. After M20, the cycle restarts at M01 as a **re-audit**, checking only what
 changed since the last DONE date (`git log --since`).
+
+**Year plan (Jack, 2026-11-11: "spend A YEAR on this").** One module per run, every third
+day, comes to about 120 runs a year. Pass 1 (M00–M20, about 21 runs, roughly 2 months) is
+the line-by-line baseline. Each later pass goes deeper on the same modules in the same risk
+order:
+- **Pass 2**: backtests and forward tests. Replay more history and compare live outcomes
+  with the intent register.
+- **Pass 3**: adversarial. Poison-pill every alarm added in passes 1–2, and plant silence to
+  prove the watcher fires.
+- **Pass 4+**: re-audit only what changed (`git log --since`), plus anything that broke
+  in between.
+Record the pass number in the run log.
 
 ## Findings log
 
