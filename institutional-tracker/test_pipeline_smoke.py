@@ -1633,6 +1633,41 @@ class TestBackupRetentionCountsOnlySnapshots(unittest.TestCase):
             self.assertTrue((bdir / "cit_inline").is_dir())     # not ours, untouched
 
 
+class TestBigBackupsAreCompressedAndRestorable(unittest.TestCase):
+    """2026-11-12: three 344MB snapshots kept the 9.7GB VM at 87%; 250MB of each
+    was three Kalshi JSON files that cannot be rebuilt. They are gzipped, not
+    excluded, so the only thing that matters is that a restore gets the exact
+    bytes back."""
+
+    def test_large_json_round_trips_through_gzip(self):
+        import backup_data as bd
+        with tempfile.TemporaryDirectory() as d:
+            data = Path(d) / "data"; bdir = data / "backups"; data.mkdir()
+            big = json.dumps([{"i": i, "p": 0.5} for i in range(2000)]).encode()
+            (data / "big.json").write_bytes(big)
+            (data / "small.json").write_text('{"a": 1}')
+            with patch.object(bd, "DATA_DIR", data), patch.object(bd, "BACKUP_DIR", bdir), \
+                 patch.object(bd, "GZIP_MIN_BYTES", 1000):
+                r = bd.run_backup(quiet=True)
+                snap = bdir / r["backup_timestamp"]
+                self.assertTrue((snap / "big.json.gz").exists())
+                self.assertFalse((snap / "big.json").exists())
+                self.assertTrue((snap / "small.json").exists())
+                self.assertLess((snap / "big.json.gz").stat().st_size, len(big))
+                self.assertIn("big.json", r["files_copied"])
+                (data / "big.json").write_text("corrupted")
+                with patch("builtins.input", return_value="yes"), \
+                     patch("builtins.print"):
+                    bd.restore_backup(r["backup_timestamp"])
+            self.assertEqual((data / "big.json").read_bytes(), big)
+            self.assertFalse((data / "big.json.gz").exists())
+
+    def test_slow_gate_logs_are_not_backed_up(self):
+        import backup_data as bd
+        self.assertIn("slow_gate_logs", bd.EXCLUDE_PATTERNS)
+        self.assertGreaterEqual(bd.GZIP_MIN_BYTES, 1 << 20)
+
+
 class TestChairmanQueueDedup(unittest.TestCase):
     """Chronic findings (CRO paralysis, stale-chairman-actions, ...) render a
     growing cycle/day count into their title every run. Dedup that compares
