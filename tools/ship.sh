@@ -188,7 +188,14 @@ say "pushing $BRANCH (the pre-push gate runs the test suite first)"
 if [ "$DRY" = 1 ]; then echo "  (dry-run) git push -u origin HEAD:$BRANCH"
 else
   OUT="$(retry 4 git -c core.sshCommand="ssh -o ServerAliveInterval=20 -o ServerAliveCountMax=30" \
-         push -u origin "HEAD:$BRANCH")" || { restore_reports; fail "git push failed: $(echo "$OUT" | grep -v '^=*$' | tail -8 | tr '\n' ' ')"; }
+         push -u origin "HEAD:$BRANCH")" \
+    || { echo "$OUT" | grep -qiE 'ssh:|Could not read from remote|closed by remote' \
+         && say "ssh push failed; retrying over HTTPS with gh's credentials" \
+         && OUT="$(git -c credential.helper= -c 'credential.helper=!gh auth git-credential' \
+                   push "https://github.com/$(gh repo view --json nameWithOwner -q .nameWithOwner).git" \
+                   "HEAD:refs/heads/$BRANCH" 2>&1)" \
+         && git branch -q --set-upstream-to="origin/$BRANCH" 2>/dev/null; } \
+    || { restore_reports; fail "git push failed: $(echo "$OUT" | grep -v '^=*$' | tail -8 | tr '\n' ' ')"; }
   restore_reports
 fi
 
