@@ -31,7 +31,7 @@ Status values: `TODO`, `IN PROGRESS`, `DONE` (all gates pass), `DONE-WITH-FINDIN
 | M04 | Kalshi copy-trader / manager / scout | 1 | TODO | — | 0/6 | Shard balance issue 11-09 |
 | M05 | Kalshi scanner / calibration / mirror | 1 | TODO | — | 0/4 | |
 | M06 | Pods: budgets & boards | 1 | TODO | — | 0/4 | |
-| M07 | Board meeting & deputy board | 2 | TODO | — | 0/4 | Vote crash fixed PR #22 |
+| M07 | Board meeting & deputy board | 2 | TODO | — | 0/4 | Vote crash fixed PR #22; deputy 0 decisions all week (finding 11-12) |
 | M08 | Board → execution | 2 | BLOCKED | — | — | Owned by thread "Make board decisions actually get executed"; re-verify after it lands |
 | M09 | CIT director & routing | 2 | TODO | — | 0/2 | |
 | M10 | Logic team | 2 | TODO | — | 0/2 | |
@@ -43,7 +43,7 @@ Status values: `TODO`, `IN PROGRESS`, `DONE` (all gates pass), `DONE-WITH-FINDIN
 | M16 | Model metrics & harness | 4 | TODO | — | 0/3 | |
 | M17 | ML long-term / EDGAR | 4 | TODO | — | 0/1 | |
 | M18 | Email | 5 | TODO | — | 0/2 | |
-| M19 | Ops (deploy, backup, disk, cron) | 5 | TODO | — | 0/4 | Dead June-22 cron line |
+| M19 | Ops (deploy, backup, disk, cron) | 5 | TODO | — | 0/4 | Dead June-22 + June pregenerate cron lines: removal approved 11-12, waiting for the combined deploy |
 | M20 | Dashboard & reports | 5 | TODO | — | 0/1 | |
 
 The run order is M00 first, because every later module adds its heartbeat to the watcher.
@@ -68,7 +68,8 @@ Record the pass number in the run log.
 |---|---|---|---|---|
 | 2026-11-11 | baseline | `cit_implementation_agent.py` scheduled on neither host; last ran June 10 | A | Board-execution thread |
 | 2026-11-11 | baseline | No outcome-level liveness alarm exists for most features (26 gaps) | A | M00 |
-| 2026-11-11 | baseline | `deputy_board.py` and `internal_audit_agent.py` have no VM cron line | A/B | Verify in M07 / M14 |
+| 2026-11-11 | baseline | `deputy_board.py` and `internal_audit_agent.py` have no VM cron line | A/B | **Closed 2026-11-12, not a bug.** Deputy runs inside `cit_director.py --session evening` (VM cron 01:00); internal audit runs inside main.py (main.py:2025) and catch_up.py. No new cron needed |
+| 2026-11-12 | M07 pre-check | Deputy board **decides nothing**: VM logs show 0 approved / 0 rejected on every day 11-06→11-12; today 8 of 8 proposals NEEDS_INFO ("no file:line / not actionable"). It runs and reports fresh, so no alarm fires | A | Sent to board-execution thread; gate in M07 (decisions > 0) |
 | 2026-11-11 | baseline | VM crontab: dead June-22 one-shot model switch (re-fires yearly, uses bare python3) | C | M19; needs Jack's OK to remove |
 | 2026-11-11 | baseline | Coherence `deployed_set_matches_repo` VIOLATED (5 files differ) and `positions_conserve` VIOLATED | B | M19 / M02 |
 
@@ -77,6 +78,7 @@ Record the pass number in the run log.
 | Date | Run | Module | Result | Tokens (approx) |
 |---|---|---|---|---|
 | 2026-11-11 | baseline | — | Wrote README, INTENT_REGISTER, AUDIT_PLAN, LIVENESS_GAPS, PROGRESS | — |
+| 2026-11-12 | follow-up | — | Routine moved to the Mac bridge env (VM reachable); verified deputy/internal-audit invokers; logged deputy zero-decision finding | — |
 
 ## Budget
 Target is about 30% of the weekly token allowance. With a run every third day that comes

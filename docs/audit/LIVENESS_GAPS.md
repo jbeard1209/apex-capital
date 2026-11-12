@@ -47,7 +47,7 @@ decisions stop. **B** means a control goes blind. **C** means a report stops.
 |---|---|---|---|---|---|
 | G01 | Board → execution (CIT implementation) | No implementations | None (unscheduled) | **Owned by the board-execution thread.** Needs an outcome heartbeat: approvals vs implementations | A |
 | G02 | Board vote | Votes cast = 0 while proposals pending | job_failure_monitor (log errors only) | A vote that silently casts 0 votes with no error is still invisible | A |
-| G03 | Deputy board | Never runs | None; no cron line | Verify whether it is called at all | A |
+| G03 | Deputy board | Runs but decides nothing | None | It does run (inside cit_director evening, 01:00). But 11-06→11-12 it made 0 decisions, all NEEDS_INFO. Heartbeat must count *decisions*, not runs | A |
 | G04 | Pod order flow (each pod) | Pod places 0 orders for N days | pod_health_monitor (partial) | No per-pod "last order" expectation; ML pod idle with no decision recorded | A |
 | G05 | Short covers | Cover attempts rejected | None | Count of failed covers / short positions older than max-hold | A |
 | G06 | Kalshi copy-trader while armed | Armed but 0 orders for 48 h; balance in the wrong shard | manager breaker only covers *losses* | An idle-while-armed alarm, plus a shard balance check | A |
@@ -56,7 +56,7 @@ decisions stop. **B** means a control goes blind. **C** means a report stops.
 | G09 | job_failure_monitor | Monitor dies | None | Nothing watches the watcher, so route it through the healthchecks.io watcher | B |
 | G10 | canary | Canary dies | None external | Same as G09 | B |
 | G11 | Coherence laws | Not run (weekend-only cron line) | internal_audit (when run) | Weekday runs come only via main.py? Verify; heartbeat with n_examined | B |
-| G12 | internal_audit_agent | Never runs | None; no cron line seen | Verify the invoker | B |
+| G12 | internal_audit_agent | Never runs | catch_up.py re-runs it if main.py missed | Invoked by main.py + catch_up (verified 11-12); still needs a watcher heartbeat | B |
 | G13 | Sentinels (metric, data integrity, freshness, problem lifecycle) | Dies | None | Each one needs a heartbeat into the watcher | B |
 | G14 | Mail delivery | Emails stop (SMTP creds expire) | None | A daily "I'm alive" digest. If Jack stops getting it, that is the alarm, and healthchecks.io does it for free | B |
 | G15 | Claude scheduled routines (CIT bug fixer, audits) | Dead at enabled=true | launchd for Mac-critical only | Each routine writes a heartbeat; the watcher expects it | B |
