@@ -221,9 +221,16 @@ def _mentions(text: str, keywords) -> bool:
     A bare substring test made 'irm' match 'firm'/'confirm' and 'cro' match
     'macro'/'across'/'micro', so the CRO and IRM deputies DEFERred proposals
     that touch neither risk controls nor governance.
+
+    The END of the word may inflect (s/es/ed/ing). Until the IRM review of
+    2026-11-12 the boundary was strict on both sides, so "guardrails on
+    drawdowns" never reached the CRO deputy and passed the deputies 7-0: the
+    mandate veto this same change added could be dodged by a plural. A missed
+    keyword lets a risk change skip the full board; a spurious one only sends
+    a row to the board, which votes every pending row anyway.
     """
     for k in keywords:
-        if _re.search(r'(?<![a-z])' + k + r'(?![a-z])', text):
+        if _re.search(r'(?<![a-z])' + k + r'(?:s|es|ed|ing)?(?![a-z])', text):
             return True
     return False
 

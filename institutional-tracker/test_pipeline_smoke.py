@@ -1669,6 +1669,23 @@ class TestDeputyBoardCanDecide(unittest.TestCase):
         self.assertFalse(r["passed"])
         self.assertEqual(r["classification"], "FULL_BOARD")
 
+    def test_g4_the_mandate_reads_plurals(self):
+        # 2026-11-12 IRM review of the combined deploy: _mentions() put a word
+        # boundary on BOTH sides, so "guardrail on drawdown" reached the CRO
+        # deputy but "guardrails on drawdowns" did not, and passed 7-0, the CRO
+        # deputy APPROVING a risk-control change. The same hole let "reports"
+        # and "audits" past the IRM deputy.
+        for title, deputy in (("Raise guardrails on drawdowns for FI pod", "Deputy CRO"),
+                              ("Loosen stop_losses on the FE book", "Deputy CRO"),
+                              ("Stop the audits of sealed reports", "Deputy IRM")):
+            r = self._vote(self._prop(title=title))
+            by = {v["deputy"]: v["vote"] for v in r["votes"]}
+            self.assertEqual(by[deputy], "DEFER", title)
+            self.assertFalse(r["passed"], title)
+            self.assertEqual(r["classification"], "FULL_BOARD", title)
+        # ...and the inside-a-word guard still holds (test_g2 covers firm/macro).
+        self.assertFalse(self.d._mentions("a crowd across the macro firm", ["cro", "irm"]))
+
 
 class TestOnlyCrucialBoardApprovalsReachTheChairman(unittest.TestCase):
     """Chairman directive 2026-11-09: board-approved changes go ahead; "only
