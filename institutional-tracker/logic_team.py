@@ -1466,6 +1466,33 @@ def _escalate_critical_to_irm(findings: list) -> int:
     return escalated
 
 
+def _close_relayed_decisions(entry: dict) -> int:
+    """A finding that cleared must take its Chairman decision with it.
+
+    LTIA turns some findings (idle pod capital) into board proposals keyed on
+    the finding's rule; an approved one lands in chairman_action_required.json
+    with no source, so nothing closed it when the finding stopped firing and
+    the Chairman was asked to decide on a condition that no longer existed.
+    Only rules LTIA relays this way are closed, and only on the tracker's
+    3-clean-runs verdict, which needs the check to have RUN three times.
+    """
+    rule = str(entry.get("rule") or "")
+    if not rule.startswith("idle_pod_"):
+        return 0
+    try:
+        import chairman_queue
+        closed = chairman_queue.resolve_relayed(
+            [rule], "LTIA-", path=str(DATA_DIR / "chairman_action_required.json"),
+            note=f"Logic Team: '{rule}' cleared for 3 consecutive runs "
+                 f"(auto-closed {datetime.now().isoformat()[:19]})")
+        if closed:
+            logger.info(f"  ✅ closed {len(closed)} Chairman decision(s) for cleared {rule}")
+        return len(closed)
+    except Exception as e:
+        logger.warning(f"  could not close relayed decisions for {rule}: {e}")
+        return 0
+
+
 def _update_resolution_tracker(findings: list):
     """
     Maintain a lifecycle record for each finding: open → board_voted → resolved.
@@ -1514,6 +1541,7 @@ def _update_resolution_tracker(findings: list):
                     entry["resolution"]    = "auto_closed: 3 consecutive clean runs"
                     resolved.append(entry)
                     logger.info(f"  ✅ Finding auto-resolved: {entry.get('title','?')[:60]}")
+                    _close_relayed_decisions(entry)
 
         tracker["open"]     = open_findings
         tracker["resolved"] = resolved[-200:]  # keep last 200 resolutions
