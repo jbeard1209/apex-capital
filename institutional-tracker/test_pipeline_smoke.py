@@ -35459,14 +35459,15 @@ class TestKalshiReportNeverReachesAPublicRepo(unittest.TestCase):
                 cfg_path.write_text(json.dumps(cfg))
             with patch.object(kp, "CONFIG_FILE", cfg_path), \
                     patch.object(kp, "visibility_verdict", return_value=verdict), \
-                    patch.object(kp, "fetch_report", fetch or (lambda: "report")), \
-                    patch.object(kp, "fetch_history", lambda: None), \
-                    patch.object(kp, "push", lambda r, t, e=None: pushed.append(t) or True), \
+                    patch.object(kp, "fetch_report", fetch or (lambda **k: "report")), \
+                    patch.object(kp, "fetch_history", lambda **k: None), \
+                    patch.object(kp, "fetch_pod_history", lambda **k: None), \
+                    patch.object(kp, "push", lambda r, t, e=None, k=None: pushed.append(t) or True), \
                     patch("sys.stdout", new_callable=io.StringIO):
                 return kp.main([]), pushed
 
     def test_public_failed_or_unconfigured_runs_push_nothing(self):
-        def boom():
+        def boom(**k):
             raise RuntimeError("ssh exit 255")
         self.assertEqual(self._main(None), (2, []))
         self.assertEqual(self._main({"remote": self.REMOTE}, verdict=(False, "PUBLIC")), (1, []))
@@ -35632,9 +35633,10 @@ class TestKalshiPnlIsRecordedLikeEveryOtherDesk(unittest.TestCase):
             pushed = []
             with patch.object(kp, "CONFIG_FILE", cfg), \
                     patch.object(kp, "visibility_verdict", return_value=(True, "private")), \
-                    patch.object(kp, "fetch_report", lambda: "report"), \
-                    patch.object(kp, "fetch_history", lambda: doc), \
-                    patch.object(kp, "push", lambda r, t, e=None: pushed.append(e) or True), \
+                    patch.object(kp, "fetch_report", lambda **k: "report"), \
+                    patch.object(kp, "fetch_history", lambda **k: doc), \
+                    patch.object(kp, "fetch_pod_history", lambda **k: None), \
+                    patch.object(kp, "push", lambda r, t, e=None, k=None: pushed.append(e) or True), \
                     patch("sys.stdout", new_callable=io.StringIO):
                 self.assertEqual(kp.main([]), 0)
             self.assertEqual(set(pushed[0]), {kp.HISTORY_NAME, kp.HISTORY_CSV})
@@ -35652,6 +35654,155 @@ class TestKalshiPnlIsRecordedLikeEveryOtherDesk(unittest.TestCase):
         for bad in ("--record", "--arm", "deploy.sh", "rm ", "--live", "--execute",
                     "crontab", "> "):
             self.assertNotIn(bad, run, bad)
+
+
+class TestEveryPodPnlIsRecordedDaily(unittest.TestCase):
+    """Chairman, 2026-11-12: every desk's P&L is kept day by day, not only
+    Kalshi's. pod_pnl_report.json was a snapshot overwritten on every run, so
+    yesterday's pod figures were lost. pod_pnl_history.py keeps one row per
+    day. The firm half is back-filled from broker snapshots and is exact. A pod
+    mark exists only for a day the recorder ran, and is otherwise None."""
+
+    PERF = {"snapshots": [
+        {"snapshot_date": "2026-11-03", "portfolio_value": 100000.0, "cash": 50000.0,
+         "n_positions": 3, "pnl_today_usd": 10.0, "pnl_inception_usd": 0.0},
+        {"snapshot_date": "2026-11-04", "portfolio_value": 100500.0, "cash": 50000.0,
+         "n_positions": 3, "pnl_today_usd": 500.0, "pnl_inception_usd": 500.0},
+        {"snapshot_date": "2026-11-05", "portfolio_value": float("nan"), "cash": 1.0}]}
+
+    @staticmethod
+    def _alloc(cur=110.0, realised=None, avg=100.0):
+        pod = {"name": "R&D", "budget": 5000.0, "deployed_value": 10 * cur,
+               "budget_remaining": 3900.0,
+               "positions": {"AAA": {"qty": 10.0, "avg_entry": avg, "current_price": cur}}}
+        if realised is not None:
+            pod["pnl_realised_lifetime"] = realised
+        return {"last_updated": "x", "pods": {"pod1_rd": pod},
+                "unattributed": {"ZZZ": {"qty": 2.0, "price": 50.0}}}
+
+    def _rec(self, day, alloc, existing=None):
+        import pod_pnl_history as ph
+        return ph.record(now=datetime(2026, 11, day, 21, tzinfo=timezone.utc), alloc=alloc,
+                         perf=self.PERF, existing=existing or {}, write=False, host="vm")
+
+    def test_firm_is_backfilled_and_unmarked_pods_are_none(self):
+        doc = self._rec(5, self._alloc())
+        rows = {r["date"]: r for r in doc["snapshots"]}
+        self.assertEqual(sorted(rows), ["2026-11-03", "2026-11-04", "2026-11-05"])
+        self.assertEqual(rows["2026-11-04"]["firm"]["pnl_today_usd"], 500.0)
+        for d in ("2026-11-03", "2026-11-04"):
+            self.assertFalse(rows[d]["marked"])
+            self.assertIsNone(rows[d]["pods"])
+        t = rows["2026-11-05"]
+        self.assertTrue(t["marked"])
+        p = t["pods"]["pod1_rd"]
+        self.assertEqual((p["cost_basis_usd"], p["unrealised_usd"]), (1000.0, 100.0))
+        self.assertIsNone(p["pnl_change_usd"])          # first mark: nothing to compare
+        self.assertEqual(t["unattributed"]["market_value"], 100.0)
+        self.assertIsNone(t["unattributed"]["unrealised_usd"])
+
+    def test_an_earlier_mark_is_frozen_and_the_change_links_marks(self):
+        d5 = self._rec(5, self._alloc(cur=110.0))
+        # Next day the pod sold some and prices moved: realised appears.
+        d6 = self._rec(6, self._alloc(cur=120.0, realised=30.0), existing=d5)
+        rows = {r["date"]: r for r in d6["snapshots"]}
+        self.assertEqual(rows["2026-11-05"]["pods"]["pod1_rd"]["unrealised_usd"], 100.0)
+        p = rows["2026-11-06"]["pods"]["pod1_rd"]
+        # (200 + 30) - (100 + 0)
+        self.assertEqual(p["pnl_change_usd"], 130.0)
+        self.assertEqual(p["change_since"], "2026-11-05")
+        self.assertEqual(d6["summary"]["latest_mark"], "2026-11-06")
+
+    def test_POISON_PILL_an_unpriced_position_is_not_a_partial_sum(self):
+        """A position with no entry price must make the pod's P&L unknown. A
+        partial sum would report a real-looking number missing one position."""
+        doc = self._rec(5, self._alloc(avg=None))
+        p = doc["snapshots"][-1]["pods"]["pod1_rd"]
+        self.assertIsNone(p["unrealised_usd"])
+        self.assertIsNone(p["cost_basis_usd"])
+        import pod_pnl_history as ph
+        self.assertIsNone(ph._num(float("nan")))
+        self.assertIsNone(ph._num("n/a"))
+
+    def test_csv_writes_unmeasured_as_an_empty_cell(self):
+        import pod_pnl_history as ph
+        doc = self._rec(5, self._alloc(avg=None))
+        lines = ph.history_csv(doc).strip().splitlines()
+        self.assertEqual(len(lines), 3)                 # header, pod, unattributed
+        col = list(ph.CSV_COLS).index("unrealised_usd")
+        self.assertEqual(lines[1].split(",")[col], "")
+        firm = ph.firm_csv(doc).strip().splitlines()
+        self.assertEqual(len(firm), 4)
+        self.assertNotIn("nan", firm[-1].lower())
+
+    def test_json_mode_is_read_only(self):
+        import io
+        import pod_pnl_history as ph
+        with tempfile.TemporaryDirectory() as td:
+            f = Path(td) / "h.json"
+            with patch.object(ph, "HISTORY_FILE", f), \
+                    patch("sys.stdout", new_callable=io.StringIO) as out:
+                self.assertEqual(ph.main(["--json"]), 1)
+            self.assertFalse(f.exists())
+            self.assertIn("no history", out.getvalue())
+
+    def test_publisher_runs_on_the_vm_without_ssh(self):
+        """Local mode is what lets the hourly report run while the Mac sleeps:
+        no ssh, its own deploy key, and never a mirror over the VM's original."""
+        import io
+        import kalshi_report_publish as kp
+        seen = []
+
+        class R:
+            returncode, stdout, stderr = 0, "KALSHI COPY-TRADE MANAGER\nx", ""
+        kp.fetch_report(run=lambda a: seen.append(a) or R, local=True)
+        kp.fetch_report(run=lambda a: seen.append(a) or R, local=False)
+        self.assertNotEqual(seen[0][0], "ssh")
+        self.assertEqual(seen[1][0], "ssh")
+        env = kp._git_env("/k/key")
+        self.assertIn("-i /k/key", env["GIT_SSH_COMMAND"])
+        self.assertIsNone(kp._git_env(None))
+
+        pods = self._rec(5, self._alloc())
+        with tempfile.TemporaryDirectory() as td:
+            cfg = Path(td) / "c.json"
+            mirror = Path(td) / "mirror"
+            mirror.mkdir()
+            cfg.write_text(json.dumps({"remote": "git@github.com:a/b.git", "source": "local",
+                                       "ssh_key": "/k/key", "mirror_dir": str(mirror)}))
+            calls = []
+            with patch.object(kp, "CONFIG_FILE", cfg), \
+                    patch.object(kp, "visibility_verdict", return_value=(True, "private")), \
+                    patch.object(kp, "fetch_report", lambda **k: calls.append(k) or "r"), \
+                    patch.object(kp, "fetch_history", lambda **k: None), \
+                    patch.object(kp, "fetch_pod_history", lambda **k: pods), \
+                    patch.object(kp, "push",
+                                 lambda r, t, e=None, k=None: calls.append((set(e), k)) or True), \
+                    patch("sys.stdout", new_callable=io.StringIO):
+                self.assertEqual(kp.main([]), 0)
+            self.assertEqual(calls[0], {"local": True})
+            self.assertEqual(calls[1], ({kp.POD_HISTORY_NAME, kp.POD_HISTORY_CSV,
+                                         kp.FIRM_HISTORY_CSV}, "/k/key"))
+            self.assertEqual(list(mirror.iterdir()), [])
+
+    def test_publisher_rejects_a_pod_history_that_is_not_one(self):
+        import kalshi_report_publish as kp
+
+        class R:
+            def __init__(self, out):
+                self.returncode, self.stdout, self.stderr = 0, out, ""
+        self.assertIsNone(kp.fetch_pod_history(run=lambda a: R('{"sector": "kalshi"}')))
+        self.assertIsNone(kp.fetch_pod_history(run=lambda a: R('{"sector": "pods"}')))
+        good = json.dumps(self._rec(5, self._alloc()))
+        self.assertEqual(kp.fetch_pod_history(run=lambda a: R(good))["sector"], "pods")
+        a = kp.history_files(None, self._rec(5, self._alloc()))[kp.POD_HISTORY_NAME]
+        later = self._rec(5, self._alloc())
+        later["last_written"] = "y"
+        for r in later["snapshots"]:
+            r["recorded_at"] = "z"
+        b = kp.history_files(None, later)[kp.POD_HISTORY_NAME]
+        self.assertEqual(kp._volatile(kp.POD_HISTORY_NAME, a),
+                         kp._volatile(kp.POD_HISTORY_NAME, b))
 
 
 class TestKalshiCopytradeScoutDropsBadLeaders(unittest.TestCase):
