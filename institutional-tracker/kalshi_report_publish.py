@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-APEX CAPITAL — KALSHI REPORT PUBLISHER (Mac launchd, hourly)
-============================================================
+APEX CAPITAL — KALSHI + POD REPORT PUBLISHER (hourly; VM cron or Mac launchd)
+============================================================================
 Chairman, 2026-11-09: wants Claude in the project to read the copy-trade report
 without relaying it by hand. Only the Mac can ssh to the VM, so this runs the
 VM's read-only `--report` and pushes the output to a GitHub repo.
@@ -30,13 +30,24 @@ kalshi_pnl_history.json, so the Mac's dashboard can show the VM-only desk.
 Since 2026-11-11 each push also carries the desk's daily P&L history
 (kalshi_pnl_history.json + .csv), read from the VM's recorder output.
 
+Since 2026-11-12 it also carries every pod's daily P&L (pod_pnl_history.json,
+pod_pnl_history.csv, firm_pnl_history.csv), and it can run ON THE VM, so the
+report no longer stops whenever the Mac sleeps. VM config:
+    {"remote": "git@github.com:OWNER/REPO.git", "source": "local",
+     "ssh_key": "/home/jackbeard/.ssh/apex_reports_deploy"}
+"source": "local" runs the VM commands directly instead of over ssh;
+"ssh_key" is a deploy key with write access to that one repo (the VM's other
+key belongs to apex-capital, and GitHub ties a deploy key to a single repo).
+
 Usage:
     python3 kalshi_report_publish.py            # fetch + check + push
     python3 kalshi_report_publish.py --dry-run  # fetch + check, print, push nothing
 """
 
 import json
+import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -55,6 +66,13 @@ HISTORY_NAME = "kalshi_pnl_history.json"
 HISTORY_CSV = "kalshi_pnl_history.csv"
 HISTORY_COMMAND = ("cd ~/institutional-tracker && "
                    "~/venv/bin/python3 kalshi_pnl_history.py --json")
+# Every pod's daily P&L (pod_pnl_history.py), published beside the Kalshi desk
+# so apex-reports carries the whole firm, not one desk of it.
+POD_HISTORY_NAME = "pod_pnl_history.json"
+POD_HISTORY_CSV = "pod_pnl_history.csv"
+FIRM_HISTORY_CSV = "firm_pnl_history.csv"
+POD_HISTORY_COMMAND = ("cd ~/institutional-tracker && "
+                       "~/venv/bin/python3 pod_pnl_history.py --json")
 CSV_COLS = ("date", "orders_filled", "orders_errored", "orders_paper", "spent_usd",
             "realised_usd", "cum_spent_usd", "cum_realised_usd", "marked",
             "unrealised_usd", "total_usd", "balance_total_usd")
@@ -62,8 +80,9 @@ _REMOTE_RE = re.compile(r"^(?:git@github\.com:|https://github\.com/)"
                         r"([\w.-]+)/([\w.-]+?)(?:\.git)?/?$")
 
 
-def _run(args, timeout=180, cwd=None):
-    return subprocess.run(args, capture_output=True, text=True, timeout=timeout, cwd=cwd)
+def _run(args, timeout=180, cwd=None, env=None):
+    return subprocess.run(args, capture_output=True, text=True, timeout=timeout, cwd=cwd,
+                          env=env)
 
 
 def parse_remote(remote):
@@ -96,11 +115,20 @@ def visibility_verdict(remote, status_of=_http_status):
     return False, f"cannot tell if {parsed[0]}/{parsed[1]} is private (HTTP {code})"
 
 
-def fetch_report(run=_run):
+def _vm(command, local=False):
+    """argv that runs `command` on the VM: over ssh from the Mac, or directly
+    when this copy IS on the VM (config "source": "local"). The VM runs it
+    hourly so the report no longer stops whenever the Mac sleeps."""
+    if local:
+        return ["bash", "-c", command]
+    return ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=20", "apex-capital",
+            command]
+
+
+def fetch_report(run=_run, local=False):
     """The report text. Raises on failure: an error must never be published
     over the last good report."""
-    r = run(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=20", "apex-capital",
-             REMOTE_COMMAND])
+    r = run(_vm(REMOTE_COMMAND, local))
     if r.returncode != 0:
         raise RuntimeError(f"ssh exit {r.returncode}: {r.stderr.strip()[:200]}")
     if "KALSHI COPY-TRADE MANAGER" not in r.stdout:
@@ -108,18 +136,22 @@ def fetch_report(run=_run):
     return r.stdout
 
 
-def fetch_history(run=_run):
-    """The VM's P&L history as a dict, or None. A failure here never blocks the
-    text report: the history is the newer, optional half of the push."""
+def fetch_history(run=_run, local=False, command=HISTORY_COMMAND, sector="kalshi"):
+    """A VM P&L history as a dict, or None. A failure here never blocks the
+    text report: the histories are the optional half of the push."""
     try:
-        r = run(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=20", "apex-capital",
-                 HISTORY_COMMAND])
+        r = run(_vm(command, local))
         if r.returncode != 0:
             return None
         doc = json.loads(r.stdout)
-        return doc if isinstance(doc, dict) and doc.get("sector") == "kalshi" else None
+        return doc if isinstance(doc, dict) and doc.get("sector") == sector \
+            and isinstance(doc.get("snapshots"), list) else None
     except (ValueError, OSError, subprocess.SubprocessError):
         return None
+
+
+def fetch_pod_history(run=_run, local=False):
+    return fetch_history(run, local, POD_HISTORY_COMMAND, "pods")
 
 
 def history_csv(doc):
@@ -132,12 +164,23 @@ def history_csv(doc):
     return "\n".join(lines) + "\n"
 
 
-def history_files(doc):
-    """{filename: text} to publish alongside the report; {} when no history."""
-    if not doc:
-        return {}
-    return {HISTORY_NAME: json.dumps(doc, indent=1, default=str) + "\n",
-            HISTORY_CSV: history_csv(doc)}
+def history_files(doc, pods=None):
+    """{filename: text} to publish alongside the report; a history that could
+    not be read contributes nothing, so its last good copy stays up."""
+    out = {}
+    if doc:
+        out[HISTORY_NAME] = json.dumps(doc, indent=1, default=str) + "\n"
+        out[HISTORY_CSV] = history_csv(doc)
+    if pods:
+        out[POD_HISTORY_NAME] = json.dumps(pods, indent=1, default=str) + "\n"
+        try:
+            import pod_pnl_history as ph
+        except ImportError:
+            # The Mac runs a lone copy of this file; the JSON still goes up.
+            return out
+        out[POD_HISTORY_CSV] = ph.history_csv(pods)
+        out[FIRM_HISTORY_CSV] = ph.firm_csv(pods)
+    return out
 
 
 def _volatile(name, text):
@@ -145,7 +188,7 @@ def _volatile(name, text):
     commit every hour."""
     if name == REPORT_NAME:
         return _strip_stamp(text)
-    if name == HISTORY_NAME:
+    if name in (HISTORY_NAME, POD_HISTORY_NAME):
         try:
             d = json.loads(text)
             for k in ("generated_at", "last_written"):
@@ -166,14 +209,26 @@ def _strip_stamp(text):
     return text.split("\n\n", 1)[-1]
 
 
-def push(remote, text, extra=None):
+def _git_env(ssh_key=None):
+    """The VM already has a key, but it is apex-capital's deploy key and
+    GitHub ties a deploy key to one repo, so apex-reports gets its own."""
+    if not ssh_key:
+        return None
+    env = dict(os.environ)
+    env["GIT_SSH_COMMAND"] = (f"ssh -i {shlex.quote(str(ssh_key))} -o IdentitiesOnly=yes "
+                              "-o BatchMode=yes")
+    return env
+
+
+def push(remote, text, extra=None, ssh_key=None):
     """Commit `text` (plus any `extra` {filename: text}) to a throwaway clone
     and push. False if nothing changed. A fresh clone, so the Mac's checkout and
     its pre-push gate are never touched."""
     files = {REPORT_NAME: text, **(extra or {})}
     tmp = tempfile.mkdtemp(prefix="kalshi-report-")
     try:
-        r = _run(["git", "clone", "--quiet", "--depth", "1", remote, tmp])
+        env = _git_env(ssh_key)
+        r = _run(["git", "clone", "--quiet", "--depth", "1", remote, tmp], env=env)
         if r.returncode != 0:
             raise RuntimeError(f"clone failed: {r.stderr.strip()[:200]}")
         changed = []
@@ -190,7 +245,7 @@ def push(remote, text, extra=None):
                       "-c", "user.email=noreply@localhost", "commit", "-qm",
                       "kalshi copy-trade report"],
                      ["git", "push", "--quiet", "origin", "HEAD"]):
-            r = _run(args, cwd=tmp)
+            r = _run(args, cwd=tmp, env=env)
             if r.returncode != 0:
                 raise RuntimeError(f"{args[1]} failed: {r.stderr.strip()[:200]}")
         return True
@@ -214,20 +269,27 @@ def main(argv=None):
         print(f"{stamp} REFUSED: {why}; nothing published")
         return 1
     try:
-        text = render(fetch_report(), datetime.now(timezone.utc))
-        extra = history_files(fetch_history())
+        local = isinstance(cfg, dict) and cfg.get("source") == "local"
+        text = render(fetch_report(local=local), datetime.now(timezone.utc))
+        extra = history_files(fetch_history(local=local), fetch_pod_history(local=local))
         if "--dry-run" in argv:
             print(text)
             for name, body in extra.items():
                 print(f"--- {name}: {len(body)} bytes")
             return 0
         mirror = cfg.get("mirror_dir") if isinstance(cfg, dict) else None
-        if extra and mirror and Path(mirror).is_dir():
+        if mirror and Path(mirror).is_dir() and not local:
             # The Mac dashboard reads its own data/ (no state sync between
             # hosts), so the VM's history is copied there for it to show.
-            (Path(mirror) / HISTORY_NAME).write_text(extra[HISTORY_NAME])
-        hist = "with history" if extra else "no history (VM file missing or unreadable)"
-        print(f"{stamp} {'published' if push(remote, text, extra) else 'unchanged'} "
+            # Never on the VM: there the mirror would overwrite the original.
+            for name in (HISTORY_NAME, POD_HISTORY_NAME):
+                if name in extra:
+                    (Path(mirror) / name).write_text(extra[name])
+        hist = ("with " + ", ".join(n for n in (HISTORY_NAME, POD_HISTORY_NAME) if n in extra)
+                if any(n in extra for n in (HISTORY_NAME, POD_HISTORY_NAME))
+                else "no history (VM file missing or unreadable)")
+        key = cfg.get("ssh_key") if isinstance(cfg, dict) else None
+        print(f"{stamp} {'published' if push(remote, text, extra, key) else 'unchanged'} "
               f"({why}; {hist})")
         return 0
     except Exception as e:
