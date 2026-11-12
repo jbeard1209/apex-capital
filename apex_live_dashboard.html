@@ -1078,6 +1078,8 @@ function renderPods(data) {
     {key:null,      label:'Pod 4 · First Eagle',       color:'var(--yellow)',cls:'pod4-border', fixed:5000},
     {key:null,      label:'Pod 5 · Fixed Income',      color:'var(--orange)',cls:'pod5-border', fixed:30000},
   ];
+  const kal = data.kalshi_pnl || null;
+  const kalSum = (kal||{}).summary || {};
 
   $('pods-summary-row').innerHTML = summaryMeta.map(m => {
     const p = m.key ? (podPnl[m.key] || pods[m.key] || {}) : {};
@@ -1087,7 +1089,7 @@ function renderPods(data) {
       <div style="font-size:18px;font-weight:700;color:${m.color}">${fmt$(val)}</div>
       <div style="font-size:9px;color:var(--text2);margin-top:4px">${m.key ? ((podPnl[m.key]||{}).n_positions||0) + ' positions' : 'Pipeline live'}</div>
     </div>`;
-  }).join('');
+  }).join('') + kalshiSummaryCard(kal);
 
   // Alloc bar
   const total = 149000;
@@ -1217,6 +1219,9 @@ function renderPods(data) {
     </div>
   </div>`;
 
+  // Kalshi desk (real money, separate from the Alpaca pods)
+  html += kalshiDetail(kal);
+
   // Reserve
   html += `<div style="border:1px solid var(--border);border-radius:8px;padding:14px;background:rgba(255,255,255,.02);display:flex;gap:14px;align-items:center">
     <div style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:13px;font-weight:700;color:var(--text2);white-space:nowrap">Reserve</div>
@@ -1225,6 +1230,67 @@ function renderPods(data) {
   </div>`;
 
   $('pods-detail').innerHTML = html;
+}
+
+// ── Kalshi sector ─────────────────────────────────────────────────────────
+// data.kalshi_pnl = data/kalshi_pnl_history.json (kalshi_pnl_history.py on the
+// VM). Cents matter here, so it has its own formatter; a missing number is
+// shown as "—" (not measured), never as $0.
+const fmtC = n => n == null ? '—' : (n < 0 ? '-$' : '$') + Math.abs(Number(n)).toFixed(2);
+const fmtCs = n => n == null ? '—' : (n >= 0 ? '+' : '') + fmtC(n);
+function kalshiState(kal) {
+  const st = (kal||{}).status || {};
+  if (!kal) return ['NO DATA','badge-dim'];
+  if (st.halted) return ['HALTED','badge-r'];
+  if (st.armed) return ['LIVE','badge-g'];
+  return ['NOT ARMED','badge-dim'];
+}
+function kalshiSummaryCard(kal) {
+  const s = (kal||{}).summary || {};
+  const t = s.total_usd;
+  return `<div class="card" style="text-align:center;padding:12px 8px;border-color:rgba(0,200,255,.35)">
+    <div style="font-size:9px;color:var(--text2);margin-bottom:6px;letter-spacing:.5px">Kalshi · Copy-Trade</div>
+    <div style="font-size:18px;font-weight:700;color:${t==null?'var(--text2)':(t>=0?'var(--green)':'var(--red)')}">${fmtCs(t)}</div>
+    <div style="font-size:9px;color:var(--text2);margin-top:4px">${kal ? kalshiState(kal)[0] + ' · ' + (s.n_open_positions||0) + ' open' : 'no history file'}</div>
+  </div>`;
+}
+function kalshiDetail(kal) {
+  if (!kal) return `<div class="pod-wrap" style="border:1px solid rgba(0,200,255,.25)"><div style="font-size:13px;color:var(--text2)">Kalshi desk: no data/kalshi_pnl_history.json on this host yet.</div></div>`;
+  const s = kal.summary || {}, st = kal.status || {}, per = kal.periods || {};
+  const [badge, bcls] = kalshiState(kal);
+  const shards = Object.entries(s.balance_by_shard || {}).map(([k,v]) => `shard ${k}: ${fmtC(v)}`).join(' · ') || '—';
+  const prow = ['today','week','month','year','all_time'].map(k => {
+    const p = per[k] || {};
+    return `<tr><td>${k.replace('_',' ')}</td><td class="${(p.total_usd||0)>=0?'g':'r'}">${fmtCs(p.total_usd)}</td><td>${p.return_pct==null?'—':p.return_pct.toFixed(1)+'%'}</td><td>${fmtC(p.spent_usd)}</td><td>${p.markets??'—'}</td><td>${p.wins??'—'}/${p.settled??'—'}</td></tr>`;
+  }).join('');
+  const days = (kal.snapshots||[]).slice(-14).reverse().map(r =>
+    `<tr><td>${r.date}</td><td>${r.orders_filled}</td><td>${fmtC(r.spent_usd)}</td><td class="${r.realised_usd>=0?'g':'r'}">${fmtCs(r.realised_usd)}</td><td>${fmtCs(r.cum_realised_usd)}</td><td>${r.marked?fmtCs(r.total_usd):'<span style="color:var(--text2)">backfill</span>'}</td></tr>`).join('');
+  const pos = (kal.open_positions||[]).map(p =>
+    `<tr><td><strong>${p.ticker}</strong></td><td>${p.leader||'—'}</td><td>${p.yes_contracts}</td><td>${p.mark==null?'—':p.mark.toFixed(3)}</td><td class="${p.unrealised_usd>=0?'g':'r'}">${fmtCs(p.unrealised_usd)}</td></tr>`).join('');
+  return `<div class="pod-wrap" style="border:1px solid rgba(0,200,255,.25)">
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px">
+      <div class="pod-num" style="background:rgba(0,200,255,.15);border:1px solid rgba(0,200,255,.35);color:#00c8ff">K</div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:700;color:#00c8ff">Kalshi Copy-Trade Desk <span style="font-size:10px;color:var(--text2);font-weight:400;margin-left:6px">Real money · caps ${fmtC(st.per_market_cap_usd)}/market, ${fmtC(st.per_day_cap_usd)}/day</span></div>
+        <div style="font-size:11px;color:var(--text2);margin-top:3px">Copies followed Kalshi traders: ${(st.leaders||[]).join(', ')||'none'}. Spent today ${fmtC(st.spent_today_usd)} of ${fmtC(st.per_day_cap_usd)}.${st.halted?' <span style="color:var(--red)">Halted: '+String(st.halt_reason||'').slice(0,140)+'</span>':''}</div>
+      </div>
+      <div><span class="badge ${bcls}">${badge}</span></div>
+    </div>
+    <div class="grid4">
+      <div class="card" style="padding:10px"><div style="font-size:9px;color:var(--text2);margin-bottom:3px">Total P&L</div><div style="font-size:18px;font-weight:700;color:${(s.total_usd||0)>=0?'var(--green)':'var(--red)'}">${fmtCs(s.total_usd)}</div><div style="font-size:9px;color:var(--text2)">on ${fmtC(s.spent_usd)} spent</div></div>
+      <div class="card" style="padding:10px"><div style="font-size:9px;color:var(--text2);margin-bottom:3px">Realised / Open</div><div style="font-size:13px;font-weight:700">${fmtCs(s.realised_usd)} / ${fmtCs(s.unrealised_usd)}</div></div>
+      <div class="card" style="padding:10px"><div style="font-size:9px;color:var(--text2);margin-bottom:3px">Cash by shard</div><div style="font-size:11px;font-weight:700">${shards}</div></div>
+      <div class="card" style="padding:10px"><div style="font-size:9px;color:var(--text2);margin-bottom:3px">As of</div><div style="font-size:11px;font-weight:700">${(kal.generated_at||'—').replace('T',' ').slice(0,16)} UTC</div></div>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="card" style="padding:10px"><div class="card-title" style="margin-bottom:8px">By period (date opened)</div>
+        <table><thead><tr><th>Period</th><th>P&L</th><th>Return</th><th>Spent</th><th>Mkts</th><th>Won</th></tr></thead><tbody>${prow}</tbody></table></div>
+      <div class="card" style="padding:10px"><div class="card-title" style="margin-bottom:8px">Daily history (last 14 days)</div>
+        <table><thead><tr><th>Date</th><th>Fills</th><th>Spent</th><th>Realised</th><th>Cum.</th><th>Total</th></tr></thead><tbody>${days}</tbody></table></div>
+    </div>
+    <div class="card" style="padding:10px;margin-top:10px"><div class="card-title" style="margin-bottom:8px">Open positions ${(kal.open_positions||[]).length?'('+kal.open_positions.length+')':'— None'}</div>
+      <table><thead><tr><th>Market</th><th>Leader</th><th>YES qty</th><th>Mark</th><th>Open P&L</th></tr></thead><tbody>${pos}</tbody></table></div>
+  </div>`;
 }
 
 function podCard(num,name,strat,cls,color,badge,badgeCls,val,budget,cashPct,nPos,pnlToday,pnlLife,positions,agentHtml,idle=false) {

@@ -101,6 +101,9 @@ DATA_FILES = {
     "cos":               "chief_of_staff_report.json",
     "pods":              "pod_allocations.json",
     "pod_pnl":           "pod_pnl_report.json",
+    # Kalshi desk daily P&L (kalshi_pnl_history.py on the VM; mirrored to the
+    # Mac by kalshi_report_publish.py's mirror_dir).
+    "kalshi_pnl":        "kalshi_pnl_history.json",
     "agents":            "agent_registry.json",
     "morning":           "morning_briefing.json",
     "trade_review":      "trade_review_report.json",

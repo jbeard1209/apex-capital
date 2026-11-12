@@ -35460,7 +35460,8 @@ class TestKalshiReportNeverReachesAPublicRepo(unittest.TestCase):
             with patch.object(kp, "CONFIG_FILE", cfg_path), \
                     patch.object(kp, "visibility_verdict", return_value=verdict), \
                     patch.object(kp, "fetch_report", fetch or (lambda: "report")), \
-                    patch.object(kp, "push", lambda r, t: pushed.append(t) or True), \
+                    patch.object(kp, "fetch_history", lambda: None), \
+                    patch.object(kp, "push", lambda r, t, e=None: pushed.append(t) or True), \
                     patch("sys.stdout", new_callable=io.StringIO):
                 return kp.main([]), pushed
 
@@ -35486,6 +35487,171 @@ class TestKalshiReportNeverReachesAPublicRepo(unittest.TestCase):
         b = kp.render("body\n\nmore", datetime(2026, 11, 9, 2, tzinfo=timezone.utc))
         self.assertNotEqual(a, b)
         self.assertEqual(kp._strip_stamp(a), kp._strip_stamp(b))
+
+
+class TestKalshiPnlIsRecordedLikeEveryOtherDesk(unittest.TestCase):
+    """Chairman, 2026-11-11: Kalshi P&L must be "recorded and tracked the same
+    way the other sectors/pods are ... with back-filled history". Until then the
+    desk's P&L was only ever recomputed on demand, so yesterday's mark was lost.
+    kalshi_pnl_history.py keeps one row per UTC day. The ledger half is exact
+    for every day, including back-filled ones. A back-filled day's mark was
+    never measured and must read None, never $0 or today's price."""
+
+    NOW = datetime(2026, 11, 5, 18, 0, tzinfo=timezone.utc)
+    ROWS = [
+        {"at": "2026-11-02T14:00:00+00:00", "leader": "a", "ticker": "KX-WON",
+         "side": "bid", "price": 0.40, "fill_count": "2.00", "status": "placed"},
+        {"at": "2026-11-02T14:05:00+00:00", "status": "error", "ticker": "KX-X"},
+        {"at": "2026-11-04T09:00:00+00:00", "leader": "b", "ticker": "KX-OPEN",
+         "side": "bid", "price": 0.50, "fill_count": "1.00", "status": "placed"},
+        {"at": "2026-11-04T09:01:00+00:00", "status": "paper", "ticker": "KX-P"},
+    ]
+    MARKETS = {"KX-WON": {"result": "yes", "settlement_ts": "2026-11-03T20:00:00Z"},
+               "KX-OPEN": {"result": "", "last_price_dollars": "0.30"}}
+    BAL = {"balance": 1613, "portfolio_value": 1539,
+           "balance_breakdown": [{"exchange_index": 0, "balance": 0.57},
+                                 {"exchange_index": 1, "balance": 15.56}]}
+
+    def _record(self, td, balance=None, prior=None, now=None):
+        import kalshi_copytrade as ct
+        import kalshi_pnl_history as kh
+        names = ("CONFIG_FILE", "STATE_FILE", "LEDGER_FILE", "ARM_FILE", "HALT_FILE")
+        hist = Path(td) / "kalshi_pnl_history.json"
+        if prior is not None:
+            hist.write_text(json.dumps(prior))
+        patches = [patch.object(ct, n, Path(td) / n.lower()) for n in names]
+        patches.append(patch.object(kh, "HISTORY_FILE", hist))
+        for p in patches:
+            p.start()
+        try:
+            return kh.record(now=now or self.NOW, rows=self.ROWS,
+                             market=self.MARKETS.get,
+                             balance=self.BAL if balance is None else balance)
+        finally:
+            for p in patches:
+                p.stop()
+
+    def test_backfill_covers_every_day_with_exact_ledger_fields(self):
+        with tempfile.TemporaryDirectory() as td:
+            doc = self._record(td)
+            self.assertTrue((Path(td) / "kalshi_pnl_history.json").exists())
+        days = {r["date"]: r for r in doc["snapshots"]}
+        self.assertEqual(sorted(days), ["2026-11-02", "2026-11-03", "2026-11-04",
+                                        "2026-11-05"])        # gap day 03 is kept
+        self.assertEqual((days["2026-11-02"]["orders_filled"],
+                          days["2026-11-02"]["orders_errored"],
+                          days["2026-11-02"]["spent_usd"]), (1, 1, 0.8))
+        self.assertEqual(days["2026-11-04"]["orders_paper"], 1)
+        # Realised P&L lands on the day the market SETTLED, not the day bought.
+        self.assertEqual(days["2026-11-02"]["realised_usd"], 0.0)
+        self.assertGreater(days["2026-11-03"]["realised_usd"], 1.0)
+        self.assertEqual(days["2026-11-05"]["cum_spent_usd"], 1.3)
+        for d in ("2026-11-02", "2026-11-03", "2026-11-04"):
+            self.assertFalse(days[d]["marked"], d)
+            self.assertIsNone(days[d]["unrealised_usd"], d)
+            self.assertIsNone(days[d]["total_usd"], d)
+        today = days["2026-11-05"]
+        self.assertTrue(today["marked"])
+        self.assertEqual(today["open_positions"], ["KX-OPEN"])
+        self.assertEqual(today["balance_by_shard"], {"0": 0.57, "1": 15.56})
+        self.assertEqual(today["balance_total_usd"], 16.13)
+
+    def test_the_total_agrees_with_the_managers_all_time_figure(self):
+        import kalshi_copytrade_manager as mgr
+        with tempfile.TemporaryDirectory() as td:
+            doc = self._record(td)
+        perf = mgr.performance(rows=self.ROWS, now=self.NOW, market=self.MARKETS.get)
+        self.assertEqual(doc["summary"]["total_usd"], perf["all_time"]["total_usd"])
+        self.assertEqual(doc["snapshots"][-1]["total_usd"], perf["all_time"]["total_usd"])
+        self.assertEqual(doc["summary"]["realised_usd"], perf["all_time"]["realised_usd"])
+
+    def test_an_earlier_days_mark_is_frozen_not_recomputed(self):
+        with tempfile.TemporaryDirectory() as td:
+            first = self._record(td, now=datetime(2026, 11, 4, 18, 0, tzinfo=timezone.utc))
+            mark_on_4th = first["snapshots"][-1]["unrealised_usd"]
+            self.MARKETS["KX-OPEN"]["last_price_dollars"] = "0.90"
+            try:
+                second = self._record(td)
+            finally:
+                self.MARKETS["KX-OPEN"]["last_price_dollars"] = "0.30"
+        days = {r["date"]: r for r in second["snapshots"]}
+        self.assertTrue(days["2026-11-04"]["marked"])
+        self.assertEqual(days["2026-11-04"]["unrealised_usd"], mark_on_4th)
+        self.assertNotEqual(days["2026-11-05"]["unrealised_usd"], mark_on_4th)
+
+    def test_POISON_PILL_an_unreadable_balance_is_not_zero_dollars(self):
+        import kalshi_pnl_history as kh
+        self.assertEqual(kh.shard_balances({}), (None, None, None))
+        self.assertEqual(kh.shard_balances(None), (None, None, None))
+        with tempfile.TemporaryDirectory() as td:
+            doc = self._record(td, balance={})
+        self.assertIsNone(doc["summary"]["balance_by_shard"])
+        self.assertIsNone(doc["summary"]["balance_total_usd"])
+        self.assertIsNone(doc["snapshots"][-1]["balance_by_shard"])
+
+    def test_publisher_csv_leaves_unmeasured_cells_empty(self):
+        import kalshi_report_publish as kp
+        with tempfile.TemporaryDirectory() as td:
+            doc = self._record(td)
+        lines = kp.history_csv(doc).splitlines()
+        self.assertEqual(lines[0].split(","), list(kp.CSV_COLS))
+        self.assertEqual(len(lines), 1 + len(doc["snapshots"]))
+        col = list(kp.CSV_COLS).index("unrealised_usd")
+        self.assertEqual(lines[1].split(",")[col], "")              # backfill
+        self.assertNotEqual(lines[-1].split(",")[col], "")          # today
+
+    def test_publisher_ignores_stamps_and_survives_a_bad_history(self):
+        import kalshi_report_publish as kp
+        with tempfile.TemporaryDirectory() as td:
+            doc = self._record(td)
+        a = kp.history_files(doc)[kp.HISTORY_NAME]
+        later = dict(doc, generated_at="x", last_written="y")
+        b = kp.history_files(later)[kp.HISTORY_NAME]
+        self.assertEqual(kp._volatile(kp.HISTORY_NAME, a), kp._volatile(kp.HISTORY_NAME, b))
+        self.assertEqual(kp.history_files(None), {})
+
+        class R:
+            def __init__(self, code, out):
+                self.returncode, self.stdout, self.stderr = code, out, ""
+        self.assertIsNone(kp.fetch_history(run=lambda a: R(255, "")))
+        self.assertIsNone(kp.fetch_history(run=lambda a: R(0, "Traceback")))
+        self.assertIsNone(kp.fetch_history(run=lambda a: R(0, '{"sector": "other"}')))
+        self.assertEqual(kp.fetch_history(run=lambda a: R(0, json.dumps(doc)))["sector"],
+                         "kalshi")
+
+    def test_publisher_pushes_the_history_beside_the_report(self):
+        import io
+        import kalshi_report_publish as kp
+        with tempfile.TemporaryDirectory() as td:
+            doc = self._record(td)
+            cfg = Path(td) / "c.json"
+            mirror = Path(td) / "mirror"
+            mirror.mkdir()
+            cfg.write_text(json.dumps({"remote": "git@github.com:a/b.git",
+                                       "mirror_dir": str(mirror)}))
+            pushed = []
+            with patch.object(kp, "CONFIG_FILE", cfg), \
+                    patch.object(kp, "visibility_verdict", return_value=(True, "private")), \
+                    patch.object(kp, "fetch_report", lambda: "report"), \
+                    patch.object(kp, "fetch_history", lambda: doc), \
+                    patch.object(kp, "push", lambda r, t, e=None: pushed.append(e) or True), \
+                    patch("sys.stdout", new_callable=io.StringIO):
+                self.assertEqual(kp.main([]), 0)
+            self.assertEqual(set(pushed[0]), {kp.HISTORY_NAME, kp.HISTORY_CSV})
+            self.assertTrue((mirror / kp.HISTORY_NAME).exists())
+
+    def test_the_kalshi_slash_command_is_read_only(self):
+        """`/kalshi` runs on the VM where real money trades: only --report and
+        --json, never --record, a deploy, or anything that touches the halt."""
+        cmd = (Path(__file__).resolve().parent.parent / ".claude" / "commands"
+               / "kalshi.md").read_text()
+        self.assertIn("kalshi_copytrade_manager.py --report", cmd)
+        self.assertIn("kalshi_pnl_history.py --json", cmd)
+        run = "\n".join(l for l in cmd.splitlines() if l.startswith("!`"))
+        self.assertEqual(run.count("!`"), 2)
+        for bad in ("--record", "--arm", "deploy.sh", "rm ", "--live", "--execute",
+                    "crontab", "> "):
+            self.assertNotIn(bad, run, bad)
 
 
 class TestKalshiCopytradeScoutDropsBadLeaders(unittest.TestCase):
