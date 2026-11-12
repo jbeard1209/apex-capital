@@ -1626,6 +1626,20 @@ def _route_approved_cit_proposals(approved: list) -> None:
                 continue          # clear_voted_proposals already recorded it
             _appr.append(p)
 
+    # ── Hand every approval to the executor ──────────────────────────────
+    # Until 2026-11-11 this router's rows ended at chairman_action_required as
+    # "approved_by_board, owner CIT" — a status nothing reads — so approvals
+    # were recorded and never carried out, and the finding was re-filed and
+    # re-approved (fund-sanity-BBIO: 23 times). board_dispatch owns execution.
+    try:
+        import board_dispatch
+        board_dispatch.enqueue(
+            approved, routed_by="board_meeting",
+            awaiting_chairman_ids={a.get("id") for a in needs_chairman
+                                   if a.get("status") == "awaiting_chairman"})
+    except Exception as _bd_e:
+        logger.error(f"  [CIT Router] board_dispatch.enqueue failed: {_bd_e}")
+
     logger.info(f"  [CIT Router] {len(newly_actioned)} approved proposal(s) routed.")
     logger.info(f"  [CIT Router] {len(needs_chairman)} added to chairman_action_required.json")
     if persistent:
@@ -2799,6 +2813,9 @@ def run_board_clarification_revote() -> dict:
             pass
 
         all_pending = get_pending_proposals()
+        import board_dispatch
+        all_pending = board_dispatch.filter_standing(
+            all_pending, "data/cit_pending_proposals.json", session="board_revote")
         revote_props = [
             p for p in all_pending
             if p.get("needs_revote") and p.get("id") in answered_pids
@@ -3088,6 +3105,11 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
     try:
         from cit_director import get_pending_proposals, clear_voted_proposals
         cit_proposals = get_pending_proposals()
+        # An approved decision still being carried out is not put to the vote
+        # again — it is counted on its dispatch row (board_dispatch).
+        import board_dispatch
+        cit_proposals = board_dispatch.filter_standing(
+            cit_proposals, "data/cit_pending_proposals.json", session="board_meeting")
         if cit_proposals:
             logger.info(f"\n  Step 4c/6: CIT Proposal Vote — {len(cit_proposals)} pending proposal(s)...")
 
@@ -3130,6 +3152,18 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
                 ))
         else:
             logger.info("\n  Step 4c/6: CIT Proposal Vote — no pending proposals.")
+        # ── Carry out what the board has approved ─────────────────────────
+        # Runs every meeting, votes or not: standing decisions are rechecked
+        # (a quarantine lifts when its data is fixed) and legacy approvals are
+        # pulled in. Executor failure must not fail the vote's persistence.
+        _vote_status["stage"] = "dispatch"
+        try:
+            _disp = board_dispatch.run()
+            _vote_status["dispatch"] = {k: len(_disp[k]) for k in
+                                        ("executed", "standing", "needs_human", "errors")}
+        except Exception as _bd_e:
+            logger.error(f"  [Dispatch] executor failed: {_bd_e}")
+            _vote_status["dispatch"] = {"error": str(_bd_e)[:200]}
         _vote_status["stage"] = "done"
         _vote_status["ok"] = not _vote_status["row_errors"]
     except Exception as _cit_e:

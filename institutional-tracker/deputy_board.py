@@ -737,6 +737,15 @@ def _mark_approved(proposal: dict):
     with aj.update(PENDING_PATH, default=[], expect=list) as pending:
         pending[:] = [p for p in pending if p.get("id") != pid]
 
+    # Every approval reaches the executor's queue. _queue_fix (called just
+    # before this) sent it to the Chairman, so it waits for his sign-off there.
+    try:
+        import board_dispatch
+        board_dispatch.enqueue([proposal], routed_by="deputy_board",
+                               awaiting_chairman_ids={pid})
+    except Exception as _bd_e:
+        logger.error(f"  board_dispatch.enqueue failed for {pid}: {_bd_e}")
+
 
 # =============================================================================
 # CIT IMPLEMENTATION AGENT ROUTER
@@ -806,6 +815,13 @@ def run_deputy_board(dry_run: bool = False) -> dict:
     all_pending = _load_json(PENDING_PATH)
     if not isinstance(all_pending, list):
         all_pending = []
+    # Approved-and-still-in-force decisions are not re-voted (board_dispatch).
+    try:
+        import board_dispatch
+        all_pending = board_dispatch.filter_standing(
+            all_pending, PENDING_PATH, session="deputy_board")
+    except Exception as _bd_e:
+        logger.warning(f"  board_dispatch.filter_standing failed: {_bd_e}")
 
     # Load answered clarifications so we can skip proposals still awaiting CIT response
     unanswered_pids: set = set()
