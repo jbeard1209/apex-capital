@@ -196,6 +196,15 @@ def _file_bug_proposals(violations) -> int:
         pid = f"fund-sanity-{ticker}"
         if pid in existing:
             continue
+        # Already approved and its quarantine still in force: re-filing only
+        # re-asks the board (BBIO was approved 23x this way). board_dispatch
+        # rechecks the quarantine every run and closes it when data is fixed.
+        try:
+            import board_dispatch
+            if board_dispatch.is_standing(pid):
+                continue
+        except Exception:
+            pass
         notes = "; ".join(f"{x['metric']}={x['value']} ({x['note']})" for x in vs)
         pending.append({
             "id": pid,

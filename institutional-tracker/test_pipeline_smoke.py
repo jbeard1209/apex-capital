@@ -1323,6 +1323,205 @@ class TestOneApprovalIsOneLedgerRow(unittest.TestCase):
         self.assertFalse(any("PERSISTENT" in m for m in logs.output), logs.output)
 
 
+class TestBoardApprovalsAreExecutedNotReVoted(unittest.TestCase):
+    """2026-11-11: the board approved fund-sanity-BBIO 23 times and nothing
+    ran it. The router's approvals ended at chairman_action_required as
+    approved_by_board (read by nothing), the executor was scheduled on no
+    host, and every producer re-filed the finding once the vote took it out
+    of pending. 1,177 of 1,561 ledger approvals were re-approvals.
+
+    Gates: G1 every approval reaches the dispatch queue; G2 a standing
+    approval is never put to a vote again (a finished one that recurs is);
+    G3 the fund-sanity handler's outcome follows the data, and closes the
+    Chairman row only when the action is verifiably in force."""
+
+    BAD = {"by_year": {"long_term_debt": {"2024": 300.0}, "total_assets": {"2024": 100.0},
+                       "net_income": {"2024": 1.0}},
+           "shares_outstanding": [10.0], "revenue": [5.0], "net_income": [1.0]}
+
+    def setUp(self):
+        import board_dispatch as bd
+        self.bd = bd
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.data = self.root / "data"; self.data.mkdir()
+        (self.data / "fe_fundamentals_cache").mkdir()
+        for n in ("cit_pending_proposals.json", "cit_approved_proposals.json",
+                  "cit_rejected_proposals.json", "cit_implementation_queue.json",
+                  "chairman_action_required.json"):
+            (self.data / n).write_text("[]")
+        self._orig = os.getcwd(); os.chdir(self.root)
+        self._p = [patch.object(bd, "DATA", self.data)]
+        for p in self._p: p.start()
+
+    def tearDown(self):
+        for p in self._p: p.stop()
+        os.chdir(self._orig); self._tmp.cleanup()
+
+    def _j(self, name, val=None):
+        f = self.data / name
+        if val is not None:
+            f.write_text(json.dumps(val)); return val
+        return json.loads(f.read_text())
+
+    def _cache(self, ticker, d):
+        d = dict(d, fetched_at=datetime.now().isoformat())
+        (self.data / "fe_fundamentals_cache" / f"{ticker}.json").write_text(json.dumps(d))
+
+    # ── G1 ──────────────────────────────────────────────────────────────
+    def test_g1_board_approval_reaches_the_dispatch_queue_once(self):
+        import board_meeting as bm, cit_director as cd
+        row = {"id": "fund-sanity-BBIO", "title": "Impossible fundamentals for BBIO",
+               "category": "LOGIC_ERROR", "description": "x", "confidence": 88}
+        self._j("cit_pending_proposals.json", [row])
+        with patch.object(cd, "CIT_PENDING", self.data / "cit_pending_proposals.json"), \
+             patch.object(cd, "CIT_APPROVED", self.data / "cit_approved_proposals.json"), \
+             patch.object(cd, "CIT_REJECTED", self.data / "cit_rejected_proposals.json"), \
+             patch("email_buffer.buffer_email", MagicMock()), \
+             patch("email_sender.send_daily_report", MagicMock()):
+            cd.clear_voted_proposals([row["id"]], [row["id"]])
+            bm._route_approved_cit_proposals([dict(row)])
+            bm._route_approved_cit_proposals([dict(row)])     # same approval re-routed
+        q = self._j("cit_implementation_queue.json")
+        self.assertEqual([r["proposal_id"] for r in q], ["fund-sanity-BBIO"])
+        self.assertEqual(q[0]["times_approved"], 2)
+
+    def test_g1_deputy_approval_reaches_the_dispatch_queue(self):
+        import deputy_board as db
+        p = {"id": "dep-1", "title": "t", "category": "BUG_FIX"}
+        self._j("cit_pending_proposals.json", [dict(p)])
+        db._mark_approved(dict(p))
+        q = self._j("cit_implementation_queue.json")
+        self.assertEqual([(r["proposal_id"], r["status"]) for r in q],
+                         [("dep-1", "awaiting_chairman")])
+
+    def test_g1_every_vote_path_is_wired(self):
+        """AST, not grep: a comment naming filter_standing is not a call."""
+        def calls(path, fn_name, target):
+            tree = ast.parse(Path(path).read_text())
+            for n in ast.walk(tree):
+                if isinstance(n, ast.FunctionDef) and n.name == fn_name:
+                    return sum(1 for c in ast.walk(n) if isinstance(c, ast.Call)
+                               and getattr(c.func, "attr", None) == target)
+            self.fail(f"{fn_name} not found in {path}")
+        here = Path(__file__).resolve().parent
+        self.assertEqual(calls(here / "board_meeting.py", "_route_approved_cit_proposals", "enqueue"), 1)
+        self.assertEqual(calls(here / "deputy_board.py", "_mark_approved", "enqueue"), 1)
+        self.assertEqual(calls(here / "deputy_board.py", "run_deputy_board", "filter_standing"), 1)
+        self.assertEqual(calls(here / "fundamentals_sanity.py", "_file_bug_proposals", "is_standing"), 1)
+        src = (here / "board_meeting.py").read_text()
+        tree = ast.parse(src)
+        # both board paths that call get_pending_proposals() must filter first
+        fns = [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)
+               and any(isinstance(c, ast.Call) and getattr(c.func, "id", None) == "get_pending_proposals"
+                       for c in ast.walk(n))]
+        self.assertGreaterEqual(len(fns), 2)
+        # the executor runs inside the scheduled board meeting (no new cron line)
+        self.assertTrue(any(isinstance(c, ast.Call) and getattr(c.func, "attr", None) == "run"
+                            and getattr(c.func.value, "id", None) == "board_dispatch"
+                            for f in fns for c in ast.walk(f)),
+                        "no vote path calls board_dispatch.run()")
+        for f in fns:
+            n = sum(1 for c in ast.walk(f) if isinstance(c, ast.Call)
+                    and getattr(c.func, "attr", None) == "filter_standing")
+            self.assertEqual(n, 1, f"{f.name} votes pending without filter_standing")
+
+    # ── G2 ──────────────────────────────────────────────────────────────
+    def test_g2_standing_approval_is_not_voted_and_leaves_pending(self):
+        self._j("cit_approved_proposals.json",
+                [{"id": "A", "approved_at": "2026-07-30T00:00:00"},
+                 {"id": "LEGACY", "approved_at": "2026-08-01T00:00:00", "title": "old"},
+                 {"id": "DONE", "approved_at": "2026-08-01T00:00:00"}])
+        self._j("cit_implementation_queue.json",
+                [{"proposal_id": "A", "status": "standing_quarantine"},
+                 {"proposal_id": "DONE", "status": "executed"}])
+        props = [{"id": i, "title": i} for i in ("A", "LEGACY", "DONE", "NEW")]
+        self._j("cit_pending_proposals.json", props)
+        out = self.bd.filter_standing(list(props), self.data / "cit_pending_proposals.json", "t")
+        self.assertEqual([p["id"] for p in out], ["DONE", "NEW"])   # recurrence + new are voted
+        self.assertEqual([p["id"] for p in self._j("cit_pending_proposals.json")], ["DONE", "NEW"])
+        q = {r["proposal_id"]: r for r in self._j("cit_implementation_queue.json")}
+        self.assertEqual(q["A"]["times_reseen"], 1)
+        self.assertEqual(q["LEGACY"]["status"], "queued")          # backfilled for the executor
+        self.assertEqual(q["LEGACY"]["times_reseen"], 1)
+
+    def test_g2_producer_does_not_refile_a_standing_finding(self):
+        import fundamentals_sanity as fs
+        self._j("cit_approved_proposals.json",
+                [{"id": "fund-sanity-BBIO", "approved_at": "2026-07-30T00:00:00"}])
+        v = [{"ticker": "BBIO", "impossible": True, "metric": "m", "value": 2.1,
+              "note": "n", "severity": "HIGH"},
+             {"ticker": "ZZZ", "impossible": True, "metric": "m", "value": 2.1,
+              "note": "n", "severity": "HIGH"}]
+        with patch.object(fs, "CIT_PENDING", self.data / "cit_pending_proposals.json"):
+            fs._file_bug_proposals(v)
+        self.assertEqual([p["id"] for p in self._j("cit_pending_proposals.json")],
+                         ["fund-sanity-ZZZ"])
+
+    # ── G3 ──────────────────────────────────────────────────────────────
+    def _queue_bbio(self, status="queued"):
+        self._j("cit_approved_proposals.json",
+                [{"id": "fund-sanity-BBIO", "approved_at": "2026-07-30T00:00:00"}])
+        self._j("cit_implementation_queue.json",
+                [{"proposal_id": "fund-sanity-BBIO", "status": status}])
+        self._j("chairman_action_required.json",
+                [{"id": "fund-sanity-BBIO", "status": "awaiting_chairman"},
+                 {"id": "fund-sanity-BBIO", "status": "awaiting_chairman", "source": "other"}])
+
+    def test_g3_bad_data_is_a_standing_quarantine_and_closes_the_inbox_row(self):
+        import fundamentals_sanity as fs
+        self._cache("BBIO", self.BAD); self._queue_bbio()
+        with patch.object(fs, "CACHE_DIR", self.data / "fe_fundamentals_cache"):
+            rep = self.bd.run()
+        self.assertEqual([e["id"] for e in rep["standing"]], ["fund-sanity-BBIO"])
+        q = self._j("cit_implementation_queue.json")[0]
+        self.assertEqual(q["status"], "standing_quarantine")
+        ch = self._j("chairman_action_required.json")
+        self.assertEqual(ch[0]["status"], "resolved")
+        self.assertEqual(ch[1]["status"], "awaiting_chairman")    # another producer's row
+        self.assertIn("fund-sanity-BBIO", self.bd.standing_ids())  # still not re-voted
+
+    def test_g3_corrected_data_executes_and_a_recurrence_is_voted_again(self):
+        import fundamentals_sanity as fs
+        good = json.loads(json.dumps(self.BAD)); good["by_year"]["long_term_debt"]["2024"] = 50.0
+        self._cache("BBIO", good); self._queue_bbio("standing_quarantine")
+        with patch.object(fs, "CACHE_DIR", self.data / "fe_fundamentals_cache"):
+            rep = self.bd.run()
+        self.assertEqual([e["id"] for e in rep["executed"]], ["fund-sanity-BBIO"])
+        self.assertNotIn("fund-sanity-BBIO", self.bd.standing_ids())
+
+    def test_g3_a_broken_control_goes_to_a_human_not_closed(self):
+        import fundamentals_sanity as fs
+        self._cache("BBIO", self.BAD); self._queue_bbio()
+        with patch.object(fs, "CACHE_DIR", self.data / "fe_fundamentals_cache"), \
+             patch.object(self.bd, "_fe_gate_wired", return_value=False):
+            rep = self.bd.run()
+        self.assertEqual([e["status"] for e in rep["needs_human"]], ["needs_human"])
+        self.assertEqual(self._j("chairman_action_required.json")[0]["status"], "awaiting_chairman")
+
+    def test_g3_the_real_fe_gate_is_detected_as_wired(self):
+        self.assertTrue(self.bd._fe_gate_wired())
+
+    def test_g3_legacy_approval_with_a_handler_is_backfilled_and_executed(self):
+        import fundamentals_sanity as fs
+        self._cache("BBIO", self.BAD)
+        self._j("cit_approved_proposals.json",
+                [{"id": "fund-sanity-BBIO", "approved_at": "2026-07-30T00:00:00"},
+                 {"id": "loop-sig-y", "approved_at": "2026-07-30T00:00:00"}])
+        with patch.object(fs, "CACHE_DIR", self.data / "fe_fundamentals_cache"):
+            rep = self.bd.run()
+        self.assertEqual(rep["backfilled"], ["fund-sanity-BBIO"])
+        self.assertEqual([r["proposal_id"] for r in self._j("cit_implementation_queue.json")],
+                         ["fund-sanity-BBIO"])
+        self.assertEqual([e["id"] for e in rep["standing"]], ["fund-sanity-BBIO"])
+
+    def test_g3_unhandled_rows_are_left_queued_and_counted(self):
+        self._j("cit_implementation_queue.json", [{"proposal_id": "loop-sig-x", "status": "queued"}])
+        rep = self.bd.run()
+        self.assertEqual(rep["no_handler_count"], 1)
+        self.assertEqual(self._j("cit_implementation_queue.json")[0]["status"], "queued")
+
+
 class TestOnlyCrucialBoardApprovalsReachTheChairman(unittest.TestCase):
     """Chairman directive 2026-11-09: board-approved changes go ahead; "only
     super crucial ones or ones that we will talk about in the future" still
