@@ -93,10 +93,31 @@ if [ -f "$TRACKED_HOOK" ]; then
     fi
 fi
 
+# Pick an interpreter that can actually import the firm. Bare `python3` is
+# whatever comes first on PATH, and on the Mac that is Framework 3.15 with no
+# numpy/pandas/dotenv/yfinance — so pushed from a plain Terminal the gate
+# ERRORed on 13 of 61 wiring tests before any of them could check a contract
+# (2026-11-12), and the only way through was --no-verify. Only /usr/bin/python3
+# (3.9) has the packages there; the VM uses ~/venv/bin/python3. A missing
+# package is a broken environment, not a broken contract, so say which.
+PY=""
+for cand in "${APEX_PYTHON:-}" "$HOME/venv/bin/python3" /usr/bin/python3 "$(command -v python3)"; do
+    [ -n "$cand" ] && [ -x "$cand" ] || continue
+    if "$cand" -c "import numpy, pandas, dotenv, yfinance" >/dev/null 2>&1; then
+        PY="$cand"; break
+    fi
+done
+if [ -z "$PY" ]; then
+    echo "[pre-push] BLOCKED: no python3 on this host can import numpy/pandas/dotenv/yfinance,"
+    echo "[pre-push] so the gate cannot run. Set APEX_PYTHON to an interpreter that has them."
+    exit 1
+fi
+echo "[pre-push] using $PY"
+
 echo "[pre-push] fast gate: wiring audit + TestWiringContracts (local + TZ=UTC)..."
 
-python3 wiring_audit.py --quiet || {
-    echo "[pre-push] BLOCKED: wiring contract violation. Run: python3 wiring_audit.py"
+"$PY" wiring_audit.py --quiet || {
+    echo "[pre-push] BLOCKED: wiring contract violation. Run: $PY wiring_audit.py"
     exit 1
 }
 
@@ -137,7 +158,7 @@ _report_smoke_failure() {
 # other test class in test_pipeline_smoke.py runs off the push path via
 # slow_gate.py.
 SMOKE_OUT="$(mktemp)"
-PYTHONUNBUFFERED=1 python3 -m unittest -v test_pipeline_smoke.TestWiringContracts \
+PYTHONUNBUFFERED=1 "$PY" -m unittest -v test_pipeline_smoke.TestWiringContracts \
     > "$SMOKE_OUT" 2>&1 || {
     echo "[pre-push] BLOCKED: wiring-contract tests failed:"
     _report_smoke_failure "$SMOKE_OUT"
@@ -150,7 +171,7 @@ PYTHONUNBUFFERED=1 python3 -m unittest -v test_pipeline_smoke.TestWiringContract
 # (00:00-04:00 ET) — found 2026-08-02, green locally the whole time.
 # "Green on the Mac is not green" (memory host_divergence_is_a_bug_class);
 # the gate should measure the host that actually runs the money.
-TZ=UTC PYTHONUNBUFFERED=1 python3 -m unittest -v test_pipeline_smoke.TestWiringContracts \
+TZ=UTC PYTHONUNBUFFERED=1 "$PY" -m unittest -v test_pipeline_smoke.TestWiringContracts \
     > "$SMOKE_OUT" 2>&1 || {
     echo "[pre-push] BLOCKED: wiring-contract tests pass locally but FAIL under TZ=UTC,"
     echo "[pre-push] which is the zone the GCP VM runs in. This would ship red."
