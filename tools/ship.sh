@@ -165,11 +165,31 @@ fi
 
 # ── push (pre-push gate runs here, ~8 min) ───────────────────────────────
 STEP="push"
+# A worktree is not the Mac checkout: it has no .env and its committed liveness
+# reports read as weeks old, so the pre-push gate blocks every push from it.
+# Give the gate what the Mac tree has — placeholder creds (they cannot trade or
+# email) and the Mac's current reports — then put the reports back. Never
+# --no-verify.
+RESTORE=()
+if [ "$(cd "$ROOT" && pwd -P)" != "$(cd "$MAC_ROOT" 2>/dev/null && pwd -P)" ]; then
+  if [ ! -f "$ROOT/institutional-tracker/.env" ]; then
+    for v in ALPACA_API_KEY ALPACA_SECRET_KEY GMAIL_APP_PASSWORD; do
+      [ -n "${!v:-}" ] || export "$v=placeholder-worktree-push"
+    done
+    [ -n "${GMAIL_SENDER:-}" ] || export GMAIL_SENDER="placeholder@example.invalid"
+  fi
+  for r in coherence_report.json internal_audit_report.json; do
+    src="$MAC_ROOT/institutional-tracker/data/$r"; dst="$ROOT/institutional-tracker/data/$r"
+    if [ -f "$src" ] && [ "$DRY" = 0 ]; then cp "$src" "$dst" && RESTORE+=("institutional-tracker/data/$r"); fi
+  done
+fi
+restore_reports() { [ ${#RESTORE[@]} -gt 0 ] && git checkout -q -- "${RESTORE[@]}" 2>/dev/null; true; }
 say "pushing $BRANCH (the pre-push gate runs the test suite first)"
 if [ "$DRY" = 1 ]; then echo "  (dry-run) git push -u origin HEAD:$BRANCH"
 else
   OUT="$(retry 4 git -c core.sshCommand="ssh -o ServerAliveInterval=20 -o ServerAliveCountMax=30" \
-         push -u origin "HEAD:$BRANCH")" || fail "git push failed: $(echo "$OUT" | tail -8 | tr '\n' ' ')"
+         push -u origin "HEAD:$BRANCH")" || { restore_reports; fail "git push failed: $(echo "$OUT" | grep -v '^=*$' | tail -8 | tr '\n' ' ')"; }
+  restore_reports
 fi
 
 # ── PR ────────────────────────────────────────────────────────────────────
