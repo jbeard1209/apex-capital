@@ -71,6 +71,26 @@ cloned, so re-run it on a fresh checkout:
 git config core.sshCommand "ssh -o ServerAliveInterval=20 -o ServerAliveCountMax=30"
 ```
 
+## Shipping and the needs-Jack list (read before ending a session)
+
+- **Ship it yourself.** `tools/ship.sh -m "msg" path...` commits on a `claude/*`
+  branch, pushes (the pre-push gate runs), opens the PR, waits for CI and merges,
+  then fast-forwards the Mac checkout. It never `git add -A`s and refuses `.env`,
+  Kalshi arm files and `data/` (without `--allow-data`). Work in a git worktree
+  when another session owns the Mac tree. Use `gh` directly for anything else.
+- **Deploying is still Jack's call.** `tools/ship.sh --deploy` / `--deploy-only`
+  runs `gcp_setup/deploy.sh` only after Jack said yes in the thread, and refuses
+  if the Mac tree's code differs from `origin/main` (deploy.sh ships the Mac tree).
+- **One list for Jack: `docs/NEEDS_JACK.md`.** Add to it only after you tried and
+  a step really failed, with the exact error: `tools/needs_jack.sh "title" "error +
+  the one thing to do"`. No "Jack, paste these commands" in threads. ship.sh adds
+  its own failures there automatically.
+- **Drift is measured, not remembered.** `tools/sync_drift_check.py` (launchd
+  `com.apexcapital.syncdrift`, hourly) compares Mac / origin/main / VM, raises
+  persistent drift to the Chairman queue + digest, and publishes NEEDS_JACK.md with
+  a sync section to the private apex-reports repo. Probe it read-only with
+  `/usr/bin/python3 tools/sync_drift_check.py --no-alert`.
+
 ## Model metrics — single source of truth
 Never hardcode or guess an AUC. `model_metrics.get_model_metrics()` reads the real values
 from `data/model_meta.json` (written by `predictive_model/ml_model.py`); it returns

@@ -55,5 +55,12 @@ tail -5 logs/vmstate_launchd.log
 - **`com.apexcapital.catchup`** — `catch_up.py` on login and every 20 min,
   to run jobs missed while the Mac was asleep.
 
+- **`com.apexcapital.syncdrift`** — `tools/sync_drift_check.py --heal --publish`
+  hourly. Compares the Mac checkout, GitHub `origin/main` and the VM's deployed
+  files (md5, data/ and .env excluded). Persistent drift goes to the Chairman
+  queue + daily digest and resolves itself when cleared; it fast-forwards the
+  Mac checkout when nothing can be lost, and publishes `docs/NEEDS_JACK.md` to
+  the private apex-reports repo. Log: `logs/syncdrift_launchd.log`.
+
 Both plists are committed here so a Mac rebuild restores them. The copies in
 `~/Library/LaunchAgents/` are what actually run — if you edit one, copy it back.

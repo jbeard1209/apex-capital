@@ -22054,6 +22054,160 @@ class TestRiskLimitsAreDerivedNotInherited(unittest.TestCase):
         self.assertNotIn("hard_floor", out)
 
 
+class TestMacGithubVmDriftIsMeasuredNotRemembered(unittest.TestCase):
+    """tools/sync_drift_check.py compares three copies of the code (Mac tree,
+    origin/main, the VM's deployed files). Nothing kept them equal but a session
+    remembering to push/merge/deploy. These pin: a real divergence is flagged,
+    a cleared one resolves its queue entry, a comparison that could NOT run
+    never resolves anything, data/ and .env are out of scope, and an empty
+    deployable set is never "in sync". Also pins tools/ship.sh's refusals."""
+
+    @classmethod
+    def setUpClass(cls):
+        import importlib.util
+        root = Path(__file__).resolve().parent.parent
+        cls.root = root
+        spec = importlib.util.spec_from_file_location(
+            "sync_drift_check_t", str(root / "tools" / "sync_drift_check.py"))
+        cls.S = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cls.S)
+
+    def _repo(self):
+        d = Path(tempfile.mkdtemp(prefix="drift-"))
+        self.addCleanup(shutil.rmtree, str(d), True)
+        (d / "institutional-tracker" / "data").mkdir(parents=True)
+        (d / "docs").mkdir()
+        (d / "institutional-tracker" / "a.py").write_text("A = 1\n")
+        (d / "institutional-tracker" / "b.py").write_text("B = 2\n")
+        (d / "institutional-tracker" / "data" / "state.json").write_text("{}\n")
+        (d / "institutional-tracker" / ".env").write_text("X=1\n")
+        (d / "docs" / "INFRASTRUCTURE.md").write_text("infra\n")
+        g = lambda *a: subprocess.run(["git", "-C", str(d), *a], check=True,
+                                      capture_output=True)
+        g("init", "-q"); g("add", "-A")
+        g("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "init")
+        vm = d / "vm"
+        vm.mkdir()
+        for f in ("a.py", "b.py"):
+            shutil.copy(str(d / "institutional-tracker" / f), str(vm / f))
+        shutil.copy(str(d / "docs" / "INFRASTRUCTURE.md"), str(vm / "INFRASTRUCTURE.md"))
+        return d, vm
+
+    def test_deployable_set_excludes_data_and_env_and_maps_infrastructure(self):
+        d, _ = self._repo()
+        want = self.S.main_deployed_md5(d, "HEAD")
+        self.assertEqual(sorted(want), ["INFRASTRUCTURE.md", "a.py", "b.py"])
+
+    def test_vm_divergence_is_flagged_and_clears_after_revert(self):
+        d, vm = self._repo()
+        want = self.S.main_deployed_md5(d, "HEAD")
+        out, err = self.S.compare_vm(want, vm_local_dir=vm)
+        self.assertIsNone(err)
+        self.assertEqual((out["differs"], out["missing"], out["n_examined"]), ([], [], 3))
+        (vm / "a.py").write_text("A = 999\n")
+        (vm / "b.py").unlink()
+        out, err = self.S.compare_vm(want, vm_local_dir=vm)
+        self.assertEqual(out["differs"], ["a.py"])
+        self.assertEqual(out["missing"], ["b.py"])
+        self.assertEqual(sorted(self.S.vm_issues(out)), ["vm_differs", "vm_missing"])
+
+    def test_an_empty_deployable_set_is_cannot_tell_not_in_sync(self):
+        out, err = self.S.compare_vm({})
+        self.assertIsNotNone(err)
+
+    def test_mac_uncommitted_code_is_drift_but_data_edits_are_not(self):
+        d, _ = self._repo()
+        (d / "institutional-tracker" / "data" / "state.json").write_text('{"x":1}\n')
+        mac, err = self.S.compare_mac(d, "HEAD")
+        self.assertIsNone(err)
+        self.assertNotIn("mac_uncommitted", self.S.mac_issues(mac))
+        (d / "institutional-tracker" / "a.py").write_text("A = 2\n")
+        mac, _ = self.S.compare_mac(d, "HEAD")
+        self.assertEqual(self.S.mac_issues(mac)["mac_uncommitted"],
+                         ["institutional-tracker/a.py"])
+
+    def test_grace_persists_first_seen_and_unchecked_kinds_keep_state(self):
+        t0 = datetime(2026, 11, 12, tzinfo=timezone.utc)
+        st = self.S.update_state({}, {"vm_differs": ["a.py"]}, {"vm_differs"}, t0)
+        self.assertFalse(self.S.due("vm_differs", st, t0 + timedelta(hours=5)))
+        st = self.S.update_state(st, {"vm_differs": ["a.py"]}, {"vm_differs"},
+                                 t0 + timedelta(hours=7))
+        self.assertEqual(st["vm_differs"]["first_seen"], t0.isoformat(timespec="seconds"))
+        self.assertTrue(self.S.due("vm_differs", st, t0 + timedelta(hours=7)))
+        # VM unreachable next hour: its state must survive, not reset
+        st2 = self.S.update_state(st, {}, {"mac_unpushed"}, t0 + timedelta(hours=8))
+        self.assertIn("vm_differs", st2)
+        # comparison ran and found nothing: forgotten
+        st3 = self.S.update_state(st, {}, {"vm_differs"}, t0 + timedelta(hours=9))
+        self.assertNotIn("vm_differs", st3)
+
+    def test_alert_raises_once_resolves_on_clear_and_never_on_silence(self):
+        calls = {"submit": [], "resolve": [], "email": []}
+        open_keys = set()
+
+        def submit(entries, source, path=None):
+            new = [e for e in entries if e["dedup_key"] not in open_keys]
+            for e in new:
+                open_keys.add(e["dedup_key"])
+            calls["submit"].append([e["dedup_key"] for e in entries])
+            return len(new), len(entries) - len(new)
+
+        def resolve(keys, source, path=None, note=None):
+            gone = [k for k in keys if k in open_keys]
+            for k in gone:
+                open_keys.discard(k)
+            calls["resolve"].append(list(keys))
+            return [{"dedup_key": k} for k in gone]
+
+        email = lambda subj, body: calls["email"].append(subj)
+        issue = {"kind": "vm_differs", "n": 1, "items": ["a.py"], "age_h": 7.0,
+                 "due": True, "info_only": False}
+        rep = {"issues": [issue], "checked": ["vm_differs", "vm_missing"]}
+        a1 = self.S.alert(rep, self.root, submit=submit, resolve=resolve, email=email)
+        a2 = self.S.alert(rep, self.root, submit=submit, resolve=resolve, email=email)
+        self.assertEqual((a1["raised"], a2["raised"]), (["vm_differs"], []))
+        self.assertEqual(len(calls["email"]), 1, "the digest email must go once, not hourly")
+        # VM unreachable: vm kinds not checked -> nothing resolved
+        self.S.alert({"issues": [], "checked": ["mac_unpushed"]}, self.root,
+                     submit=submit, resolve=resolve, email=email)
+        self.assertIn("sync_drift:vm_differs", open_keys)
+        # comparison ran, clean -> resolved
+        a4 = self.S.alert({"issues": [], "checked": ["vm_differs", "vm_missing"]},
+                          self.root, submit=submit, resolve=resolve, email=email)
+        self.assertEqual(a4["resolved"], ["sync_drift:vm_differs"])
+
+    def test_parse_md5sum_reads_gnu_missing_file_lines(self):
+        got, missing = self.S.parse_md5sum(
+            "d41d8cd98f00b204e9800998ecf8427e  a.py\n"
+            "md5sum: agents/x.py: No such file or directory\n")
+        self.assertEqual(got, {"a.py": "d41d8cd98f00b204e9800998ecf8427e"})
+        self.assertEqual(missing, ["agents/x.py"])
+
+    def _ship(self, d, *args):
+        env = dict(os.environ, APEX_MAC_ROOT=str(d))
+        return subprocess.run(["bash", str(self.root / "tools" / "ship.sh"), *args],
+                              cwd=str(d), capture_output=True, text=True, env=env,
+                              timeout=60)
+
+    def test_ship_refuses_env_arm_and_data_files_and_non_claude_branches(self):
+        d, _ = self._repo()
+        (d / "institutional-tracker" / ".env").write_text("X=2\n")
+        r = self._ship(d, "--dry-run", "-b", "claude/t", "-m", "m",
+                       "institutional-tracker/.env")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn(".env", r.stderr)
+        (d / "kalshi_mirror_armed.json").write_text("{}")
+        r = self._ship(d, "--dry-run", "-b", "claude/t", "-m", "m", "kalshi_mirror_armed.json")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("arm file", r.stderr)
+        (d / "institutional-tracker" / "data" / "state.json").write_text('{"y":1}\n')
+        r = self._ship(d, "--dry-run", "-b", "claude/t", "-m", "m",
+                       "institutional-tracker/data/state.json")
+        self.assertIn("--allow-data", r.stderr)
+        r = self._ship(d, "--dry-run", "-b", "main", "-m", "m", "docs")
+        self.assertIn("claude/*", r.stderr)
+
+
 class TestThePriceTheoryAgentCommentsWithNumbers(unittest.TestCase):
     """An agent whose output is economic commentary is the purest instance of
     the firm's worst failure mode: fluent, confident, unfalsifiable.
