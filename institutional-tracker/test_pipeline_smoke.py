@@ -1522,6 +1522,154 @@ class TestBoardApprovalsAreExecutedNotReVoted(unittest.TestCase):
         self.assertEqual(self._j("cit_implementation_queue.json")[0]["status"], "queued")
 
 
+class TestDeputyBoardCanDecide(unittest.TestCase):
+    """2026-11-12: on the VM the deputy board approved 0 proposals a day for a
+    week, 8 of 8 NEEDS_INFO, while its clarification file grew to 8,654 rows.
+    (1) the evidence test was narrower than the rule every deputy quotes
+    ("file:line, metric, or data path") and read only `evidence`; (2) a
+    re-vote pasted the deputies' own questions ("...before CRO can approve")
+    into the fix, so the CRO and IRM deputies read their own names and
+    DEFERred forever; (3) a question was asked even when no answer could pass
+    the row, and asked again after CIT had answered. Gates: G1 metric evidence
+    passes and vague evidence still asks; G2 a re-vote is judged on the
+    answers, not the questions; G3 undecidable rows go to the full board once,
+    with no new question and no Chairman request; G4 a mandate DEFER (risk,
+    governance) vetoes deputy approval."""
+
+    def setUp(self):
+        import deputy_board as d
+        self.d = d
+        self.asked = []
+        self._p = [patch.object(d, "_request_clarification_batch",
+                                lambda prop, qs: self.asked.append((prop.get("id"), qs)))]
+        for p in self._p: p.start()
+
+    def tearDown(self):
+        for p in self._p: p.stop()
+
+    def _prop(self, **kw):
+        base = {"id": "CIT-T-1", "category": "VISION", "severity": "MEDIUM", "confidence": 80,
+                "title": "Event-triggered research cycles",
+                "description": "R&D fires on a fixed 3-day clock.",
+                "evidence": "last_research_run: 2026-11-09 (70h ago). Canary fired 343 alert(s).",
+                "proposed_fix": "In canary_agent.py: when a sector ETF moves >3%, write "
+                                "data/rd_trigger.json; main.py Step 3c runs rd_team_leader.py."}
+        base.update(kw); return base
+
+    def _vote(self, p):
+        with patch("apex_llm.is_available", lambda *a, **k: False):
+            return self.d._vote_on_proposal(p)
+
+    def test_g1_counted_metrics_are_evidence(self):
+        for ev in ("buy_log has 121 entries; all use flat sizing.",
+                   "last ran 70h ago; 343 alert(s) today",
+                   "17 agent(s) have >=4 consecutive zero-pick cycles"):
+            self.assertTrue(self.d._evidence_is_precise({"evidence": ev}), ev)
+        self.assertTrue(self.d._evidence_is_precise(
+            {"evidence": "", "description": "see data/cit_hr_memo.json"}))
+        for ev in ("Things look bad and should be improved.", "Performance is weak", ""):
+            self.assertFalse(self.d._evidence_is_precise(
+                {"evidence": ev, "description": "Improve the system.",
+                 "proposed_fix": "Make it better."}), ev)
+        self.assertEqual(self._vote(self._prop())["classification"], "UNANIMOUS")
+
+    def test_g1_vague_evidence_still_asks_first_time(self):
+        r = self._vote(self._prop(evidence="It seems slow.", description="Slow research.",
+                                  proposed_fix="Add an event trigger hook to the research cycle so it fires on large moves."))
+        self.assertEqual(r["classification"], "NEEDS_INFO")
+        self.assertFalse(r["passed"])
+        self.assertEqual(len(self.asked), 1)
+
+    def test_g2_revote_is_not_poisoned_by_its_own_questions(self):
+        log = [{"deputy": "Deputy CRO", "source": "deputy_board", "answer": "see above",
+                "question": "No verifiable evidence cited. CIT Director must provide "
+                            "specific evidence before CRO can approve."},
+               {"deputy": "Deputy IRM", "source": "deputy_board", "answer": "see above",
+                "question": "IRM requires a specific, verifiable evidence reference; "
+                            "governance audit report board vote."}]
+        r = self._vote(self._prop(clarification_log=log))
+        by = {v["deputy"]: v["vote"] for v in r["votes"]}
+        self.assertEqual(by["Deputy CRO"], "APPROVE")
+        self.assertEqual(by["Deputy IRM"], "APPROVE")
+        self.assertTrue(r["passed"])
+
+    def test_g2_keywords_do_not_fire_inside_words(self):
+        p = self._prop(title="Confirm firm-wide macro data across sectors",
+                       proposed_fix="In macro_agent.py confirm data across the firm.")
+        by = {v["deputy"]: v["vote"] for v in self._vote(p)["votes"]}
+        self.assertEqual(by["Deputy CRO"], "APPROVE")
+        self.assertEqual(by["Deputy IRM"], "APPROVE")
+
+    def test_g3_answered_and_still_unclear_goes_to_full_board(self):
+        log = [{"deputy": "Deputy CoS", "source": "deputy_board",
+                "question": "Provide file:line.", "answer": "CIT team deliberation findings"}]
+        r = self._vote(self._prop(evidence="It seems slow.", description="Slow.",
+                                  proposed_fix="Add an event trigger hook to the research cycle so it fires on large moves.",
+                                  clarification_log=log))
+        self.assertEqual(r["classification"], "FULL_BOARD")
+        self.assertEqual(self.asked, [])
+
+    def test_g3_unreachable_approval_asks_nothing(self):
+        # 2 APPROVE + 1 CLARIFY + 4 plain DEFER: even if the question were
+        # answered perfectly, 3 < APPROVAL_THRESHOLD. Asking it is pure noise.
+        class V:
+            def __init__(s, name, vote): s.name, s._v = name, vote
+            def vote(s, p): return {"vote": s._v, "rationale": "stub"}
+        voters = [V("a", "APPROVE"), V("b", "APPROVE"), V("c", "CLARIFY")] + \
+                 [V(f"d{i}", "DEFER") for i in range(4)]
+        with patch.object(self.d, "DEPUTY_VOTERS", voters):
+            r = self._vote(self._prop())
+        self.assertFalse(r["passed"])
+        self.assertEqual(r["classification"], "FULL_BOARD")
+        self.assertEqual(self.asked, [])
+        # ...and the same split with one more CLARIFY instead of a DEFER IS
+        # reachable (2+2=4), so it must ask, not hand off.
+        voters[3] = V("c2", "CLARIFY")
+        with patch.object(self.d, "DEPUTY_VOTERS", voters):
+            r = self._vote(self._prop())
+        self.assertEqual(r["classification"], "NEEDS_INFO")
+        self.assertEqual(len(self.asked), 1)
+
+    def test_g3_run_hands_off_once_and_never_to_the_chairman(self):
+        with tempfile.TemporaryDirectory() as t:
+            root = Path(t); (root / "data").mkdir()
+            ev = {"evidence": "It seems slow.", "description": "Slow.",
+                  "proposed_fix": "Add an event trigger hook to the research cycle so it fires on large moves.",
+                  "clarification_log": [{"source": "deputy_board", "question": "q", "answer": "a"}]}
+            rows = [self._prop(id="CIT-T-1", **ev),
+                    self._prop(id="CIT-T-2", clarification_rounds=3, **ev)]
+            for n, v in (("cit_pending_proposals.json", rows), ("cit_approved_proposals.json", []),
+                         ("cit_implementation_queue.json", []), ("cos_meeting_requests.json", []),
+                         ("chairman_action_required.json", []), ("cit_clarification_requests.json", [])):
+                (root / "data" / n).write_text(json.dumps(v))
+            import board_dispatch as bd
+            orig = os.getcwd(); os.chdir(root)
+            try:
+                with patch.object(bd, "DATA", root / "data"), \
+                     patch("apex_llm.is_available", lambda *a, **k: False), \
+                     patch("firm_channel.request_cos_meeting") as cos:
+                    r1 = self.d.run_deputy_board()
+                    r2 = self.d.run_deputy_board()
+                pend = json.loads((root / "data" / "cit_pending_proposals.json").read_text())
+            finally:
+                os.chdir(orig)
+        self.assertEqual(r1["handed_to_full_board_count"], 2)
+        self.assertEqual(r2.get("proposals_reviewed", 0), 0)      # not re-voted
+        self.assertEqual(len(pend), 2)                             # still pending for the board
+        self.assertTrue(all(p.get("deputy_handoff_at") for p in pend))
+        self.assertTrue(all(p.get("status") != "ESCALATED_TO_CHAIRMAN" for p in pend))
+        cos.assert_not_called()
+        self.assertEqual(self.asked, [])
+
+    def test_g4_risk_control_defer_vetoes_a_majority(self):
+        p = self._prop(proposed_fix="In manager_agent.py multiply MAX_POSITION_SIZE_PCT by "
+                                    "a conviction factor; log it in buy_log.")
+        r = self._vote(p)
+        self.assertGreaterEqual(r["approves"], self.d.APPROVAL_THRESHOLD)
+        self.assertFalse(r["passed"])
+        self.assertEqual(r["classification"], "FULL_BOARD")
+
+
 class TestOnlyCrucialBoardApprovalsReachTheChairman(unittest.TestCase):
     """Chairman directive 2026-11-09: board-approved changes go ahead; "only
     super crucial ones or ones that we will talk about in the future" still
@@ -35661,14 +35809,15 @@ class TestKalshiReportNeverReachesAPublicRepo(unittest.TestCase):
                 cfg_path.write_text(json.dumps(cfg))
             with patch.object(kp, "CONFIG_FILE", cfg_path), \
                     patch.object(kp, "visibility_verdict", return_value=verdict), \
-                    patch.object(kp, "fetch_report", fetch or (lambda: "report")), \
-                    patch.object(kp, "fetch_history", lambda: None), \
-                    patch.object(kp, "push", lambda r, t, e=None: pushed.append(t) or True), \
+                    patch.object(kp, "fetch_report", fetch or (lambda **k: "report")), \
+                    patch.object(kp, "fetch_history", lambda **k: None), \
+                    patch.object(kp, "fetch_pod_history", lambda **k: None), \
+                    patch.object(kp, "push", lambda r, t, e=None, k=None: pushed.append(t) or True), \
                     patch("sys.stdout", new_callable=io.StringIO):
                 return kp.main([]), pushed
 
     def test_public_failed_or_unconfigured_runs_push_nothing(self):
-        def boom():
+        def boom(**k):
             raise RuntimeError("ssh exit 255")
         self.assertEqual(self._main(None), (2, []))
         self.assertEqual(self._main({"remote": self.REMOTE}, verdict=(False, "PUBLIC")), (1, []))
@@ -35834,9 +35983,10 @@ class TestKalshiPnlIsRecordedLikeEveryOtherDesk(unittest.TestCase):
             pushed = []
             with patch.object(kp, "CONFIG_FILE", cfg), \
                     patch.object(kp, "visibility_verdict", return_value=(True, "private")), \
-                    patch.object(kp, "fetch_report", lambda: "report"), \
-                    patch.object(kp, "fetch_history", lambda: doc), \
-                    patch.object(kp, "push", lambda r, t, e=None: pushed.append(e) or True), \
+                    patch.object(kp, "fetch_report", lambda **k: "report"), \
+                    patch.object(kp, "fetch_history", lambda **k: doc), \
+                    patch.object(kp, "fetch_pod_history", lambda **k: None), \
+                    patch.object(kp, "push", lambda r, t, e=None, k=None: pushed.append(e) or True), \
                     patch("sys.stdout", new_callable=io.StringIO):
                 self.assertEqual(kp.main([]), 0)
             self.assertEqual(set(pushed[0]), {kp.HISTORY_NAME, kp.HISTORY_CSV})
@@ -35854,6 +36004,155 @@ class TestKalshiPnlIsRecordedLikeEveryOtherDesk(unittest.TestCase):
         for bad in ("--record", "--arm", "deploy.sh", "rm ", "--live", "--execute",
                     "crontab", "> "):
             self.assertNotIn(bad, run, bad)
+
+
+class TestEveryPodPnlIsRecordedDaily(unittest.TestCase):
+    """Chairman, 2026-11-12: every desk's P&L is kept day by day, not only
+    Kalshi's. pod_pnl_report.json was a snapshot overwritten on every run, so
+    yesterday's pod figures were lost. pod_pnl_history.py keeps one row per
+    day. The firm half is back-filled from broker snapshots and is exact. A pod
+    mark exists only for a day the recorder ran, and is otherwise None."""
+
+    PERF = {"snapshots": [
+        {"snapshot_date": "2026-11-03", "portfolio_value": 100000.0, "cash": 50000.0,
+         "n_positions": 3, "pnl_today_usd": 10.0, "pnl_inception_usd": 0.0},
+        {"snapshot_date": "2026-11-04", "portfolio_value": 100500.0, "cash": 50000.0,
+         "n_positions": 3, "pnl_today_usd": 500.0, "pnl_inception_usd": 500.0},
+        {"snapshot_date": "2026-11-05", "portfolio_value": float("nan"), "cash": 1.0}]}
+
+    @staticmethod
+    def _alloc(cur=110.0, realised=None, avg=100.0):
+        pod = {"name": "R&D", "budget": 5000.0, "deployed_value": 10 * cur,
+               "budget_remaining": 3900.0,
+               "positions": {"AAA": {"qty": 10.0, "avg_entry": avg, "current_price": cur}}}
+        if realised is not None:
+            pod["pnl_realised_lifetime"] = realised
+        return {"last_updated": "x", "pods": {"pod1_rd": pod},
+                "unattributed": {"ZZZ": {"qty": 2.0, "price": 50.0}}}
+
+    def _rec(self, day, alloc, existing=None):
+        import pod_pnl_history as ph
+        return ph.record(now=datetime(2026, 11, day, 21, tzinfo=timezone.utc), alloc=alloc,
+                         perf=self.PERF, existing=existing or {}, write=False, host="vm")
+
+    def test_firm_is_backfilled_and_unmarked_pods_are_none(self):
+        doc = self._rec(5, self._alloc())
+        rows = {r["date"]: r for r in doc["snapshots"]}
+        self.assertEqual(sorted(rows), ["2026-11-03", "2026-11-04", "2026-11-05"])
+        self.assertEqual(rows["2026-11-04"]["firm"]["pnl_today_usd"], 500.0)
+        for d in ("2026-11-03", "2026-11-04"):
+            self.assertFalse(rows[d]["marked"])
+            self.assertIsNone(rows[d]["pods"])
+        t = rows["2026-11-05"]
+        self.assertTrue(t["marked"])
+        p = t["pods"]["pod1_rd"]
+        self.assertEqual((p["cost_basis_usd"], p["unrealised_usd"]), (1000.0, 100.0))
+        self.assertIsNone(p["pnl_change_usd"])          # first mark: nothing to compare
+        self.assertEqual(t["unattributed"]["market_value"], 100.0)
+        self.assertIsNone(t["unattributed"]["unrealised_usd"])
+
+    def test_an_earlier_mark_is_frozen_and_the_change_links_marks(self):
+        d5 = self._rec(5, self._alloc(cur=110.0))
+        # Next day the pod sold some and prices moved: realised appears.
+        d6 = self._rec(6, self._alloc(cur=120.0, realised=30.0), existing=d5)
+        rows = {r["date"]: r for r in d6["snapshots"]}
+        self.assertEqual(rows["2026-11-05"]["pods"]["pod1_rd"]["unrealised_usd"], 100.0)
+        p = rows["2026-11-06"]["pods"]["pod1_rd"]
+        # (200 + 30) - (100 + 0)
+        self.assertEqual(p["pnl_change_usd"], 130.0)
+        self.assertEqual(p["change_since"], "2026-11-05")
+        self.assertEqual(d6["summary"]["latest_mark"], "2026-11-06")
+
+    def test_POISON_PILL_an_unpriced_position_is_not_a_partial_sum(self):
+        """A position with no entry price must make the pod's P&L unknown. A
+        partial sum would report a real-looking number missing one position."""
+        doc = self._rec(5, self._alloc(avg=None))
+        p = doc["snapshots"][-1]["pods"]["pod1_rd"]
+        self.assertIsNone(p["unrealised_usd"])
+        self.assertIsNone(p["cost_basis_usd"])
+        import pod_pnl_history as ph
+        self.assertIsNone(ph._num(float("nan")))
+        self.assertIsNone(ph._num("n/a"))
+
+    def test_csv_writes_unmeasured_as_an_empty_cell(self):
+        import pod_pnl_history as ph
+        doc = self._rec(5, self._alloc(avg=None))
+        lines = ph.history_csv(doc).strip().splitlines()
+        self.assertEqual(len(lines), 3)                 # header, pod, unattributed
+        col = list(ph.CSV_COLS).index("unrealised_usd")
+        self.assertEqual(lines[1].split(",")[col], "")
+        firm = ph.firm_csv(doc).strip().splitlines()
+        self.assertEqual(len(firm), 4)
+        self.assertNotIn("nan", firm[-1].lower())
+
+    def test_json_mode_is_read_only(self):
+        import io
+        import pod_pnl_history as ph
+        with tempfile.TemporaryDirectory() as td:
+            f = Path(td) / "h.json"
+            with patch.object(ph, "HISTORY_FILE", f), \
+                    patch("sys.stdout", new_callable=io.StringIO) as out:
+                self.assertEqual(ph.main(["--json"]), 1)
+            self.assertFalse(f.exists())
+            self.assertIn("no history", out.getvalue())
+
+    def test_publisher_runs_on_the_vm_without_ssh(self):
+        """Local mode is what lets the hourly report run while the Mac sleeps:
+        no ssh, its own deploy key, and never a mirror over the VM's original."""
+        import io
+        import kalshi_report_publish as kp
+        seen = []
+
+        class R:
+            returncode, stdout, stderr = 0, "KALSHI COPY-TRADE MANAGER\nx", ""
+        kp.fetch_report(run=lambda a: seen.append(a) or R, local=True)
+        kp.fetch_report(run=lambda a: seen.append(a) or R, local=False)
+        self.assertNotEqual(seen[0][0], "ssh")
+        self.assertEqual(seen[1][0], "ssh")
+        env = kp._git_env("/k/key")
+        self.assertIn("-i /k/key", env["GIT_SSH_COMMAND"])
+        self.assertIsNone(kp._git_env(None))
+
+        pods = self._rec(5, self._alloc())
+        with tempfile.TemporaryDirectory() as td:
+            cfg = Path(td) / "c.json"
+            mirror = Path(td) / "mirror"
+            mirror.mkdir()
+            cfg.write_text(json.dumps({"remote": "git@github.com:a/b.git", "source": "local",
+                                       "ssh_key": "/k/key", "mirror_dir": str(mirror)}))
+            calls = []
+            with patch.object(kp, "CONFIG_FILE", cfg), \
+                    patch.object(kp, "visibility_verdict", return_value=(True, "private")), \
+                    patch.object(kp, "fetch_report", lambda **k: calls.append(k) or "r"), \
+                    patch.object(kp, "fetch_history", lambda **k: None), \
+                    patch.object(kp, "fetch_pod_history", lambda **k: pods), \
+                    patch.object(kp, "push",
+                                 lambda r, t, e=None, k=None: calls.append((set(e), k)) or True), \
+                    patch("sys.stdout", new_callable=io.StringIO):
+                self.assertEqual(kp.main([]), 0)
+            self.assertEqual(calls[0], {"local": True})
+            self.assertEqual(calls[1], ({kp.POD_HISTORY_NAME, kp.POD_HISTORY_CSV,
+                                         kp.FIRM_HISTORY_CSV}, "/k/key"))
+            self.assertEqual(list(mirror.iterdir()), [])
+
+    def test_publisher_rejects_a_pod_history_that_is_not_one(self):
+        import kalshi_report_publish as kp
+
+        class R:
+            def __init__(self, out):
+                self.returncode, self.stdout, self.stderr = 0, out, ""
+        self.assertIsNone(kp.fetch_pod_history(run=lambda a: R('{"sector": "kalshi"}')))
+        self.assertIsNone(kp.fetch_pod_history(run=lambda a: R('{"sector": "pods"}')))
+        good = json.dumps(self._rec(5, self._alloc()))
+        self.assertEqual(kp.fetch_pod_history(run=lambda a: R(good))["sector"], "pods")
+        a = kp.history_files(None, self._rec(5, self._alloc()))[kp.POD_HISTORY_NAME]
+        later = self._rec(5, self._alloc())
+        later["last_written"] = "y"
+        for r in later["snapshots"]:
+            r["recorded_at"] = "z"
+        b = kp.history_files(None, later)[kp.POD_HISTORY_NAME]
+        self.assertEqual(kp._volatile(kp.POD_HISTORY_NAME, a),
+                         kp._volatile(kp.POD_HISTORY_NAME, b))
 
 
 class TestKalshiCopytradeScoutDropsBadLeaders(unittest.TestCase):
