@@ -36,6 +36,34 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 
+# ── No test may write the live board queue ────────────────────────────────
+# board_dispatch.DATA is an absolute path (BASE_DIR / "data"); board_meeting's
+# router writes relative "data/..." files. Three router tests chdir into a
+# tempdir and so sandboxed the router, but not the enqueue() call it gained on
+# 2026-11-11 — every suite run since filed fixture rows "a", "b", "LTIA-1",
+# "LT-1/LT-2-cro_paralysis" into the REAL cit_implementation_queue.json, on the
+# Mac and (when the suite ran there 2026-11-12 08:35Z) on the VM. Row "b"
+# ("Suspend ML-driven buys", HIGH) sat awaiting the Chairman. Redirecting per
+# test is the guard that was already forgotten once; do it for the module.
+_REAL_DISPATCH_DATA = None
+_DISPATCH_SANDBOX = None
+
+
+def setUpModule():
+    global _REAL_DISPATCH_DATA, _DISPATCH_SANDBOX
+    import board_dispatch
+    _DISPATCH_SANDBOX = tempfile.TemporaryDirectory(prefix="dispatch_sandbox_")
+    _REAL_DISPATCH_DATA = board_dispatch.DATA
+    board_dispatch.DATA = Path(_DISPATCH_SANDBOX.name)
+
+
+def tearDownModule():
+    import board_dispatch
+    if _REAL_DISPATCH_DATA is not None:
+        board_dispatch.DATA = _REAL_DISPATCH_DATA
+    if _DISPATCH_SANDBOX is not None:
+        _DISPATCH_SANDBOX.cleanup()
+
 # The interpreter a pre-push gate line may invoke. Since 2026-11-12 the hook
 # runs `"$PY"` -- the first python on the host that can import the firm's deps
 # -- because bare `python3` on the Mac is 3.15 with no numpy/dotenv and every
@@ -1678,6 +1706,36 @@ class TestDeputyBoardCanDecide(unittest.TestCase):
         self.assertGreaterEqual(r["approves"], self.d.APPROVAL_THRESHOLD)
         self.assertFalse(r["passed"])
         self.assertEqual(r["classification"], "FULL_BOARD")
+
+
+class TestTheSuiteCannotWriteTheLiveBoardQueue(unittest.TestCase):
+    """The router tests chdir to a tempdir; the queue they also write is an
+    absolute path. Prove a routed approval lands in the sandbox, not in the
+    real data/cit_implementation_queue.json (see setUpModule)."""
+
+    def test_routing_an_approval_leaves_the_real_queue_untouched(self):
+        import board_meeting as bm
+        import board_dispatch as bd
+        real = Path(__file__).parent / "data" / "cit_implementation_queue.json"
+        before = real.read_bytes() if real.exists() else None
+        self.assertNotEqual(bd.DATA.resolve(), (Path(__file__).parent / "data").resolve(),
+                            "board_dispatch.DATA points at the live data dir during the suite")
+        orig = os.getcwd()
+        with tempfile.TemporaryDirectory() as d:
+            os.makedirs(os.path.join(d, "data")); os.chdir(d)
+            try:
+                with patch("email_buffer.buffer_email", MagicMock()), \
+                     patch("email_sender.send_daily_report", MagicMock()):
+                    bm._route_approved_cit_proposals([{
+                        "id": "leak-probe", "title": "wakeup_recovery.py missing logic_team.py catchup",
+                        "category": "INTEGRATION", "severity": "MEDIUM", "description": "x"}])
+            finally:
+                os.chdir(orig)
+        after = real.read_bytes() if real.exists() else None
+        self.assertEqual(before, after, "a test wrote the live implementation queue")
+        q = bd.DATA / "cit_implementation_queue.json"
+        self.assertTrue(q.exists() and "leak-probe" in q.read_text(),
+                        "enqueue did not run at all, so this test proves nothing")
 
 
 class TestOnlyCrucialBoardApprovalsReachTheChairman(unittest.TestCase):
