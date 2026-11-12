@@ -15,6 +15,7 @@
 # =============================================================================
 
 import argparse
+import gzip
 import json
 import logging
 import os
@@ -62,7 +63,16 @@ EXCLUDE_PATTERNS = {
     "edgar_cache",          # re-downloadable filings cache
     "filing_tickers.json",  # 102MB derived file, rebuilt by label builder
     "fe_fundamentals_cache",# re-downloadable EDGAR fundamentals
+    "slow_gate_logs",       # 33MB of push-gate run logs — logs, not state
 }
+
+# JSON at or above this size is stored gzipped (name.json.gz). Measured on the
+# VM 2026-11-12: each snapshot was ~344MB, 250MB of it three Kalshi files
+# (shadow_book 145MB, quote_track 65MB, predictions 31MB) that gzip ~13x. Three
+# snapshots were 1GB of a 9.7GB disk and put it back at 87% within a day of a
+# cleanup. They are NOT excluded: the shadow book and quote track are recorded
+# observations the calibration evidence rests on, and cannot be rebuilt.
+GZIP_MIN_BYTES = 8 * 1024 * 1024
 
 
 def run_backup(quiet: bool = False) -> dict:
@@ -86,7 +96,12 @@ def run_backup(quiet: bool = False) -> dict:
         if item.name in EXCLUDE_PATTERNS:
             continue
         if item.is_file() and item.suffix == ".json":
-            shutil.copy2(item, dest / item.name)
+            if item.stat().st_size >= GZIP_MIN_BYTES:
+                with open(item, "rb") as fi, gzip.open(dest / (item.name + ".gz"), "wb", compresslevel=6) as fo:
+                    shutil.copyfileobj(fi, fo, 1 << 20)
+                shutil.copystat(item, dest / (item.name + ".gz"))
+            else:
+                shutil.copy2(item, dest / item.name)
             copied.append(item.name)
         elif item.is_dir() and item.name not in EXCLUDE_PATTERNS:
             shutil.copytree(item, dest / item.name, ignore=shutil.ignore_patterns("backups"))
@@ -185,7 +200,12 @@ def restore_backup(date_str: str):
         if item.name == "_manifest.json":
             continue
         target = DATA_DIR / item.name
-        if item.is_file():
+        if item.is_file() and item.name.endswith(".json.gz"):
+            target = DATA_DIR / item.name[:-3]
+            with gzip.open(item, "rb") as fi, open(target, "wb") as fo:
+                shutil.copyfileobj(fi, fo, 1 << 20)
+            restored += 1
+        elif item.is_file():
             shutil.copy2(item, target)
             restored += 1
         elif item.is_dir():

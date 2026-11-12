@@ -254,11 +254,20 @@ def check_health(now=None, rows=None, balance=None, market=None, fetch=None):
         if balance is None:
             try:
                 b = kc.get_balance()
-                balance = float(b.get("balance", 0)) / 100.0
+                # The cash the copier can SPEND: the shards it trades on, not the
+                # account total. 2026-11-11 the total was $16.13 (above the $3
+                # cap, so this stayed silent) while the one shard every copied
+                # market trades on held $0.57, and three orders bounced.
+                per = ct.shard_cash(b)
+                if per is not None:
+                    balance = sum(per.get(i, 0.0) for i in cfg.get(
+                        "exchange_indexes", ct.DEFAULTS["exchange_indexes"]))
+                else:
+                    balance = float(b.get("balance", 0)) / 100.0
             except Exception as e:
                 add("KEY_FAILED", f"Kalshi key check failed: {str(e)[:160]}")
         if balance is not None and balance < cfg["per_day_usd"]:
-            add("LOW_BALANCE", f"Kalshi balance ${balance:.2f} is below the "
+            add("LOW_BALANCE", f"Kalshi cash on the shard(s) we trade is ${balance:.2f}, below the "
                 f"${cfg['per_day_usd']:.2f} daily cap; orders will bounce", "MEDIUM")
 
     day_ago = now - timedelta(days=1)

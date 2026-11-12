@@ -131,6 +131,7 @@ PAYOUT_MULTIPLE = 5.0      # payout cap = this x per_trade_usd, under max_payout
 MIN_PRICE = 0.15   # was 0.05 until 2026-11-06; see the module docstring
 MAX_PRICE = 0.85
 MAX_CONSECUTIVE_ERRORS = 3
+CASH_REFRESH_S = 30.0   # re-read per-shard cash this often; see cash_check()
 
 
 # ------------------------------------------------------------------ config --
@@ -351,6 +352,55 @@ def venue_check(dec, cfg, market):
             f"cash only on {cfg.get('exchange_indexes')}", **keep}
 
 
+def shard_cash(balance_resp):
+    """GET /portfolio/balance -> {exchange_index: dollars}, or None if unreadable.
+
+    Kalshi keeps a separate balance per exchange shard. The top-level "balance"
+    is the account TOTAL (cents) and says nothing about whether the shard a
+    market trades on can pay for it."""
+    try:
+        rows = (balance_resp or {}).get("balance_breakdown")
+        if not isinstance(rows, list):
+            return None
+        out = {}
+        for r in rows:
+            v = float(r.get("balance"))
+            if v != v:                      # NaN is not a balance
+                return None
+            out[int(r.get("exchange_index", 0))] = v
+        return out
+    except (TypeError, ValueError, AttributeError):
+        return None
+
+
+def cash_check(dec, cash, market):
+    """An opening order -> the same order, or a skip if its shard cannot pay.
+
+    Live, 2026-11-11 07:47 UTC: the account held $16.13, but $15.57 of it sat
+    on shard 1 (Combos) and $0.57 on shard 0, where every market we copy
+    trades. Three $0.70 copies went out, the exchange answered each with
+    HTTP 400 "insufficient_balance", and the three errors tripped the halt,
+    so a cash shortfall the copier could have read in advance stopped the
+    whole desk for the day. `cash` is shard_cash()'s map; None (unread)
+    leaves the order to the exchange, which rejects it and the halt still
+    backstops. Exits are never blocked: selling raises cash."""
+    if cash is None or dec["action"] != "order" or dec.get("reduce_only"):
+        return dec
+    idx = (market or {}).get("exchange_index")
+    try:
+        idx = 0 if idx is None else int(idx)
+    except (TypeError, ValueError):
+        idx = 0
+    have = cash.get(idx, 0.0)
+    need = float(dec.get("cost_usd") or 0)
+    if need <= have + 1e-9:
+        return dec
+    keep = {k: v for k, v in dec.items() if k in ("ticker", "leader_price", "lag_s",
+                                                    "cost_usd")}
+    return {"action": "skip", "reason": f"shard {idx} holds ${have:.2f}; this copy "
+            f"needs ${need:.2f}", **keep}
+
+
 def settle_time(ticker, cache):
     """When a market is expected to settle (datetime), or None if unknown.
 
@@ -520,8 +570,12 @@ def market_spent(ticker, rows=None, live=None):
 
 # ------------------------------------------------------------------- loop --
 
-def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order):
-    """One pass over every leader. Mutates `state` (seen ids). Returns rows written."""
+def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order,
+              cash=None):
+    """One pass over every leader. Mutates `state` (seen ids). Returns rows written.
+
+    `cash` is the per-shard balance map (shard_cash); when given, an opening
+    order its shard cannot pay is skipped, and each placed order is deducted."""
     written = []
     settle_cache = {}
     is_live, why_not = armed()
@@ -560,6 +614,8 @@ def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order):
                 if dec["action"] == "order":
                     # the record settle_time just read; no second request
                     dec = venue_check(dec, cfg, settle_cache.get(("market", dec["ticker"])))
+                if dec["action"] == "order" and is_live:
+                    dec = cash_check(dec, cash, settle_cache.get(("market", dec["ticker"])))
             elif dec["action"] == "order":
                 dec = exit_check(dec, net_position(dec["ticker"], rows_, live=is_live))
             row = {"at": now_.isoformat(), "leader": leader,
@@ -580,6 +636,13 @@ def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order):
                                  reduce_only=dec["reduce_only"], client_order_id=coid)
                     row.update(status="placed", order_id=resp.get("order_id"),
                                fill_count=kc.parse_size(resp.get("fill_count")))
+                    if cash is not None and not dec.get("reduce_only"):
+                        m = settle_cache.get(("market", dec["ticker"])) or {}
+                        try:
+                            ix = int(m.get("exchange_index") or 0)
+                        except (TypeError, ValueError):
+                            ix = 0
+                        cash[ix] = cash.get(ix, 0.0) - float(dec.get("cost_usd") or 0)
                     state["consecutive_errors"] = 0
                 except Exception as e:
                     row.update(status="error", error=f"{type(e).__name__}: {str(e)[:200]}")
@@ -604,12 +667,19 @@ def run_for(seconds):
             print("another copier is running; exiting")
             return 0
         end = time.time() + seconds
+        cash, cash_at = None, 0.0
         while time.time() < end:
             cfg = load_config()
             state = _read_json(STATE_FILE, {})
             if not isinstance(state, dict):
                 state = {}
-            for r in poll_once(cfg, state):
+            if armed()[0] and time.time() - cash_at >= CASH_REFRESH_S:
+                try:
+                    cash = shard_cash(kc.get_balance())
+                except Exception:
+                    cash = None
+                cash_at = time.time()
+            for r in poll_once(cfg, state, cash=cash):
                 print(f"{r['at'][11:19]} {r['leader']:<20} {r['status']:<8} "
                       f"{r.get('ticker')} {r.get('side', '')} x{r.get('count', '')} "
                       f"@{r.get('price', '')} {r.get('reason', '')}", flush=True)

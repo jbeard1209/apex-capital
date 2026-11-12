@@ -172,6 +172,47 @@ def _close_locked(wanted, source, path, note):
     return closed
 
 
+def resolve_relayed(dedup_keys, id_prefix, path=DEFAULT_PATH, note=None):
+    """Close OPEN entries a producer RELAYED here through the board.
+
+    resolve() matches on `source`, and that is right for direct producers. But
+    a Logic Team finding reaches this file second-hand: LTIA files a board
+    proposal (id "LTIA-<ts>", dedup_key = the finding's rule), the board
+    approves it, and board_meeting copies it here with no `source` at all. So
+    when the finding cleared there was no owner who could close the row.
+    2026-11-11: "Decide on idle pod capital: R&D" (LTIA-20260828160602) was
+    approved on 11-10 and surfaced to the Chairman on 11-11 at 12:30, from a
+    finding first seen in August; R&D bought nine positions at 16:01.
+
+    Ownership here is the id prefix PLUS the exact dedup_key, never either alone,
+    and only rows with no `source` (a sourced row belongs to resolve()). The
+    caller decides what cleared, exactly as for resolve().
+    """
+    wanted = {str(k) for k in dedup_keys}
+    if not wanted or not id_prefix:
+        return []
+    with aj.locked(path):
+        existing = _load(path)
+        from datetime import datetime
+        now = datetime.now().isoformat()
+        closed = []
+        for e in existing:
+            if e.get("source") or e.get("status") not in OPEN_STATUSES:
+                continue
+            if not str(e.get("id", "")).startswith(id_prefix):
+                continue
+            if str(e.get("dedup_key") or "") not in wanted:
+                continue
+            e["status"] = "resolved"
+            e["resolved_at"] = now
+            e["resolved_by"] = note or ("condition no longer observed at %s — "
+                                        "closed by re-observation" % now[:19])
+            closed.append(e)
+        if closed:
+            aj.write(path, existing)
+    return closed
+
+
 def submit(new_entries, source, path=DEFAULT_PATH,
            max_entries=DEFAULT_MAX_ENTRIES):
     """Merge `new_entries` into the shared Chairman queue on behalf of `source`.

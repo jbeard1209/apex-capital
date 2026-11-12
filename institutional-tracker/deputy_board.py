@@ -169,29 +169,63 @@ import re as _re
 
 _PRECISE_RE = _re.compile(
     r'(\w+\.py:\d+'           # file:line  e.g. main.py:42
-    r'|data/[\w/]+\.json'     # data file  e.g. data/state.json
-    r'|\d+\s*h\s+old'        # file age   e.g. 48h old
+    r'|\b\w+\.py\b'          # a named source file  e.g. manager_agent.py
+    r'|data/[\w/.-]+\.json'   # data file  e.g. data/state.json
+    r'|\b\w+_log\b'           # a named log  e.g. buy_log
+    r'|\d+\s*h\s+(?:old|ago)'  # file age   e.g. 48h old, 70h ago
     r'|\d+\s+ERROR'          # log count  e.g. 142 ERROR
     r'|\d+\s+WARNING'
     r'|\$[\d,]+'             # dollar amount
-    r'|\d+\.\d+%'            # percentage with decimal
+    r'|\d+(?:\.\d+)?%'        # percentage   e.g. 12% or 0.67%
     r'|\bline\s+\d+\b'       # "line 42"
     r'|[A-Z_]{4,}\(\)'       # CONSTANT() — uppercase function call
     r'|\bdef\s+\w+'          # def function_name
-    r'|\bclass\s+\w+)',      # class ClassName
+    r'|\bclass\s+\w+'        # class ClassName
+    # a counted quantity: a number followed by what was counted
+    r'|\b\d+\s+(?:\w+\s+){0,2}?(?:entr(?:y|ies)|rows?|alerts?|agents?|proposals?'
+    r'|positions?|buys?|sells?|trades?|orders?|picks?|errors?|warnings?|cycles?'
+    r'|runs?|days?|hours?|files?|items?|records?|tickers?|failures?|signals?)(?:\(s\))?\b)',
     _re.IGNORECASE,
 )
 
 _CODE_REF_RE = _re.compile(
-    r'\w+\.py:\d+|\bdef\s+\w+|\bclass\s+\w+|data/\w+\.json',
+    r'\w+\.py:\d+|\b\w+\.py\b|\bdef\s+\w+|\bclass\s+\w+|data/[\w/.-]+\.json',
     _re.IGNORECASE,
 )
 
 
+def _evidence_text(proposal: dict) -> str:
+    """Everything a deputy can verify a claim against.
+
+    UNTIL 2026-11-12 ONLY `evidence` WAS READ, against a pattern narrower than
+    the rule every deputy quotes ("file:line, metric, or data path"). "buy_log
+    has 121 entries" and "last ran 70h ago, 343 alert(s)" are metrics; neither
+    matched, so on the VM 8 of 8 proposals were NEEDS_INFO on 2026-11-12 and
+    the deputy board approved nothing for a week. The full board's screen
+    (board_meeting._board_clarify_check) already read evidence + description +
+    fix + the CIT Director's answers; this is the same text. The deputies'
+    own QUESTIONS are deliberately excluded — see _inject_clarification_context.
+    """
+    return " ".join(str(proposal.get(k) or "") for k in
+                    ("evidence", "description", "proposed_fix", "_clarification_answers"))
+
+
 def _evidence_is_precise(proposal: dict) -> bool:
-    """Return True if evidence contains a specific, verifiable reference."""
-    ev = proposal.get("evidence", "")
-    return bool(_PRECISE_RE.search(ev))
+    """Return True if the proposal cites a specific, verifiable reference."""
+    return bool(_PRECISE_RE.search(_evidence_text(proposal)))
+
+
+def _mentions(text: str, keywords) -> bool:
+    """Keyword test that does not fire inside a longer word.
+
+    A bare substring test made 'irm' match 'firm'/'confirm' and 'cro' match
+    'macro'/'across'/'micro', so the CRO and IRM deputies DEFERred proposals
+    that touch neither risk controls nor governance.
+    """
+    for k in keywords:
+        if _re.search(r'(?<![a-z])' + k + r'(?![a-z])', text):
+            return True
+    return False
 
 
 def _fix_is_specific(proposal: dict) -> bool:
@@ -276,7 +310,7 @@ class _DeputyManagerVoter:
         risky_keywords = ["submit_buy", "submit_sell", "MarketOrderRequest", "alpaca_trader"]
         is_risky = any(k in fix for k in risky_keywords)
         if is_risky and "guard" not in fix.lower() and "check" not in fix.lower():
-            return {"vote": "DEFER",
+            return {"vote": "DEFER", "scope": True,
                     "rationale": "Fix touches live trading code without an explicit safety guard — this must go to the full board with a risk review."}
 
         # Require actual evidence before approving anything HIGH+
@@ -311,7 +345,7 @@ class _DeputyCROVoter:
 
         risk_keywords = ["stop.loss", "stop_loss", "cash.floor", "position.size", "position_size",
                          "guardrail", "cro", "risk_bulletin", "cvar", "drawdown", "max_position"]
-        touches_risk = any(k in title or k in fix for k in risk_keywords)
+        touches_risk = _mentions(title, risk_keywords) or _mentions(fix, risk_keywords)
 
         if touches_risk and sev == "CRITICAL":
             if not _fix_is_specific(proposal):
@@ -321,7 +355,7 @@ class _DeputyCROVoter:
                     "rationale": "CRITICAL risk control bug with specific fix — must be addressed immediately."}
 
         if touches_risk:
-            return {"vote": "DEFER",
+            return {"vote": "DEFER", "scope": True,
                     "rationale": "Fix touches risk controls — this requires the full board and CRO principal sign-off, not just deputies."}
 
         # Non-risk proposals: check evidence quality
@@ -359,7 +393,7 @@ class _DeputyCITVoter:
                     "rationale": f"Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet."}
 
         if cat not in DEPUTY_CATEGORIES:
-            return {"vote": "DEFER",
+            return {"vote": "DEFER", "scope": True,
                     "rationale": f"Category '{cat}' is outside deputy scope — route to the full board."}
 
         return {"vote": "APPROVE",
@@ -416,7 +450,7 @@ class _DeputyIRMVoter:
 
         governance_keywords = ["irm", "board", "vote", "consensus", "sealed", "governance",
                                 "oversight", "audit", "accountability", "report", "firm_channel"]
-        touches_governance = any(k in title or k in fix for k in governance_keywords)
+        touches_governance = _mentions(title, governance_keywords) or _mentions(fix, governance_keywords)
 
         if touches_governance and sev in ("CRITICAL", "HIGH"):
             if not _fix_is_specific(proposal):
@@ -426,7 +460,7 @@ class _DeputyIRMVoter:
                     "rationale": "Governance integrity bug with specific fix — IRM supports immediate resolution."}
 
         if touches_governance:
-            return {"vote": "DEFER",
+            return {"vote": "DEFER", "scope": True,
                     "rationale": "Change touches governance/oversight mechanisms — must have IRM principal review, not just deputy approval."}
 
         # Non-governance: IRM checks that evidence is verifiable and fix doesn't
@@ -455,7 +489,7 @@ class _DeputyRDVoter:
 
         research_keywords = ["research", "signal", "sector", "rd_team", "conviction", "backtest",
                               "feature", "ml_model", "predictor", "label_builder"]
-        touches_research = any(k in title or k in fix for k in research_keywords)
+        touches_research = _mentions(title, research_keywords) or _mentions(fix, research_keywords)
 
         # Research/signal changes need a backtest or data reference
         if touches_research and sev in ("HIGH", "CRITICAL") and not _evidence_is_precise(proposal):
@@ -485,7 +519,7 @@ class _DeputyOpsDirVoter:
 
         infra_keywords = ["cron", "schedule", "log", "file", "path", "missing output", "orphan",
                           "stale", "backup", "deploy", "gcp", "nohup"]
-        is_infra = any(k in title or k in fix for k in infra_keywords)
+        is_infra = _mentions(title, infra_keywords) or _mentions(fix, infra_keywords)
 
         if not _evidence_is_precise(proposal):
             return {"vote": "CLARIFY",
@@ -520,26 +554,31 @@ DEPUTY_VOTERS = [
 
 def _inject_clarification_context(proposal: dict) -> dict:
     """
-    If this proposal has been through a clarification round, prepend the CIT
-    Director's answers into the evidence and proposed_fix fields so deputies
-    see the full Q&A when re-voting. Returns a shallow copy — orignal unchanged.
+    If this proposal has been through a clarification round, give the voters
+    the CIT Director's ANSWERS as `_clarification_answers`, which
+    _evidence_is_precise reads. Returns a shallow copy — original unchanged.
+
+    UNTIL 2026-11-12 the whole Q&A block — the deputies' own questions included
+    — was pasted into `evidence` AND `proposed_fix`. The CRO and IRM deputies
+    keyword-scan the fix, and their own questions say "...before CRO can
+    approve" and "IRM requires...", so on every re-vote each of them read its
+    own name in the fix and DEFERred: a proposal could not pass after it had
+    been asked anything. The questions stay in clarification_log, not in the
+    text the voters judge.
     """
     log = proposal.get("clarification_log", [])
     if not log:
         return proposal
-
     p = dict(proposal)  # shallow copy
-
-    qa_block = "\n--- CIT Director Clarification Responses ---\n"
-    for entry in log:
-        qa_block += (
-            f"[{entry.get('deputy','?')}] Q: {entry.get('question','?')[:150]}\n"
-            f"  A: {entry.get('answer','?')[:300]}\n"
-        )
-
-    p["evidence"]      = qa_block + "\n" + p.get("evidence", "")
-    p["proposed_fix"]  = p.get("proposed_fix", "") + "\n" + qa_block
+    p["_clarification_answers"] = " ".join(
+        str(e.get("answer") or "") for e in log if isinstance(e, dict))
     return p
+
+
+def _deputy_answered(proposal: dict) -> bool:
+    """True once the CIT Director has answered a deputy question on this row."""
+    return any(isinstance(e, dict) and e.get("source", "deputy_board") == "deputy_board"
+               and e.get("answer") for e in proposal.get("clarification_log") or [])
 
 
 def _vote_on_proposal(proposal: dict) -> dict:
@@ -576,22 +615,30 @@ def _vote_on_proposal(proposal: dict) -> dict:
         }
     proposal = {**proposal, "confidence": int(conf) if conf.is_integer() else conf}
 
+    scope_defer = False
     for voter in DEPUTY_VOTERS:
         result = voter.vote(proposal)
         v = result["vote"]
         votes.append({"deputy": voter.name, "vote": v, "rationale": result["rationale"]})
+        # A DEFER that says "this is not ours to decide" (risk controls, live
+        # order code, governance, out-of-scope category) is a veto on deputy
+        # approval, not one vote in seven. Until 2026-11-12 a 6-1 majority
+        # passed over the CRO deputy's "requires the full board" — moot only
+        # because nothing passed at all.
+        scope_defer = scope_defer or (v == "DEFER" and bool(result.get("scope")))
         if v == "APPROVE":   approves  += 1
         elif v == "REJECT":  rejects   += 1
         elif v == "CLARIFY": clarifies += 1
         else:                defers    += 1
 
     # Any CLARIFY or REJECT prevents approval — proposal is held for CIT response
-    passed = approves >= APPROVAL_THRESHOLD and rejects == 0 and clarifies == 0
+    passed = (approves >= APPROVAL_THRESHOLD and rejects == 0 and clarifies == 0
+              and not scope_defer)
 
     # ── Fable 5 deputy tie-breaker — gated to split votes only ────────────
     # When deputies disagree (some approve, some reject/defer), an LLM read
     # of the proposal often resolves what keyword rules can't.
-    if not passed and approves >= 1 and clarifies == 0:
+    if not passed and approves >= 1 and clarifies == 0 and not scope_defer:
         try:
             from apex_llm import reason as _r, is_available
             if is_available("deputy_board"):
@@ -617,8 +664,24 @@ def _vote_on_proposal(proposal: dict) -> dict:
         except Exception:
             pass
 
-    # Write ALL clarification questions at once so CIT Director gets them simultaneously
-    if clarifies > 0:
+    # Ask the CIT Director only when the answer can change the outcome.
+    #
+    # UNTIL 2026-11-12 every CLARIFY wrote a question, even when the answer
+    # could not matter — e.g. 2 approve + 3 clarify + 2 defer can reach 5, but
+    # 1 approve + 2 clarify + 4 defer can reach only 3 of the 4 needed — and
+    # every such row went round the loop: CIT answered, the
+    # deputies re-voted on unchanged text, asked again, and after
+    # MAX_CLARIFICATION_ROUNDS the row went to the Chairman. On the VM the
+    # deputy board approved 0 proposals every day 11-06..11-12 and its
+    # clarification file reached 8,654 rows. Two cases now hand the row to its
+    # principal, the full board (which votes every pending row), instead:
+    #   * unreachable: approves + clarifies < threshold — answers cannot pass it;
+    #   * already answered: CIT has replied to the deputies once and they still
+    #     cannot tell. Asking the same question of the same answerer is a loop.
+    reachable = (approves + clarifies) >= APPROVAL_THRESHOLD and rejects == 0
+    handoff = scope_defer or (clarifies > 0 and not passed
+                              and (not reachable or _deputy_answered(proposal)))
+    if clarifies > 0 and not handoff:
         all_questions = [
             (v["deputy"], v["rationale"])
             for v in votes if v["vote"] == "CLARIFY"
@@ -628,8 +691,9 @@ def _vote_on_proposal(proposal: dict) -> dict:
     classification = (
         "UNANIMOUS"    if approves == len(DEPUTY_VOTERS)
         else "MAJORITY"    if passed
-        else "NEEDS_INFO"  if clarifies > 0 and rejects == 0
         else "REJECTED"    if rejects > 0
+        else "FULL_BOARD"  if handoff
+        else "NEEDS_INFO"  if clarifies > 0 and rejects == 0
         else "DEFERRED"
     )
 
@@ -646,6 +710,29 @@ def _vote_on_proposal(proposal: dict) -> dict:
         "clarifies":      clarifies,
         "votes":          votes,
     }
+
+
+def _hand_to_full_board(proposal: dict, reason: str, dry_run: bool = False):
+    """Leave the row pending for board_meeting and take it out of deputy scope.
+
+    Stamped on the pending row so later deputy runs (4x/day) skip it instead
+    of re-voting unchanged text. Status is untouched: the full board votes
+    every pending row. A failed stamp only costs a repeat vote next run.
+    """
+    proposal["deputy_handoff_at"] = datetime.now().isoformat()
+    proposal["deputy_handoff_reason"] = reason
+    if dry_run:
+        return
+    try:
+        with aj.update(PENDING_PATH, default=[], expect=list) as pending:
+            for p in pending:
+                if p.get("id") == proposal.get("id"):
+                    p["deputy_handoff_at"] = proposal["deputy_handoff_at"]
+                    p["deputy_handoff_reason"] = reason
+                    p.pop("needs_revote", None)
+                    break
+    except Exception as e:
+        logger.warning(f"  could not stamp full-board hand-off on {proposal.get('id')}: {e}")
 
 
 CHAIRMAN_ACTION_FILE = "data/chairman_action_required.json"
@@ -864,6 +951,8 @@ def run_deputy_board(dry_run: bool = False) -> dict:
         pid = p.get("id", "")
         if pid in unanswered_pids:
             return False
+        if p.get("deputy_handoff_at") or p.get("status") == "ESCALATED_TO_CHAIRMAN":
+            return False  # deputies already handed it to the full board
         if cat in FULL_BOARD_ONLY_CATEGORIES:
             return False  # escalate to full board
         if cat in AUTO_IMPLEMENT_CATEGORIES and sev == AUTO_IMPLEMENT_MAX_SEVERITY:
@@ -900,40 +989,23 @@ def run_deputy_board(dry_run: bool = False) -> dict:
         # Count batch rounds (not individual questions) so a 3-question first round = 1 round.
         n_rounds = prop.get("clarification_rounds", 0)
         if n_rounds >= MAX_CLARIFICATION_ROUNDS:
-            logger.warning(
-                f"  ESCALATED — proposal has {n_rounds} clarification rounds "
-                f"with no approval. Routing to Chairman."
-            )
-            try:
-                from firm_channel import request_cos_meeting as _rcm
-                _rcm(
-                    from_agent="Deputy Board",
-                    summary=(
-                        f"ESCALATION: Proposal '{prop.get('title','?')[:80]}' "
-                        f"has been through {n_rounds} deputy clarification rounds "
-                        f"and still cannot be approved. Deputy board cannot resolve this — "
-                        f"Chairman review required. Proposal ID: {prop.get('id','?')}. "
-                        f"Last clarification: {prop.get('clarification_log',[''])[- 1].get('question','?')[:150]}"
-                    ),
-                    urgency="HIGH",
-                )
-            except Exception:
-                pass
-            prop["status"] = "ESCALATED_TO_CHAIRMAN"
-            prop.pop("needs_revote", None)
-            # Write status back to pending so CIT Director sees it
-            with aj.update(PENDING_PATH, default=[], expect=list) as _pending_all:
-                for _p in _pending_all:
-                    if _p.get("id") == prop.get("id"):
-                        _p["status"] = "ESCALATED_TO_CHAIRMAN"
-                        break
+            # Legacy rows only: the hand-off below stops new rows getting here.
+            # This used to file a HIGH Chairman meeting request — every run, for
+            # the same row, since nothing took it out of deputy scope — for an
+            # item the full board was going to vote on anyway. Its owner is the
+            # full board, not the Chairman.
+            logger.warning(f"  HANDOFF — {n_rounds} clarification rounds; full board decides.")
+            _hand_to_full_board(prop, f"max clarification rounds ({MAX_CLARIFICATION_ROUNDS}) reached",
+                                dry_run)
             results.append({
                 "proposal_id": prop.get("id"), "title": prop.get("title"),
-                "passed": False, "classification": "ESCALATED",
+                "passed": False, "classification": "FULL_BOARD",
                 "approves": 0, "rejects": 0, "defers": 0, "clarifies": 0,
-                "votes": [{"deputy": "Deputy Board", "vote": "ESCALATE",
-                           "rationale": f"Max clarification rounds ({MAX_CLARIFICATION_ROUNDS}) exceeded."}],
+                "votes": [{"deputy": "Deputy Board", "vote": "DEFER",
+                           "rationale": f"Max clarification rounds ({MAX_CLARIFICATION_ROUNDS}) "
+                                        f"reached — handed to the full board."}],
             })
+            deferred.append(prop)
             continue
         vote_result = _vote_on_proposal(prop)
 
@@ -971,6 +1043,9 @@ def run_deputy_board(dry_run: bool = False) -> dict:
         elif cls == "NEEDS_INFO":
             needs_info.append(prop)
         else:
+            if cls == "FULL_BOARD":
+                _hand_to_full_board(prop, "deputies cannot decide; clarification "
+                                          "cannot change the outcome", dry_run)
             deferred.append(prop)
 
     # Build report
@@ -982,6 +1057,8 @@ def run_deputy_board(dry_run: bool = False) -> dict:
         "rejected_count":    len(rejected),
         "deferred_count":    len(deferred),
         "needs_info_count":  len(needs_info),
+        "handed_to_full_board_count": sum(1 for r in results
+                                          if r.get("classification") == "FULL_BOARD"),
         "clarify_path":      CLARIFY_PATH if needs_info else None,
         "results":           results,
         "status":            "CLEAN" if not bug_proposals else (

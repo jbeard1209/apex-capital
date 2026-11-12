@@ -1522,6 +1522,154 @@ class TestBoardApprovalsAreExecutedNotReVoted(unittest.TestCase):
         self.assertEqual(self._j("cit_implementation_queue.json")[0]["status"], "queued")
 
 
+class TestDeputyBoardCanDecide(unittest.TestCase):
+    """2026-11-12: on the VM the deputy board approved 0 proposals a day for a
+    week, 8 of 8 NEEDS_INFO, while its clarification file grew to 8,654 rows.
+    (1) the evidence test was narrower than the rule every deputy quotes
+    ("file:line, metric, or data path") and read only `evidence`; (2) a
+    re-vote pasted the deputies' own questions ("...before CRO can approve")
+    into the fix, so the CRO and IRM deputies read their own names and
+    DEFERred forever; (3) a question was asked even when no answer could pass
+    the row, and asked again after CIT had answered. Gates: G1 metric evidence
+    passes and vague evidence still asks; G2 a re-vote is judged on the
+    answers, not the questions; G3 undecidable rows go to the full board once,
+    with no new question and no Chairman request; G4 a mandate DEFER (risk,
+    governance) vetoes deputy approval."""
+
+    def setUp(self):
+        import deputy_board as d
+        self.d = d
+        self.asked = []
+        self._p = [patch.object(d, "_request_clarification_batch",
+                                lambda prop, qs: self.asked.append((prop.get("id"), qs)))]
+        for p in self._p: p.start()
+
+    def tearDown(self):
+        for p in self._p: p.stop()
+
+    def _prop(self, **kw):
+        base = {"id": "CIT-T-1", "category": "VISION", "severity": "MEDIUM", "confidence": 80,
+                "title": "Event-triggered research cycles",
+                "description": "R&D fires on a fixed 3-day clock.",
+                "evidence": "last_research_run: 2026-11-09 (70h ago). Canary fired 343 alert(s).",
+                "proposed_fix": "In canary_agent.py: when a sector ETF moves >3%, write "
+                                "data/rd_trigger.json; main.py Step 3c runs rd_team_leader.py."}
+        base.update(kw); return base
+
+    def _vote(self, p):
+        with patch("apex_llm.is_available", lambda *a, **k: False):
+            return self.d._vote_on_proposal(p)
+
+    def test_g1_counted_metrics_are_evidence(self):
+        for ev in ("buy_log has 121 entries; all use flat sizing.",
+                   "last ran 70h ago; 343 alert(s) today",
+                   "17 agent(s) have >=4 consecutive zero-pick cycles"):
+            self.assertTrue(self.d._evidence_is_precise({"evidence": ev}), ev)
+        self.assertTrue(self.d._evidence_is_precise(
+            {"evidence": "", "description": "see data/cit_hr_memo.json"}))
+        for ev in ("Things look bad and should be improved.", "Performance is weak", ""):
+            self.assertFalse(self.d._evidence_is_precise(
+                {"evidence": ev, "description": "Improve the system.",
+                 "proposed_fix": "Make it better."}), ev)
+        self.assertEqual(self._vote(self._prop())["classification"], "UNANIMOUS")
+
+    def test_g1_vague_evidence_still_asks_first_time(self):
+        r = self._vote(self._prop(evidence="It seems slow.", description="Slow research.",
+                                  proposed_fix="Add an event trigger hook to the research cycle so it fires on large moves."))
+        self.assertEqual(r["classification"], "NEEDS_INFO")
+        self.assertFalse(r["passed"])
+        self.assertEqual(len(self.asked), 1)
+
+    def test_g2_revote_is_not_poisoned_by_its_own_questions(self):
+        log = [{"deputy": "Deputy CRO", "source": "deputy_board", "answer": "see above",
+                "question": "No verifiable evidence cited. CIT Director must provide "
+                            "specific evidence before CRO can approve."},
+               {"deputy": "Deputy IRM", "source": "deputy_board", "answer": "see above",
+                "question": "IRM requires a specific, verifiable evidence reference; "
+                            "governance audit report board vote."}]
+        r = self._vote(self._prop(clarification_log=log))
+        by = {v["deputy"]: v["vote"] for v in r["votes"]}
+        self.assertEqual(by["Deputy CRO"], "APPROVE")
+        self.assertEqual(by["Deputy IRM"], "APPROVE")
+        self.assertTrue(r["passed"])
+
+    def test_g2_keywords_do_not_fire_inside_words(self):
+        p = self._prop(title="Confirm firm-wide macro data across sectors",
+                       proposed_fix="In macro_agent.py confirm data across the firm.")
+        by = {v["deputy"]: v["vote"] for v in self._vote(p)["votes"]}
+        self.assertEqual(by["Deputy CRO"], "APPROVE")
+        self.assertEqual(by["Deputy IRM"], "APPROVE")
+
+    def test_g3_answered_and_still_unclear_goes_to_full_board(self):
+        log = [{"deputy": "Deputy CoS", "source": "deputy_board",
+                "question": "Provide file:line.", "answer": "CIT team deliberation findings"}]
+        r = self._vote(self._prop(evidence="It seems slow.", description="Slow.",
+                                  proposed_fix="Add an event trigger hook to the research cycle so it fires on large moves.",
+                                  clarification_log=log))
+        self.assertEqual(r["classification"], "FULL_BOARD")
+        self.assertEqual(self.asked, [])
+
+    def test_g3_unreachable_approval_asks_nothing(self):
+        # 2 APPROVE + 1 CLARIFY + 4 plain DEFER: even if the question were
+        # answered perfectly, 3 < APPROVAL_THRESHOLD. Asking it is pure noise.
+        class V:
+            def __init__(s, name, vote): s.name, s._v = name, vote
+            def vote(s, p): return {"vote": s._v, "rationale": "stub"}
+        voters = [V("a", "APPROVE"), V("b", "APPROVE"), V("c", "CLARIFY")] + \
+                 [V(f"d{i}", "DEFER") for i in range(4)]
+        with patch.object(self.d, "DEPUTY_VOTERS", voters):
+            r = self._vote(self._prop())
+        self.assertFalse(r["passed"])
+        self.assertEqual(r["classification"], "FULL_BOARD")
+        self.assertEqual(self.asked, [])
+        # ...and the same split with one more CLARIFY instead of a DEFER IS
+        # reachable (2+2=4), so it must ask, not hand off.
+        voters[3] = V("c2", "CLARIFY")
+        with patch.object(self.d, "DEPUTY_VOTERS", voters):
+            r = self._vote(self._prop())
+        self.assertEqual(r["classification"], "NEEDS_INFO")
+        self.assertEqual(len(self.asked), 1)
+
+    def test_g3_run_hands_off_once_and_never_to_the_chairman(self):
+        with tempfile.TemporaryDirectory() as t:
+            root = Path(t); (root / "data").mkdir()
+            ev = {"evidence": "It seems slow.", "description": "Slow.",
+                  "proposed_fix": "Add an event trigger hook to the research cycle so it fires on large moves.",
+                  "clarification_log": [{"source": "deputy_board", "question": "q", "answer": "a"}]}
+            rows = [self._prop(id="CIT-T-1", **ev),
+                    self._prop(id="CIT-T-2", clarification_rounds=3, **ev)]
+            for n, v in (("cit_pending_proposals.json", rows), ("cit_approved_proposals.json", []),
+                         ("cit_implementation_queue.json", []), ("cos_meeting_requests.json", []),
+                         ("chairman_action_required.json", []), ("cit_clarification_requests.json", [])):
+                (root / "data" / n).write_text(json.dumps(v))
+            import board_dispatch as bd
+            orig = os.getcwd(); os.chdir(root)
+            try:
+                with patch.object(bd, "DATA", root / "data"), \
+                     patch("apex_llm.is_available", lambda *a, **k: False), \
+                     patch("firm_channel.request_cos_meeting") as cos:
+                    r1 = self.d.run_deputy_board()
+                    r2 = self.d.run_deputy_board()
+                pend = json.loads((root / "data" / "cit_pending_proposals.json").read_text())
+            finally:
+                os.chdir(orig)
+        self.assertEqual(r1["handed_to_full_board_count"], 2)
+        self.assertEqual(r2.get("proposals_reviewed", 0), 0)      # not re-voted
+        self.assertEqual(len(pend), 2)                             # still pending for the board
+        self.assertTrue(all(p.get("deputy_handoff_at") for p in pend))
+        self.assertTrue(all(p.get("status") != "ESCALATED_TO_CHAIRMAN" for p in pend))
+        cos.assert_not_called()
+        self.assertEqual(self.asked, [])
+
+    def test_g4_risk_control_defer_vetoes_a_majority(self):
+        p = self._prop(proposed_fix="In manager_agent.py multiply MAX_POSITION_SIZE_PCT by "
+                                    "a conviction factor; log it in buy_log.")
+        r = self._vote(p)
+        self.assertGreaterEqual(r["approves"], self.d.APPROVAL_THRESHOLD)
+        self.assertFalse(r["passed"])
+        self.assertEqual(r["classification"], "FULL_BOARD")
+
+
 class TestOnlyCrucialBoardApprovalsReachTheChairman(unittest.TestCase):
     """Chairman directive 2026-11-09: board-approved changes go ahead; "only
     super crucial ones or ones that we will talk about in the future" still
@@ -1631,6 +1779,41 @@ class TestBackupRetentionCountsOnlySnapshots(unittest.TestCase):
             self.assertNotIn("2026-10-14_090001", snaps)        # oldest pruned
             self.assertIn("2026-10-15_090001", snaps)           # 3 real dailies kept
             self.assertTrue((bdir / "cit_inline").is_dir())     # not ours, untouched
+
+
+class TestBigBackupsAreCompressedAndRestorable(unittest.TestCase):
+    """2026-11-12: three 344MB snapshots kept the 9.7GB VM at 87%; 250MB of each
+    was three Kalshi JSON files that cannot be rebuilt. They are gzipped, not
+    excluded, so the only thing that matters is that a restore gets the exact
+    bytes back."""
+
+    def test_large_json_round_trips_through_gzip(self):
+        import backup_data as bd
+        with tempfile.TemporaryDirectory() as d:
+            data = Path(d) / "data"; bdir = data / "backups"; data.mkdir()
+            big = json.dumps([{"i": i, "p": 0.5} for i in range(2000)]).encode()
+            (data / "big.json").write_bytes(big)
+            (data / "small.json").write_text('{"a": 1}')
+            with patch.object(bd, "DATA_DIR", data), patch.object(bd, "BACKUP_DIR", bdir), \
+                 patch.object(bd, "GZIP_MIN_BYTES", 1000):
+                r = bd.run_backup(quiet=True)
+                snap = bdir / r["backup_timestamp"]
+                self.assertTrue((snap / "big.json.gz").exists())
+                self.assertFalse((snap / "big.json").exists())
+                self.assertTrue((snap / "small.json").exists())
+                self.assertLess((snap / "big.json.gz").stat().st_size, len(big))
+                self.assertIn("big.json", r["files_copied"])
+                (data / "big.json").write_text("corrupted")
+                with patch("builtins.input", return_value="yes"), \
+                     patch("builtins.print"):
+                    bd.restore_backup(r["backup_timestamp"])
+            self.assertEqual((data / "big.json").read_bytes(), big)
+            self.assertFalse((data / "big.json.gz").exists())
+
+    def test_slow_gate_logs_are_not_backed_up(self):
+        import backup_data as bd
+        self.assertIn("slow_gate_logs", bd.EXCLUDE_PATTERNS)
+        self.assertGreaterEqual(bd.GZIP_MIN_BYTES, 1 << 20)
 
 
 class TestChairmanQueueDedup(unittest.TestCase):
@@ -7365,12 +7548,32 @@ class TestWrongfulRetirement(unittest.TestCase):
         for cn, ev in vacated:
             self.assertTrue(ev.get("monitoring_review_by"),
                             f"{cn} was reinstated with no monitoring review date")
-        # and the reader must fire on them once that date arrives
+        # and the reader must fire on every one the Chairman has NOT yet
+        # answered once its date arrives. A REINSTATEMENT_CONFIRMED (the HR KEEP
+        # command) is the answer: that agent leaves monitoring by design. On
+        # 2026-11-09 all 9 were confirmed and this assert read "0 != 9" because
+        # it counted answered promises as unanswered ones.
+        confirmed = {(cn, str(ev.get("confirms_vacation") or ""))
+                     for cn, rec in (hist.get("agent_records") or {}).items()
+                     for ev in (rec.get("events") or [])
+                     if ev.get("event") == "REINSTATEMENT_CONFIRMED"}
+        open_ = {cn for cn, ev in vacated
+                 if (cn, str(ev.get("date") or "")) not in confirmed}
         latest = max(date.fromisoformat(str(ev["monitoring_review_by"])[:10])
                      for _, ev in vacated)
         fired = A._reinstatement_reviews(hist, today=latest)
-        self.assertEqual(len(fired), len(vacated),
+        self.assertEqual(len(fired), len(open_),
                          "review dates exist but nothing raises them")
+        # and the confirmation path must really be what removed them: strip
+        # the confirmations and every vacated agent is on the hook again.
+        import copy
+        bare = copy.deepcopy(hist)
+        for rec in (bare.get("agent_records") or {}).values():
+            rec["events"] = [e for e in rec.get("events") or []
+                             if e.get("event") != "REINSTATEMENT_CONFIRMED"]
+        self.assertEqual(len(A._reinstatement_reviews(bare, today=latest)),
+                         len({cn for cn, _ in vacated}),
+                         "unconfirmed vacations are not raised")
 
     def test_live_registry_has_no_duplicate_agent_records(self):
         """Roster counts and per-agent evaluations both double-count duplicates.
@@ -35196,6 +35399,153 @@ class TestKalshiCopytradeSkipsShardsWeCannotTrade(unittest.TestCase):
         rows, skips = bt.replay("L", [fill], mk, dict(ct.DEFAULTS), unit=True)
         self.assertEqual(rows, [])
         self.assertTrue(any("shard" in k for k in skips), skips)
+
+
+class TestKalshiCopytradeChecksTheShardCanPay(unittest.TestCase):
+    """Live, 2026-11-11 07:47 UTC: $16.13 in the account, $15.57 of it on shard
+    1 (Combos), $0.57 on shard 0 where every copied market trades. Three $0.70
+    copies bounced "insufficient_balance" and tripped the halt. A copy its
+    shard cannot pay is now skipped before it is sent."""
+
+    NOW = datetime(2026, 11, 11, 7, 47, 0, tzinfo=timezone.utc)
+    T = "KXEBASKETBALLGAME-26NOV110248SHAQICEK-SHAQ"
+    LIVE_RESP = {"balance": 1613, "balance_breakdown": [
+        {"balance": "0.5662", "exchange_index": 0},
+        {"balance": "15.5700", "exchange_index": 1},
+        {"balance": "0.0000", "exchange_index": 2}]}
+
+    def _poll(self, cash, n=1, action="buy", live=True):
+        import kalshi_copytrade as ct
+        import kalshi_client as kc
+        # one market per fill, so the $1 per-market cap is not what stops them
+        fills = [{"trade_id": "t%d" % i, "ticker": "%s%d" % (self.T, i), "price_dollars": "0.6700",
+                  "count_fp": "4.00", "taker_side": "yes", "taker_action": action,
+                  "taker_nickname": "L", "maker_nickname": "",
+                  "create_date": (self.NOW - timedelta(seconds=2)).isoformat()}
+                 for i in range(n)]
+        rec = {"exchange_index": 0,
+               "expected_expiration_time": (self.NOW + timedelta(hours=2)).isoformat()}
+        placed = []
+        def place(**kw):
+            placed.append(kw)
+            return {"order_id": "1", "fill_count": str(kw["count"])}
+        with tempfile.TemporaryDirectory() as td:
+            saved, ct.LEDGER_FILE = ct.LEDGER_FILE, Path(td) / "l.jsonl"
+            ct.LEDGER_FILE.write_text("")
+            cfg = ct.load_config()
+            cfg.update(leaders=["L"], per_trade_usd=1.0, per_day_usd=3.0)
+            try:
+                with patch.object(ct, "armed", return_value=(live, "" if live else "x")), \
+                     patch.object(kc, "_get", return_value={"market": rec}):
+                    rows = ct.poll_once(cfg, {"initialised": ["L"], "seen": {"L": []}},
+                                        now=self.NOW, place=place, cash=cash,
+                                        fetch=lambda n_: {"trades": list(fills)})
+            finally:
+                ct.LEDGER_FILE = saved
+        return placed, rows
+
+    def test_the_breakdown_is_read_per_shard_not_as_the_total(self):
+        import kalshi_copytrade as ct
+        cash = ct.shard_cash(self.LIVE_RESP)
+        self.assertAlmostEqual(cash[0], 0.5662)
+        self.assertAlmostEqual(cash[1], 15.57)
+        for bad in (None, {}, {"balance": 1613}, {"balance_breakdown": [{"balance": "nan"}]},
+                    {"balance_breakdown": [{"balance": "lots", "exchange_index": 0}]}):
+            self.assertIsNone(ct.shard_cash(bad), bad)
+
+    def test_the_live_incident_is_skipped_not_sent(self):
+        import kalshi_copytrade as ct
+        placed, rows = self._poll(ct.shard_cash(self.LIVE_RESP), n=3)
+        self.assertEqual(placed, [])
+        self.assertTrue(all(r["status"] == "skipped" for r in rows), rows)
+        self.assertIn("shard 0 holds $0.57", rows[0]["reason"])
+
+    def test_placed_orders_spend_down_the_shard(self):
+        # $1.50 on shard 0 pays for two ~$0.70 copies, not three
+        placed, rows = self._poll({0: 1.50}, n=3)
+        self.assertEqual(len(placed), 2, [r.get("reason") for r in rows])
+        self.assertEqual(rows[2]["status"], "skipped")
+
+    def test_an_unread_balance_leaves_the_order_to_the_exchange(self):
+        placed, _ = self._poll(None)
+        self.assertEqual(len(placed), 1)
+
+    def test_paper_mode_is_not_blocked_by_live_cash(self):
+        placed, rows = self._poll({0: 0.0}, live=False)
+        self.assertEqual(rows[0]["status"], "paper")
+
+    def test_the_manager_warns_on_shard_cash_not_the_account_total(self):
+        import kalshi_copytrade_manager as M
+        import kalshi_client as kc
+        with patch.object(kc, "get_balance", return_value=self.LIVE_RESP):
+            per = __import__("kalshi_copytrade").shard_cash(kc.get_balance())
+        self.assertLess(per[0], 3.0)
+        src = Path(M.__file__).read_text()
+        self.assertIn("ct.shard_cash(b)", src)
+
+
+class TestAClearedFindingClosesItsRelayedDecision(unittest.TestCase):
+    """2026-11-11: "Decide on idle pod capital: R&D" reached the Chairman at
+    12:30 from a finding first seen in August, after the board approved LTIA's
+    proposal; R&D bought nine positions at 16:01. The row board_meeting writes
+    has no `source`, so no producer could close it when the finding cleared."""
+
+    def _rows(self):
+        return [
+            {"id": "LTIA-20260828160602", "dedup_key": "idle_pod_pod1_rd",
+             "status": "awaiting_chairman"},
+            {"id": "LTIA-20260901000000", "dedup_key": "idle_pod_pod3_macro",
+             "status": "awaiting_chairman"},                        # other pod
+            {"id": "X-1", "dedup_key": "idle_pod_pod1_rd",
+             "status": "awaiting_chairman"},                        # not LTIA's
+            {"id": "LTIA-2", "dedup_key": "idle_pod_pod1_rd", "source": "S",
+             "status": "awaiting_chairman"},                        # sourced: resolve()'s
+            {"id": "LTIA-3", "dedup_key": "idle_pod_pod1_rd",
+             "status": "resolved"},                                 # already closed
+        ]
+
+    def test_only_the_relayed_row_for_that_rule_is_closed(self):
+        import chairman_queue
+        with tempfile.TemporaryDirectory() as td:
+            p = Path(td) / "a.json"
+            p.write_text(json.dumps(self._rows()))
+            closed = chairman_queue.resolve_relayed(["idle_pod_pod1_rd"], "LTIA-", path=str(p))
+            self.assertEqual([c["id"] for c in closed], ["LTIA-20260828160602"])
+            after = {r["id"]: r["status"] for r in json.loads(p.read_text())}
+        self.assertEqual(after, {"LTIA-20260828160602": "resolved",
+                                 "LTIA-20260901000000": "awaiting_chairman",
+                                 "X-1": "awaiting_chairman",
+                                 "LTIA-2": "awaiting_chairman", "LTIA-3": "resolved"})
+
+    def test_an_empty_key_set_or_prefix_closes_nothing(self):
+        import chairman_queue
+        with tempfile.TemporaryDirectory() as td:
+            p = Path(td) / "a.json"
+            p.write_text(json.dumps(self._rows()))
+            self.assertEqual(chairman_queue.resolve_relayed([], "LTIA-", path=str(p)), [])
+            self.assertEqual(chairman_queue.resolve_relayed(["idle_pod_pod1_rd"], "",
+                                                            path=str(p)), [])
+
+    def test_the_tracker_closes_it_after_three_clean_runs_and_not_before(self):
+        import logic_team as LT
+        with tempfile.TemporaryDirectory() as td:
+            d = Path(td)
+            (d / "chairman_action_required.json").write_text(json.dumps(self._rows()))
+            saved = (LT.DATA_DIR, LT.LT_RESOLUTIONS)
+            LT.DATA_DIR, LT.LT_RESOLUTIONS = d, d / "lt.json"
+            try:
+                f = {"agent": "CapitalLogicAgent", "rule": "idle_pod_pod1_rd",
+                     "severity": "MEDIUM", "title": "idle"}
+                LT._update_resolution_tracker([f])
+                status = lambda: {r["id"]: r["status"] for r in json.loads(
+                    (d / "chairman_action_required.json").read_text())}["LTIA-20260828160602"]
+                for _ in range(2):
+                    LT._update_resolution_tracker([])
+                    self.assertEqual(status(), "awaiting_chairman")
+                LT._update_resolution_tracker([])
+                self.assertEqual(status(), "resolved")
+            finally:
+                LT.DATA_DIR, LT.LT_RESOLUTIONS = saved
 
 
 class TestKalshiPaperCopiesDoNotSpendTheLiveCap(unittest.TestCase):
