@@ -36,6 +36,16 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 
+# The interpreter a pre-push gate line may invoke. Since 2026-11-12 the hook
+# runs `"$PY"` -- the first python on the host that can import the firm's deps
+# -- because bare `python3` on the Mac is 3.15 with no numpy/dotenv and every
+# push from a plain Terminal ERRORed before checking a single contract. The
+# gate-shape guards below pinned the literal `python3` and went red on that
+# fix; they assert the PROPERTY (a run of the suite, in both zones), so they
+# accept either spelling of the interpreter.
+_GATE_PY = r'(?:python3?|"\$PY")'
+
+
 def assert_every_call_is_gated(testcase, scope, is_transmit, is_gate, what):
     """Every `is_transmit` call in `scope` is short-circuit-guarded by `is_gate`.
 
@@ -9330,7 +9340,7 @@ class TestThePushGateIsTheGateTheRepoShips(unittest.TestCase):
                 # Since the 2026-09-08 fast/slow split the hook runs
                 # `python3 -m unittest test_pipeline_smoke.TestWiringContracts`;
                 # a pin on the old spelling made this red on every Mac run.
-                if re.search(r"python3?\s+(test_pipeline_smoke\.py|"
+                if re.search(_GATE_PY + r"\s+(test_pipeline_smoke\.py|"
                              r"-m\s+unittest\b.*\btest_pipeline_smoke\b)", ln)]
         self.assertGreaterEqual(
             len(runs), 2,
@@ -9338,7 +9348,7 @@ class TestThePushGateIsTheGateTheRepoShips(unittest.TestCase):
             f"twice — once in the local zone and once in the VM's zone.\n  "
             + "\n  ".join(runs))
         utc = [ln for ln in runs
-               if re.match(r"^\s*(\w+=\S+\s+)*TZ=UTC(\s+\w+=\S+)*\s+python3?\s",
+               if re.match(r"^\s*(\w+=\S+\s+)*TZ=UTC(\s+\w+=\S+)*\s+" + _GATE_PY + r"\s",
                            ln)]
         self.assertTrue(
             utc,
@@ -28788,11 +28798,11 @@ class TestThePrePushGateIsTheOneWeShip(unittest.TestCase):
                 # Since the 2026-09-08 fast/slow split the hook runs
                 # `python3 -m unittest test_pipeline_smoke.TestWiringContracts`;
                 # a pin on the old spelling made this red on every Mac run.
-                if re.search(r"python3?\s+(test_pipeline_smoke\.py|"
+                if re.search(_GATE_PY + r"\s+(test_pipeline_smoke\.py|"
                              r"-m\s+unittest\b.*\btest_pipeline_smoke\b)", ln)]
         self.assertTrue(
             [ln for ln in runs
-             if re.match(r"^\s*(\w+=\S+\s+)*TZ=UTC(\s+\w+=\S+)*\s+python3?\s", ln)],
+             if re.match(r"^\s*(\w+=\S+\s+)*TZ=UTC(\s+\w+=\S+)*\s+" + _GATE_PY + r"\s", ln)],
             "the gate must RUN the suite in the VM's zone too — green on the "
             "Mac is not green. Invocations found:\n  " + "\n  ".join(runs))
         self.assertNotIn("|| exit 0", code,
@@ -33784,7 +33794,7 @@ class TestFastGateSplitIsTheOneWeShip(unittest.TestCase):
         # And NOT the whole suite — the specific regression this pin exists to
         # catch is a diff that broadens the runner and re-introduces the timeout.
         self.assertNotRegex(
-            text, r"python3\s+test_pipeline_smoke\.py",
+            text, _GATE_PY + r"\s+test_pipeline_smoke\.py",
             "The hook must not invoke test_pipeline_smoke.py as a script — that "
             "runs all 1559 tests and blows past github's SSH idle timeout.")
 
@@ -33793,13 +33803,14 @@ class TestFastGateSplitIsTheOneWeShip(unittest.TestCase):
         # Both invocations must be present — the local one, and the TZ=UTC one.
         # Without the UTC pass, host-divergence bugs [[host_divergence_is_a_bug_class]]
         # would ship green.
-        local_ct = text.count("python3 -m unittest -v test_pipeline_smoke.TestWiringContracts")
+        local_ct = len(re.findall(
+            _GATE_PY + r" -m unittest -v test_pipeline_smoke\.TestWiringContracts", text))
         self.assertGreaterEqual(
             local_ct, 2,
             "Fast gate should invoke TestWiringContracts twice — once in the "
             "local zone and once under TZ=UTC.")
         self.assertIn(
-            "TZ=UTC PYTHONUNBUFFERED=1 python3 -m unittest -v test_pipeline_smoke.TestWiringContracts",
+            'TZ=UTC PYTHONUNBUFFERED=1 "$PY" -m unittest -v test_pipeline_smoke.TestWiringContracts',
             text,
             "The second invocation must set TZ=UTC so the VM zone is measured.")
 
