@@ -231,15 +231,17 @@ else
     [ "$(date +%s)" -gt "$DEADLINE" ] && fail "no CI checks appeared on $URL within ${CI_TIMEOUT}s"
     sleep 10
   done
+  # Decide from each check's bucket (pass/fail/pending/skipping/cancel), not
+  # from `--watch`'s exit code, which is non-zero when a check is still
+  # registering and once misreported an all-green PR as failed.
   while :; do
-    gh pr checks "$PR" --watch --interval 20 >/dev/null 2>&1; RC=$?
-    CHECKS="$(gh pr checks "$PR" 2>&1)"
-    if echo "$CHECKS" | grep -qE $'\t(pending|queued|in_progress)\t'; then
-      [ "$(date +%s)" -gt "$DEADLINE" ] && fail "CI still running on $URL after ${CI_TIMEOUT}s"
-      sleep 15; continue
+    B="$(gh pr checks "$PR" --json name,bucket -q '.[] | "\(.bucket) \(.name)"' 2>&1)"
+    if echo "$B" | grep -qE '^(fail|cancel) '; then
+      fail "CI failed on $URL: $(echo "$B" | grep -E '^(fail|cancel) ' | head -5 | tr '\n' ';')"
     fi
-    [ $RC -eq 0 ] && break
-    fail "CI failed on $URL: $(echo "$CHECKS" | grep -E $'\t(fail|cancel)' | head -5 | tr '\t\n' '  ')"
+    if [ -n "$B" ] && ! echo "$B" | grep -qvE '^(pass|skipping) '; then break; fi
+    [ "$(date +%s)" -gt "$DEADLINE" ] && fail "CI still running on $URL after ${CI_TIMEOUT}s: $(echo "$B" | tr '\n' ';')"
+    sleep 20
   done
   say "CI green"
 fi
