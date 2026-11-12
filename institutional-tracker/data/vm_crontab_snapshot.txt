@@ -1,5 +1,5 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-10-03T16:20:17Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-11-12T16:34:27Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
@@ -142,15 +142,9 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 30 13 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 hr_agent.py >> logs/hr_$(date +\%Y\%m\%d).log 2>&1
 0 22 * * 0 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 hr_agent.py >> logs/hr_$(date +\%Y\%m\%d).log 2>&1
 */30 13-20 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 rd_team_leader.py --triggered >> logs/rd_triggered_$(date +\%Y\%m\%d).log 2>&1
-0 9 22 6 * cd "/home/jackbeard/institutional-tracker" && python3 -c "import json; c=json.load(open('config/llm_config.json')); c['model']='claude-opus-4-8'; json.dump(c, open('config/llm_config.json','w'), indent=2)" && python3 -c "from email_sender import send_alert_email; send_alert_email('Apex: Fable model switched to Opus 4.8', 'Your Fable 5 access expired today (June 22). The board model has been automatically switched to claude-opus-4-8 in config/llm_config.json. Everything is still running normally.')" >> /tmp/apex_model_switch.log 2>&1
 0 19 * * 0 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 missed_winners_agent.py >> logs/missed_winners_$(date +\%Y\%m\%d).log 2>&1
-0 2 13-21 6 * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 pregenerate_lessons.py --batch 12 >> logs/lesson_pregen_$(date +\%Y\%m\%d).log 2>&1
 0 21 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 irm_review_agent.py >> logs/irm_daily_$(date +\%Y\%m\%d).log 2>&1
 15 7-21 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 freshness_sentinel.py >> logs/sentinel_$(date +\%Y\%m\%d).log 2>&1
-# Job failure monitor (2026-11-09): any job whose log shows the same crash or
-# swallowed error on 2+ days (or 3+ times) is emailed to the Chairman and filed
-# to CIT. Hourly at :40. Board vote crashed silently Aug 18 - Nov 9 without it.
-40 * * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 job_failure_monitor.py >> logs/job_failure_$(date +\%Y\%m\%d).log 2>&1
 
 # ── Governance + monitoring (added 2026-07-02 — were in new_crontab.txt but never installed) ──
 0 12 * * 1 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 strategy_council.py >> logs/council_$(date +\%Y\%m\%d).log 2>&1
@@ -491,3 +485,14 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # freshness_sentinel now watches data/slow_gate_report.json — a red slow gate
 # escalates through the same freshness path as any other production failure.
 30 3 * * 0,2-6 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 slow_gate.py >> logs/slow_gate_$(date +\%Y\%m\%d).log 2>&1
+
+# weekly 13F scrape (resolved apex-sys-cit-20261002-1300-13f_data_stale 2026-10-03)
+0 11 * * 1 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 predictive_model/edgar_historical_scraper.py >> logs/edgar_13f_$(date +\%Y\%m\%d).log 2>&1
+* * * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 kalshi_copytrade.py --run-for 55 >> logs/kalshi_copytrade.log 2>&1
+30 13 * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 kalshi_copytrade_scout.py --report >> logs/kalshi_copytrade.log 2>&1
+*/15 * * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 kalshi_copytrade_manager.py --check >> logs/kalshi_copytrade.log 2>&1
+40 * * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 job_failure_monitor.py >> logs/job_failure_$(date +\%Y\%m\%d).log 2>&1
+# Kalshi + pod daily P&L history (added 2026-11-12). VM publishes apex-reports at :55 (deploy key added 2026-11-12); Mac launchd publisher unloaded.
+50 * * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 kalshi_pnl_history.py --record >> logs/kalshi_copytrade.log 2>&1
+40 * * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 pod_pnl_history.py --record >> logs/pod_pnl_history.log 2>&1
+55 * * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 kalshi_report_publish.py >> logs/kalshi_report_publish.log 2>&1
