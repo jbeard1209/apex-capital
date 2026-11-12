@@ -22184,6 +22184,42 @@ class TestMacGithubVmDriftIsMeasuredNotRemembered(unittest.TestCase):
         self.assertEqual(self.S.mac_issues(mac)["mac_uncommitted"],
                          ["institutional-tracker/a.py"])
 
+    def test_heal_keeps_host_data_but_never_touches_dirty_code(self):
+        """A tracked data/ file dirty on the Mac that main also changed made git
+        refuse the fast-forward, so the Mac sat behind main (2026-11-12, the
+        launchd/crontab snapshot files). Heal must move to main AND keep the
+        host's bytes; a dirty code file must still refuse."""
+        d, _ = self._repo()
+        g = lambda *a: subprocess.run(["git", "-C", str(d), *a], check=True,
+                                      capture_output=True)
+        snap = d / "institutional-tracker" / "data" / "state.json"
+        g("branch", "-M", "main")
+        g("checkout", "-qb", "next")
+        snap.write_text('{"main":1}\n')
+        (d / "institutional-tracker" / "a.py").write_text("A = 3\n")
+        g("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qam", "next")
+        g("checkout", "-q", "main")
+        snap.write_text('{"host":1}\n')                      # host runtime write
+        mac, _ = self.S.compare_mac(d, "next")
+        healed, why = self.S.heal_mac(d, mac, "next")
+        self.assertTrue(healed, why)
+        self.assertIn("kept this host's", why)
+        self.assertEqual(snap.read_text(), '{"host":1}\n')
+        self.assertEqual((d / "institutional-tracker" / "a.py").read_text(), "A = 3\n")
+        # dirty code: refused, untouched
+        d2, _ = self._repo()
+        g2 = lambda *a: subprocess.run(["git", "-C", str(d2), *a], check=True,
+                                       capture_output=True)
+        g2("branch", "-M", "main"); g2("checkout", "-qb", "next")
+        (d2 / "institutional-tracker" / "b.py").write_text("B = 9\n")
+        g2("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qam", "next")
+        g2("checkout", "-q", "main")
+        (d2 / "institutional-tracker" / "b.py").write_text("B = local\n")
+        mac2, _ = self.S.compare_mac(d2, "next")
+        healed2, why2 = self.S.heal_mac(d2, mac2, "next")
+        self.assertFalse(healed2)
+        self.assertEqual((d2 / "institutional-tracker" / "b.py").read_text(), "B = local\n")
+
     def test_grace_persists_first_seen_and_unchecked_kinds_keep_state(self):
         t0 = datetime(2026, 11, 12, tzinfo=timezone.utc)
         st = self.S.update_state({}, {"vm_differs": ["a.py"]}, {"vm_differs"}, t0)

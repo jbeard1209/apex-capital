@@ -200,14 +200,61 @@ def heal_mac(root, mac, ref="origin/main"):
     if mac.get("uncommitted"):
         return False, "%d code file(s) edited in the Mac tree: %s" % (
             len(mac["uncommitted"]), ", ".join(mac["uncommitted"][:5]))
+    kept = []
     if mac.get("branch") != "main":
-        r = git(root, "checkout", "-q", "main")
+        r, k = _keeping_host_data(root, "checkout", "-q", "main")
+        kept += k
         if r.returncode:
             return False, "git checkout main refused: " + r.stderr.strip()[:300]
-    r = git(root, "merge", "-q", "--ff-only", ref)
+    r, k = _keeping_host_data(root, "merge", "-q", "--ff-only", ref)
+    kept += k
     if r.returncode:
         return False, "git merge --ff-only refused: " + r.stderr.strip()[:300]
-    return True, "fast-forwarded to %s" % mac.get("main")
+    return True, "fast-forwarded to %s%s" % (
+        mac.get("main"), " (kept this host's %s)" % ", ".join(sorted(set(kept))) if kept else "")
+
+
+def _blocking_paths(stderr):
+    """Paths git lists under 'would be overwritten by checkout/merge:'."""
+    out, on = [], False
+    for l in (stderr or "").splitlines():
+        if "would be overwritten by" in l:
+            on = True
+        elif on and l.startswith("\t"):
+            out.append(l.strip())
+        elif on:
+            on = False
+    return out
+
+
+def _keeping_host_data(root, *args):
+    """Run a checkout/fast-forward that git refuses ONLY because a tracked data/
+    or logs/ runtime file is dirty here: keep this host's bytes, let git move,
+    then put them back. Until 2026-11-12 any such file (mac_launchd_snapshot.txt,
+    vm_crontab_snapshot.txt are rewritten on the Mac and also committed) refused
+    the heal, so the Mac sat behind main until a session did this by hand. The
+    host's copy wins because data/ is per-host by design (not drift, not
+    deployed). A dirty CODE file is never touched: heal_mac refuses before this,
+    and a blocking list with anything outside data/ or logs/ is returned as-is.
+    Returns (CompletedProcess, [kept paths])."""
+    r = git(root, *args)
+    if not r.returncode:
+        return r, []
+    paths = _blocking_paths(r.stderr)
+    if not paths or not all(p.startswith(EXCLUDE_PREFIXES) and not
+                            p.rsplit("/", 1)[-1].startswith(".env") for p in paths):
+        return r, []
+    saved = {p: (Path(root) / p).read_bytes() for p in paths}
+    try:
+        reset = git(root, "checkout", "-q", "--", *paths)
+        if reset.returncode:
+            return reset, []
+        r = git(root, *args)
+    finally:
+        for p, b in saved.items():
+            (Path(root) / p).parent.mkdir(parents=True, exist_ok=True)
+            (Path(root) / p).write_bytes(b)
+    return r, (paths if not r.returncode else [])
 
 
 # ── MAIN vs VM ───────────────────────────────────────────────────────────────
