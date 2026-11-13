@@ -1,0 +1,20 @@
+{
+  "_doc": "Registry of expected outcome cadence. instrumented=false means nothing writes the heartbeat yet (burn-down list, see docs/audit/LIVENESS_GAPS.md). Flip to true in the same PR that adds the liveness.beat() call.",
+  "features": {
+    "board_vote":        {"max_silence_hours": 26, "min_n_done": 1, "instrumented": false, "weekdays_only": true, "gap": "G02"},
+    "deputy_board":      {"max_silence_hours": 26, "min_n_done": 1, "instrumented": false, "weekdays_only": true, "gap": "G03"},
+    "board_execution":   {"max_silence_hours": 50, "min_n_done": 1, "instrumented": false, "gap": "G01"},
+    "pod_orders":        {"max_silence_hours": 72, "min_n_done": 1, "instrumented": false, "gap": "G04"},
+    "short_covers":      {"max_silence_hours": 72, "min_n_done": 1, "instrumented": false, "gap": "G05"},
+    "kalshi_copy_trader":{"max_silence_hours": 48, "min_n_done": 1, "instrumented": false, "gap": "G06"},
+    "cro_buy_block":     {"max_silence_hours": 72, "min_n_done": 0, "instrumented": false, "gap": "G07"},
+    "canary":            {"max_silence_hours": 26, "min_n_done": 1, "instrumented": false, "gap": "G10"},
+    "job_failure_monitor":{"max_silence_hours": 26, "min_n_done": 1, "instrumented": false, "gap": "G09"},
+    "coherence_laws":    {"max_silence_hours": 26, "min_n_done": 1, "instrumented": false, "gap": "G11"},
+    "internal_audit":    {"max_silence_hours": 26, "min_n_done": 1, "instrumented": false, "gap": "G12"},
+    "chairman_sla":      {"max_silence_hours": 26, "min_n_done": 1, "instrumented": false, "gap": "G17"},
+    "hr_evaluation":     {"max_silence_hours": 170,"min_n_done": 1, "instrumented": false, "gap": "G18"},
+    "irm_review":        {"max_silence_hours": 26, "min_n_done": 1, "instrumented": false, "gap": "G19"},
+    "backup":            {"max_silence_hours": 50, "min_n_done": 1, "instrumented": false, "gap": "G20"}
+  }
+}
