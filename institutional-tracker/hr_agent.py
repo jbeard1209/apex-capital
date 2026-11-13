@@ -1058,7 +1058,17 @@ def audit_attendance(base_dir: str = None) -> dict:
     runs_via, by_file = {}, {}
     try:
         roster = _safe_load(os.path.join(here, ROSTER_PATH))
-        if roster and _roster_is_stale(roster, base=here):
+        # A MISSING roster on the real tree (no base_dir) is the same blindness
+        # as a stale one, and audit_roster_coverage already rebuilds on it. Until
+        # 2026-11-12 this only rebuilt when the file existed AND was stale, so on
+        # any host or checkout without data/agent_roster.json (it is gitignored:
+        # every fresh worktree, every cloud run) attendance fell back to the
+        # substring test and called 3 agents the roster runs (issue_tracker,
+        # cit_implementation_agent, proxy_chairman_agent: all reached only via
+        # imports) never-scheduled. Two definitions of "scheduled" again.
+        # Under an explicit base_dir a missing file stays a narrowed sandbox.
+        if (not roster and base_dir is None) or (
+                roster and _roster_is_stale(roster, base=here)):
             # Attendance decides which modules get imported and which are
             # reported missing. Off a frozen snapshot it would take the register
             # of a firm that has moved on: agents added since the freeze are not
