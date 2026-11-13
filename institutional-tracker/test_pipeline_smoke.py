@@ -28968,6 +28968,9 @@ class TestTheAlertQueueSurvivesConcurrentProducers(unittest.TestCase):
         self.assertNotIn("open", names, "_save_buffer must not open the live path")
 
 
+from test_liveness import TestLiveness  # noqa: F401  (M00: registered so the suite runs it)
+
+
 class TestThePrePushGateIsTheOneWeShip(unittest.TestCase):
     """One tracked copy of the gate, and CLAUDE.md must name its real path.
 

@@ -24,7 +24,7 @@ Status values: `TODO`, `IN PROGRESS`, `DONE` (all gates pass), `DONE-WITH-FINDIN
 
 | ID | Module | Tier | Status | Last run | Gates | PRs / notes |
 |---|---|---|---|---|---|---|
-| M00 | Liveness watcher + registry (build; see LIVENESS_GAPS) | 0 | TODO | — | — | Build by PR; deploy needs Jack |
+| M00 | Liveness watcher + registry (build; see LIVENESS_GAPS) | 0 | DONE-WITH-FINDINGS | 2026-11-13 | 3/4 | Built by PR audit/M00-liveness-2026-11-13; VM gate BLOCKED until deployed (Jack). 0 of 15 features instrumented yet |
 | M01 | Order path & choke point | 1 | TODO | — | 0/8 | |
 | M02 | Positions, entry dates, max-hold | 1 | TODO | — | 0/4 | Open HIGH chairman item (re-buy dating) |
 | M03 | Manager, picks, CRO | 1 | TODO | — | 0/4 | |
@@ -80,6 +80,7 @@ Record the pass number in the run log.
 | 2026-11-11 | baseline | — | Wrote README, INTENT_REGISTER, AUDIT_PLAN, LIVENESS_GAPS, PROGRESS | — |
 | 2026-11-12 | follow-up | — | Routine moved to the Mac bridge env (VM reachable); verified deputy/internal-audit invokers; logged deputy zero-decision finding | — |
 | 2026-11-12 | follow-up | M19-L3 (partial) | Verified VM crontab after health-thread edit: 107 jobs, both June lines gone, snapshot matches | — |
+| 2026-11-13 | recurring | M00 (pass 1) | Built liveness.py + registry + 8 tests; host MAC (MacBook-Air-173.local) | — |
 
 ## Budget
 Target is about 30% of the weekly token allowance. With a run every third day that comes
