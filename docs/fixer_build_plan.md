@@ -100,9 +100,14 @@ strand it. That's the "a queue that never empties" lesson.
    CIT-2026-216, CIT-2026-037. Still to verify: the zero_picks rows and CIT-2026-1448.
    Back up the queue first, never touch `escalated_to_board` rows, and give Jack the list.
 2. Commit and deploy the test-suite sandbox (fixture-leak guard).
-3. Draft `fixer_routing.py` mapping table against the real 224 rows; target is 0 unrouted.
-4. Draft the seven fixer briefs (`docs/fixers/<area>.md`), each listing its files, guard tests and postmortems.
-5. Estimate cost: one run at N=5 rows, then pick the cadence (daily vs 3×/week).
+3. ✓ 2026-11-13: `docs/fixers/fixer_routing_draft.py`, measured on the live VM queue: 106 open
+   rows, 0 unrouted. See `docs/fixers/README.md`.
+4. ✓ 2026-11-13: briefs in `docs/fixers/<area>.md`. **Eight areas, not seven:** Research was
+   added (21 zero-pick / pod-output rows fit neither Risk nor Wiring).
+5. ✓ 2026-11-13 (estimate only): see `docs/fixers/README.md`. The build-day supervised run
+   is the real measurement.
+6. Routine must group rows into problems (106 rows ≈ 50 problems) and close each group with
+   one PR. Found while routing; add to build-day step 5.
 
 ## Build day checklist (gates must all pass before reporting done)
 1. `superseded` / `claimed` / `pr_open` statuses + tests. **Gate:** suite OK in both zones.
