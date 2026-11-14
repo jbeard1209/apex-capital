@@ -22125,6 +22125,11 @@ class TestMacGithubVmDriftIsMeasuredNotRemembered(unittest.TestCase):
         import importlib.util
         root = Path(__file__).resolve().parent.parent
         cls.root = root
+        # tools/ lives at repo root, which deploy.sh never ships: the VM has
+        # only institutional-tracker/ and no .git. Red there 11-13 and 11-14.
+        # Skip on that host only; on a checkout a missing file still fails.
+        if not (root / ".git").exists():
+            raise unittest.SkipTest("no repo root on this host (VM): tools/ not deployed")
         spec = importlib.util.spec_from_file_location(
             "sync_drift_check_t", str(root / "tools" / "sync_drift_check.py"))
         cls.S = importlib.util.module_from_spec(spec)
@@ -36257,6 +36262,8 @@ class TestKalshiPnlIsRecordedLikeEveryOtherDesk(unittest.TestCase):
     def test_the_kalshi_slash_command_is_read_only(self):
         """`/kalshi` runs on the VM where real money trades: only --report and
         --json, never --record, a deploy, or anything that touches the halt."""
+        if not (Path(__file__).resolve().parent.parent / ".git").exists():
+            self.skipTest("no repo root on this host (VM): .claude/ not deployed")
         cmd = (Path(__file__).resolve().parent.parent / ".claude" / "commands"
                / "kalshi.md").read_text()
         self.assertIn("kalshi_copytrade_manager.py --report", cmd)
@@ -36817,6 +36824,46 @@ class TestIRMBoardDoesNotHideACrashedSpecialist(unittest.TestCase):
         p = self._panel([1, 1, 1, 1])
         self.assertEqual([], p["specialists_failed"])
         self.assertTrue(p["board_verdict"].startswith("LOW RISK"))
+
+
+class TestANonWriterHostCanOnlyEnforceStops(unittest.TestCase):
+    """Investigator 2026-11-14. The Mac's exit guard (catch_up._mac_exit_guard)
+    runs canary_agent.py whenever it cannot see the VM. On 2026-11-12 19:40 UTC
+    the canary went ORANGE there and ran the FULL cascade, Manager included. The
+    Manager judged by the Mac's private ledger (entries from June) and sold KEY
+    (211) and ZION (84) as 'max hold 157/163 days', and bought 11 AMAT to cover
+    a short. The VM had opened all three on 11-11, the day before. The exit
+    guard's own docstring says it only closes positions breaching their own
+    stop. On a host that is not the designated writer, the cascade must do just
+    that: run the broker-sourced stop enforcer and nothing that reads a ledger."""
+
+    def _run(self, this, designated):
+        import canary_agent as ca
+        calls = []
+        fake_mgr = MagicMock(run_manager=lambda *a, **k: calls.append("manager"))
+        fake_board = MagicMock(run_board_meeting=lambda **k: calls.append("board") or {},
+                               consensus_tally=lambda c: "")
+        with patch("single_writer.this_host", lambda: this), \
+                patch("single_writer.designated_host", lambda: designated), \
+                patch.object(ca, "_enforce_canary_exits",
+                             lambda a: calls.append("enforce") or []), \
+                patch.dict(sys.modules, {"manager_agent": fake_mgr,
+                                         "risk_manager_agent": MagicMock(
+                                             run_risk_manager=lambda **k: calls.append("cro")),
+                                         "review_agent": MagicMock(
+                                             run_review=lambda **k: calls.append("review")),
+                                         "board_meeting": fake_board}):
+            ca._emergency_response_cascade({"level": "ORANGE", "triggers": ["t"],
+                                            "readings": {"positions": []}})
+        return calls
+
+    def test_a_non_designated_host_runs_only_the_stop_enforcer(self):
+        calls = self._run("mac", "apexcapitalc")
+        self.assertEqual(calls, ["enforce"])
+
+    def test_POISON_PILL_the_designated_writer_still_runs_the_full_cascade(self):
+        calls = self._run("apexcapitalc", "apexcapitalc")
+        self.assertEqual(calls, ["cro", "review", "manager", "enforce", "board"])
 
 
 if __name__ == "__main__":
