@@ -778,6 +778,29 @@ def _emergency_response_cascade(assessment: dict):
     logger.info(f"\n  [Canary] ═══ EMERGENCY RESPONSE CASCADE — {level} ═══")
     logger.info(f"  [Canary] Triggers: {'; '.join(triggers)}")
 
+    # ── Non-writer host: stops only ──────────────────────────────────────
+    # The Mac reaches here through catch_up._mac_exit_guard whenever it cannot
+    # see the VM. On 2026-11-12 the full cascade ran there and the Manager,
+    # reading the Mac's private ledger (June entry dates), sold KEY and ZION
+    # and covered an AMAT short as "max hold 157-164 days": positions the VM had
+    # opened the day before. single_writer lets exits through from any host, on
+    # purpose, so the gate cannot catch this; it has to stop here. Only the
+    # broker-sourced stop enforcer runs. Host unknown -> full cascade, as before.
+    try:
+        import single_writer as _sw
+        _designated, _this = _sw.designated_host(), _sw.this_host()
+    except Exception as e:
+        logger.warning(f"  [Canary] host check failed ({e}); running full cascade")
+        _designated, _this = "", ""
+    if _designated and _this != _designated:
+        logger.warning(
+            f"  [Canary] host {_this!r} is not the designated writer "
+            f"{_designated!r}: stop/take-profit enforcement only, no "
+            f"CRO/Review/Manager/Board (they read this host's private ledger)")
+        _enforce_canary_exits(assessment)
+        logger.info(f"  [Canary] ═══ CASCADE COMPLETE (exits only) — {level} ═══\n")
+        return
+
     # ── Step 1: CRO — fresh risk bulletin ────────────────────────────────
     logger.info("  [Canary] Step 1/5 — CRO: publishing emergency risk bulletin...")
     try:
