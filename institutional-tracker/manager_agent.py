@@ -1126,13 +1126,18 @@ def execute_decision(decision: dict, trader, dry_run: bool = False) -> dict:
                 result["error"] = f"get_positions() returned None or empty — cannot trim {ticker}"
             elif ticker in positions["ticker"].values:
                 qty_held = float(positions[positions["ticker"] == ticker]["qty"].values[0])
-                trim_qty = max(1, int(abs(qty_held) * 0.40))   # sell 40% of position
+                from alpaca_trader import trim_order_plan
+                _plan = trim_order_plan(qty_held, 0.40)   # 40%; BUY back if short
+                if _plan is None:
+                    result["error"] = f"nothing to trim: {ticker} qty={qty_held}"
+                    return result
+                trim_side, trim_qty = _plan
                 from alpaca.trading.requests import MarketOrderRequest
                 from alpaca.trading.enums import OrderSide, TimeInForce
                 order_req = MarketOrderRequest(
                     symbol=ticker,
                     qty=trim_qty,
-                    side=OrderSide.SELL,
+                    side=OrderSide.SELL if trim_side == "SELL" else OrderSide.BUY,
                     time_in_force=TimeInForce.DAY,
                 )
                 order = trader.client.submit_order(order_req)

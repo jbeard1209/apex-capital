@@ -371,6 +371,15 @@ def install():
             except Exception:
                 pass
 
+        # Liveness (audit M01): a heartbeat per order that went through the
+        # gate wrapper. If orders stop reaching the broker for a trading day the
+        # watcher says so; without this a dead gate and an idle book look alike.
+        try:
+            import liveness
+            liveness.beat("order_gate", 1, 1)
+        except Exception:
+            pass
+
         try:
             record(getattr(order, "id", ""),
                    stamp or getattr(order, "client_order_id", ""),

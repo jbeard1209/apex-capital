@@ -1883,13 +1883,17 @@ def _implement_decisions(consensus: dict, dry_run: bool = False) -> dict:
                     pos_row  = positions[positions["ticker"] == ticker]
                     qty      = float(pos_row["qty"].values[0])
                     pct      = trim_pct if trim_pct else 0.50   # default: trim 50%
-                    trim_qty = max(1, int(qty * pct))
+                    from alpaca_trader import trim_order_plan
+                    _plan = trim_order_plan(qty, pct)   # BUY back if short
+                    if _plan is None:
+                        raise ValueError(f"nothing to trim: {ticker} qty={qty}")
+                    trim_side, trim_qty = _plan
                     from alpaca.trading.requests import MarketOrderRequest
                     from alpaca.trading.enums   import OrderSide, TimeInForce
                     order_req = MarketOrderRequest(
                         symbol=ticker,
                         qty=trim_qty,
-                        side=OrderSide.SELL,
+                        side=OrderSide.SELL if trim_side == "SELL" else OrderSide.BUY,
                         time_in_force=TimeInForce.DAY,
                     )
                     order = trader.client.submit_order(order_req)

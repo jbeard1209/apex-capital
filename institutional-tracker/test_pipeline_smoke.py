@@ -36866,6 +36866,92 @@ class TestANonWriterHostCanOnlyEnforceStops(unittest.TestCase):
         self.assertEqual(calls, ["cro", "review", "manager", "enforce", "board"])
 
 
+class TestM01OrderPathAudit(unittest.TestCase):
+    """Audit M01 (2026-11-16): the order choke point, proven per site and per rule."""
+
+    # F1: every submit_order call site runs after config (which installs the gate)
+    def test_every_submit_order_site_is_preceded_by_the_gate_installer(self):
+        import ast
+        here = Path(__file__).resolve().parent
+        sites, bad = 0, []
+        for f in sorted(here.glob("*.py")):
+            if f.name.startswith("test_") or f.name == "order_ledger.py":
+                continue
+            tree = ast.parse(f.read_text())
+            calls = [n.lineno for n in ast.walk(tree) if isinstance(n, ast.Call)
+                     and isinstance(n.func, ast.Attribute) and n.func.attr == "submit_order"]
+            imps = [n.lineno for n in ast.walk(tree)
+                    if (isinstance(n, ast.ImportFrom) and n.module in ("config", "alpaca_trader", "manager_agent"))
+                    or (isinstance(n, ast.Import) and any(a.name == "config" for a in n.names))]
+            for c in calls:
+                sites += 1
+                if not any(i < c for i in imps):
+                    bad.append(f"{f.name}:{c}")
+        self.assertGreaterEqual(sites, 15, "vacuous: fewer submit_order sites than the audit counted")
+        self.assertEqual(bad, [], f"submit_order reached with no config/alpaca_trader import first: {bad}")
+
+    # F2: the gate refuses the count cap and the cash floor, never an exit
+    def _snap(self, cash, pv, held):
+        return {"cash": cash, "portfolio_value": pv,
+                "positions": {s: {"qty": q, "price": 10.0} for s, q in held.items()}}
+
+    def test_gate_refuses_cap_and_cash_floor_but_not_exits(self):
+        import risk_gate
+        orig = risk_gate.limits
+        risk_gate.limits = lambda: {"cash_floor": 0.20, "max_positions": 3}
+        try:
+            held = {"A": 10, "B": 10, "C": -10}
+            cases = [
+                ("NEW", "buy", 1, 10.0, self._snap(50000, 100000, held), False, "BLOCK_MAX_POSITIONS"),
+                ("A", "buy", 1, 10.0, self._snap(50000, 100000, held), True, "ALLOW_WITHIN_LIMITS"),
+                ("A", "buy", 1000, 10.0, self._snap(25000, 100000, held), False, "BLOCK_CASH_FLOOR"),
+                ("A", "buy", 1, 10.0, self._snap(15000, 100000, held), False, "BLOCK_CASH_FLOOR"),
+                ("A", "sell", 10, 10.0, self._snap(0, 100000, held), True, "ALLOW_EXIT"),
+                ("C", "buy", 10, 10.0, self._snap(0, 100000, held), True, "ALLOW_EXIT"),
+            ]
+            for sym, side, qty, px, snap, ok, verdict in cases:
+                allowed, v, why = risk_gate.check(sym, side, qty, px, snap=snap)
+                self.assertEqual((allowed, v), (ok, verdict), f"{sym} {side} {qty}: {why}")
+        finally:
+            risk_gate.limits = orig
+
+    # F4: a non-writer host may exit but not enter
+    def test_single_writer_blocks_entries_on_the_non_writer_host(self):
+        import single_writer
+        old = dict(os.environ)
+        try:
+            os.environ["APEX_TRADING_HOST"] = "vm"
+            os.environ["APEX_HOST_ID"] = "mac"
+            pos = {"A": 10.0, "S": -5.0}
+            for sym, side, qty, ok in [("NEW", "buy", 1, False), ("A", "sell", 10, True),
+                                       ("S", "buy", 5, True), ("A", "sell", 50, False),
+                                       ("A", "buy", 1, False)]:
+                allowed, v, why = single_writer.check(sym, side, qty, positions=pos)
+                self.assertEqual(allowed, ok, f"{sym} {side} {qty} -> {v}: {why}")
+        finally:
+            os.environ.clear()
+            os.environ.update(old)
+
+    # TRIM must shrink a short by BUYING, and never go the wrong way
+    def test_trim_plan_buys_back_a_short_and_sells_a_long(self):
+        from alpaca_trader import trim_order_plan
+        self.assertEqual(trim_order_plan(100, 0.4), ("SELL", 40))
+        self.assertEqual(trim_order_plan(-100, 0.4), ("BUY", 40))
+        self.assertEqual(trim_order_plan(-100, 0.5), ("BUY", 50))
+        self.assertEqual(trim_order_plan(-3, 0.1), ("BUY", 1))
+        self.assertEqual(trim_order_plan(2, 5.0), ("SELL", 2))
+        self.assertIsNone(trim_order_plan(0, 0.5))
+        self.assertIsNone(trim_order_plan(float("nan"), 0.5))
+
+    def test_both_trim_sites_use_the_signed_plan(self):
+        here = Path(__file__).resolve().parent
+        for name in ("manager_agent.py", "board_meeting.py"):
+            src = (here / name).read_text()
+            self.assertIn("trim_order_plan(", src, f"{name} TRIM does not use the signed plan")
+            self.assertNotIn("max(1, int(qty * pct))", src)
+            self.assertNotIn("max(1, int(abs(qty_held) * 0.40))", src)
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.
