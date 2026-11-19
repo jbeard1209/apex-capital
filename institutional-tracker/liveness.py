@@ -116,7 +116,7 @@ def _weekday_hours(rec, now):
 def check(registry=None, now=None, host=None):
     """Judge every registered feature. Returns {'n_examined', 'alarms', 'results'}.
 
-    status per feature: OK | MISSING | STALE | NO_OUTCOME | UNINSTRUMENTED | SKIPPED
+    status per feature: OK | MISSING | STALE | NO_OUTCOME | UNINSTRUMENTED | AWAITING_FIRST_BEAT | SKIPPED
     Only MISSING/STALE/NO_OUTCOME are alarms. UNINSTRUMENTED means "registered but
     nothing writes its heartbeat yet" -- reported loudly, counted, but not paged on
     (it would page forever on day one); it is the burn-down list.
@@ -138,6 +138,18 @@ def check(registry=None, now=None, host=None):
         rec = _read_hb(name)
         if rec is None:
             st = "UNINSTRUMENTED" if not spec.get("instrumented") else "MISSING"
+            if st == "MISSING" and spec.get("instrumented_since"):
+                # A job wired by today's deploy has not had one cadence to run yet.
+                # Without this, every deploy that adds a beat pages the Chairman
+                # queue an hour later for jobs that are fine (2026-11-19: 15 HIGH
+                # rows were about to be filed at 09:07Z). Grace = one
+                # max_silence window from instrumented_since, then MISSING again.
+                # An unparseable date gives age None -> MISSING (fail closed).
+                since = {"ts": str(spec["instrumented_since"]).replace("Z", "+00:00")}
+                g = (_weekday_hours(since, now) if spec.get("weekdays_only")
+                     else _age_hours(since, now))
+                if g is not None and g <= float(spec["max_silence_hours"]):
+                    st = "AWAITING_FIRST_BEAT"
             results[name] = {"status": st}
             if st == "MISSING":
                 alarms.append((name, "no heartbeat file but feature is marked instrumented"))
