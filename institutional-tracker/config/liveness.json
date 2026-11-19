@@ -1,21 +1,21 @@
 {
-  "_doc": "Registry of expected outcome cadence. instrumented=false means nothing writes the heartbeat yet (burn-down list, see docs/audit/LIVENESS_GAPS.md). Flip to true in the same PR that adds the liveness.beat() call. All 16 wired 2026-11-19 (test_liveness pins one beat() per row). cro_buy_block beats only while CRO is below HIGH, so STALE there = buys blocked >72 weekday hours (3 trading days), a policy alarm. pod_orders beats only when the Manager attempted orders, so STALE = no orders for 72 weekday hours. weekdays_only ages a heartbeat in weekday hours (Sat/Sun UTC removed), so Friday's beat is not stale on Monday morning.",
+  "_doc": "Registry of expected outcome cadence. instrumented=false means nothing writes the heartbeat yet (burn-down list, see docs/audit/LIVENESS_GAPS.md). Flip to true in the same PR that adds the liveness.beat() call. All 16 wired 2026-11-19 (test_liveness pins one beat() per row). cro_buy_block beats only while CRO is below HIGH, so STALE there = buys blocked >72 weekday hours (3 trading days), a policy alarm. pod_orders beats only when the Manager attempted orders, so STALE = no orders for 72 weekday hours. instrumented_since is the deploy that wired the beat: a missing heartbeat is AWAITING_FIRST_BEAT (no page) for one max_silence window after it, then MISSING. weekdays_only ages a heartbeat in weekday hours (Sat/Sun UTC removed), so Friday's beat is not stale on Monday morning.",
   "features": {
-    "board_vote":        {"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "weekdays_only": true, "gap": "G02"},
-    "deputy_board":      {"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "weekdays_only": true, "gap": "G03"},
-    "board_execution":   {"max_silence_hours": 50, "min_n_done": 1, "instrumented": true, "gap": "G01", "weekdays_only": true},
-    "pod_orders":        {"max_silence_hours": 72, "min_n_done": 1, "instrumented": true, "gap": "G04", "weekdays_only": true},
-    "short_covers":      {"max_silence_hours": 72, "min_n_done": 1, "instrumented": true, "gap": "G05", "weekdays_only": true},
-    "kalshi_copy_trader":{"max_silence_hours": 48, "min_n_done": 1, "instrumented": true, "gap": "G06"},
-    "cro_buy_block":     {"max_silence_hours": 72, "min_n_done": 0, "instrumented": true, "gap": "G07", "weekdays_only": true},
-    "canary":            {"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "gap": "G10"},
-    "job_failure_monitor":{"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "gap": "G09"},
-    "coherence_laws":    {"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "gap": "G11"},
-    "internal_audit":    {"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "gap": "G12", "weekdays_only": true},
-    "chairman_sla":      {"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "gap": "G17"},
-    "hr_evaluation":     {"max_silence_hours": 170,"min_n_done": 1, "instrumented": true, "gap": "G18"},
-    "irm_review":        {"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "gap": "G19", "weekdays_only": true},
-    "backup":            {"max_silence_hours": 50, "min_n_done": 1, "instrumented": true, "gap": "G20"},
-    "order_gate":        {"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "weekdays_only": true, "gap": "M01"}
+    "board_vote":        {"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "weekdays_only": true, "gap": "G02"},
+    "deputy_board":      {"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "weekdays_only": true, "gap": "G03"},
+    "board_execution":   {"max_silence_hours": 50, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G01", "weekdays_only": true},
+    "pod_orders":        {"max_silence_hours": 72, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G04", "weekdays_only": true},
+    "short_covers":      {"max_silence_hours": 72, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G05", "weekdays_only": true},
+    "kalshi_copy_trader":{"max_silence_hours": 48, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G06"},
+    "cro_buy_block":     {"max_silence_hours": 72, "min_n_done": 0, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G07", "weekdays_only": true},
+    "canary":            {"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G10"},
+    "job_failure_monitor":{"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G09"},
+    "coherence_laws":    {"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G11"},
+    "internal_audit":    {"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G12", "weekdays_only": true},
+    "chairman_sla":      {"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G17"},
+    "hr_evaluation":     {"max_silence_hours": 170,"min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G18"},
+    "irm_review":        {"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G19", "weekdays_only": true},
+    "backup":            {"max_silence_hours": 50, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G20"},
+    "order_gate":        {"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "weekdays_only": true, "gap": "M01"}
   }
 }

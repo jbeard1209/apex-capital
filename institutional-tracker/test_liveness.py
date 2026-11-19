@@ -41,6 +41,23 @@ class TestLiveness(unittest.TestCase):
     def test_instrumented_but_no_file_alarms(self):
         self.assertEqual(self._st(), "MISSING")
 
+    def test_just_instrumented_no_beat_yet_waits_does_not_page(self):
+        # Deployed 3h ago; a 26h job has had no chance to run. Paging now is a false alarm.
+        self.reg["features"]["f"]["instrumented_since"] = (self.now - timedelta(hours=3)).isoformat()
+        rep = self.L.check(self.reg, now=self.now)
+        self.assertEqual(rep["results"]["f"]["status"], "AWAITING_FIRST_BEAT")
+        self.assertEqual(rep["alarms"], [])
+
+    def test_poison_pill_grace_expired_with_no_beat_alarms(self):
+        self.reg["features"]["f"]["instrumented_since"] = (self.now - timedelta(hours=30)).isoformat()
+        rep = self.L.check(self.reg, now=self.now)
+        self.assertEqual(rep["results"]["f"]["status"], "MISSING")
+        self.assertEqual(len(rep["alarms"]), 1)
+
+    def test_unparseable_instrumented_since_fails_closed_to_missing(self):
+        self.reg["features"]["f"]["instrumented_since"] = "not a date"
+        self.assertEqual(self._st(), "MISSING")
+
     def test_uninstrumented_is_counted_not_healthy_not_paged(self):
         self.reg["features"]["f"]["instrumented"] = False
         rep = self.L.check(self.reg, now=self.now)
@@ -53,6 +70,14 @@ class TestLiveness(unittest.TestCase):
         self.assertGreater(rep["n_examined"], 0)
         for n, spec in self.L.json.loads(self.L.REGISTRY.read_text())["features"].items():
             self.assertIn("max_silence_hours", spec, n)
+
+    def test_every_registry_row_has_a_parseable_instrumented_since(self):
+        import json
+        reg = json.loads(self.L.REGISTRY.read_text())
+        for name, spec in reg["features"].items():
+            if spec.get("instrumented"):
+                ts = datetime.fromisoformat(spec["instrumented_since"].replace("Z", "+00:00"))
+                self.assertIsNotNone(ts.tzinfo, name)
 
     def test_weekdays_only_friday_beat_is_not_stale_on_monday_morning(self):
         mon = datetime(2026, 11, 16, 12, tzinfo=timezone.utc)
