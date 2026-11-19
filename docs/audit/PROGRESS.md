@@ -25,7 +25,7 @@ Status values: `TODO`, `IN PROGRESS`, `DONE` (all gates pass), `DONE-WITH-FINDIN
 | ID | Module | Tier | Status | Last run | Gates | PRs / notes |
 |---|---|---|---|---|---|---|
 | M00 | Liveness watcher + registry (build; see LIVENESS_GAPS) | 0 | DONE-WITH-FINDINGS | 2026-11-13 | 3/4 | Built by PR audit/M00-liveness-2026-11-13; VM gate BLOCKED until deployed (Jack). 0 of 15 features instrumented yet |
-| M01 | Order path & choke point | 1 | TODO | — | 0/8 | |
+| M01 | Order path & choke point | 1 | DONE-WITH-FINDINGS | 2026-11-16 | 4/8 PASS, 1 FAIL, 1 PARTIAL, 1 BLOCKED, +suite | Pass 1. PR audit/M01-order-path-2026-11-16. TRIM-on-short fixed; Mac entry 11-12; no 7% cap at choke point (CIT) |
 | M02 | Positions, entry dates, max-hold | 1 | TODO | — | 0/4 | Open HIGH chairman item (re-buy dating) |
 | M03 | Manager, picks, CRO | 1 | TODO | — | 0/4 | |
 | M04 | Kalshi copy-trader / manager / scout | 1 | TODO | — | 0/6 | Shard balance issue 11-09 |
@@ -75,6 +75,12 @@ Record the pass number in the run log.
 | 2026-11-12 | pre-push hook | Hook ran bare `python3` (Mac: 3.15, no packages), so every push from Jack's Terminal failed with 13 ImportErrors that looked like test failures | B | **Fixed** #36 (hook picks APEX_PYTHON → ~/venv → /usr/bin → PATH python3) + #37 (gate-shape tests accept `"$PY"`). Lesson: CI runs only TestWiringContracts, so a hook change needs the FULL suite locally |
 | 2026-11-12 | test suite | Suite leaked fixture rows (a, b, LTIA-1, LT-1/LT-2) into the live `cit_implementation_queue.json` on both hosts: router tests chdir to a tempdir but `board_dispatch.DATA` is absolute | B | Fix on branch `claude/suite-cannot-write-live-queue` (be82ce2, not yet on main); live rows removed on both hosts with backups. Related: running the HR tests also rewrites tracked `data/agent_status.json` — next run should check whether that is the same leak class |
 | 2026-11-12 | M13 (HR) | `TestHRSeesTheWholeFirm.test_attendance_and_the_roster_agree_on_who_is_scheduled` failing since ≥11-09. Root cause: `audit_attendance` rebuilt the roster only when `data/agent_roster.json` existed AND was stale; when missing (gitignored, so every fresh worktree / cloud run) it fell back to a substring test and called `issue_tracker`, `cit_implementation_agent`, `proxy_chairman_agent` (reached only via imports) never-scheduled, while `audit_roster_coverage` rebuilt and said they run | B | **Fixed** on `claude/project-thread-i9d8t1-hr`: rebuild on missing too (except under an explicit `base_dir` sandbox). Verified: test FAILS before, 14/14 pass after, with and without the roster file |
+| 2026-11-16 | M01 | TRIM on a short sold more of it: manager_agent hard-coded SELL; board_meeting used `max(1,int(signed_qty*pct))` and SELL | B | **Fixed** in PR: `alpaca_trader.trim_order_plan`; tests added |
+| 2026-11-16 | M01 | Mac placed an ENTRY (AMAT buy 11, manageragent) on 11-12 on the shared account; single_writer is shadow-only | B | Mitigated by #45 (exit-only Mac guard); arming enforcement remains a Chairman decision |
+| 2026-11-16 | M01 | Choke point enforces count cap + cash floor only; 7% single-name cap lives in `_size_position` (submit_buy path), CRO block caller-side; head_agent and the ETF-pod BUY have no cap; fi_executor uses its own | B | CIT proposal: BLOCK_POSITION_PCT at the gate, shadow first |
+| 2026-11-16 | M01 | Only the latest reconciliation report is retained; "last 10 reports" is unauditable | C | CIT proposal: reconciliation history file |
+| 2026-11-16 | M01 | LLM calls failed in the test run: "credit balance is too low" (claude-fable-5 and fallback) | A | Pushed to Jack; check production key/credits |
+| 2026-11-16 | M01 | PROGRESS.md on main had unresolved merge-conflict markers in the run log | C | **Fixed** in this PR |
 | 2026-11-11 | baseline | Coherence `deployed_set_matches_repo` VIOLATED (5 files differ) and `positions_conserve` VIOLATED | B | M19 / M02 |
 
 ## Run log
@@ -84,11 +90,9 @@ Record the pass number in the run log.
 | 2026-11-11 | baseline | — | Wrote README, INTENT_REGISTER, AUDIT_PLAN, LIVENESS_GAPS, PROGRESS | — |
 | 2026-11-12 | follow-up | — | Routine moved to the Mac bridge env (VM reachable); verified deputy/internal-audit invokers; logged deputy zero-decision finding | — |
 | 2026-11-12 | follow-up | M19-L3 (partial) | Verified VM crontab after health-thread edit: 107 jobs, both June lines gone, snapshot matches | — |
-<<<<<<< HEAD
 | 2026-11-13 | recurring | M00 (pass 1) | Built liveness.py + registry + 8 tests; host MAC (MacBook-Air-173.local) | — |
-=======
 | 2026-11-12 | follow-up | M13 (partial) | Routine prompt made host-aware (records hostname; MAC vs CLOUD branches; cloud marks VM/Mac gates BLOCKED). Logged pregenerate retirement, hook-python fix, test-queue leak; fixed HR attendance/roster disagreement | — |
->>>>>>> origin/main
+| 2026-11-16 | recurring | M01 (pass 1) | Host MAC (MacBook-Air-173.local), worktree /Users/jackbeard/apex-audit-2026-11-16. Order path audited; 15 sites gated; TRIM-on-short fixed; `order_gate` heartbeat added (registry entry uninstrumented until deploy) | — |
 
 ## Budget
 Target is about 30% of the weekly token allowance. With a run every third day that comes

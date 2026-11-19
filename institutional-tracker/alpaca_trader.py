@@ -40,6 +40,26 @@ logger = logging.getLogger(__name__)
 # Alpaca Client Wrapper
 # ---------------------------------------------------------------------------
 
+def trim_order_plan(qty_held, pct):
+    """(side, qty) that shrinks a position by ~pct, or None if there is nothing to trim.
+
+    A position's qty is SIGNED: a short is negative. Both TRIM call sites
+    (manager_agent, board_meeting) hard-coded SELL and, in board_meeting's case,
+    multiplied the signed qty, so trimming a short either SOLD more of it
+    (opening MORE short) or, via max(1, negative), sold exactly one share.
+    A trim is a risk reducer by definition: sell a long, BUY BACK a short.
+    Audit M01, 2026-11-16.
+    """
+    try:
+        q = float(qty_held)
+    except (TypeError, ValueError):
+        return None
+    if q != q or int(abs(q)) < 1:
+        return None
+    n = max(1, min(int(abs(q) * float(pct)), int(abs(q))))
+    return ("SELL" if q > 0 else "BUY", n)
+
+
 class AlpacaTrader:
     """
     Wraps the alpaca-py SDK for paper trading operations.
