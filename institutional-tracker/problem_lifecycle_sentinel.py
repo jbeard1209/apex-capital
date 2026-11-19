@@ -115,7 +115,11 @@ _SOURCE_FINAL = ("row", "observed_before_row")
 # (queued/needs_human/systemic/routed_to_human/pending/awaiting_*) is OPEN.
 # won't-fix statuses are closed-but-not-resolved (owner assigned, decision made)
 # and must NOT be treated as a silent drop.
-RESOLVED_STATUSES = {"implemented", "resolved", "done", "closed", "completed", "fixed"}
+RESOLVED_STATUSES = {"implemented", "resolved", "done", "closed", "completed", "fixed",
+                     # board_dispatch.DONE_STATUSES: a row its executor finished, or
+                     # closed because its premise was re-checked and false (2026-11-19).
+                     # Missing either here made a finished row read as still OPEN.
+                     "executed", "superseded"}
 WONT_FIX_STATUSES = {"skipped", "protected", "wont_fix", "rejected", "dismissed"}
 
 # ---------------------------------------------------------------------------
@@ -864,6 +868,12 @@ def _escalate_looping(h: dict, now: str) -> bool:
             f"root-cause fix or a documented won't-fix decision."
         ),
         "proposed_fix": "Root-cause / structural remediation ratified by the full board.",
+        # The problem itself, so the row is actionable on its own. Until
+        # 2026-11-19 only the description carried it and board_dispatch copied
+        # `evidence`: 60 queued rows on the VM said nothing but a hash.
+        "evidence": (f"{h.get('title')}\n\n[problem_lifecycle {sig}: seen "
+                     f"{h.get('occurrences', 0)}x since {str(h.get('first_seen', '?'))[:10]}, "
+                     f"recurred after resolution {h.get('recurred_after_resolution', 0)}x]"),
         "status": "pending",
         "ts": now,
     }
