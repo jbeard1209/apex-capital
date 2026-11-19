@@ -1,9 +1,10 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-11-12T16:34:27Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-11-19T20:15:42Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
 APEX_HEALTHCHECK_URL=https://hc-ping.com/0ca2940f-74a7-4306-a5fe-c7078f7c79cc
+APEX_LIVENESS_HC_URL=https://hc-ping.com/f09ef88f-83da-4d3e-a839-9407e173c0a6
 SHELL=/bin/bash
 PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # ============================================================
@@ -496,3 +497,8 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 50 * * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 kalshi_pnl_history.py --record >> logs/kalshi_copytrade.log 2>&1
 40 * * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 pod_pnl_history.py --record >> logs/pod_pnl_history.log 2>&1
 55 * * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 kalshi_report_publish.py >> logs/kalshi_report_publish.log 2>&1
+# M00 outcome liveness watcher (docs/audit/LIVENESS_GAPS.md), hourly
+7 * * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 liveness.py >> logs/liveness.log 2>&1
+# FE + ML research chain: scheduled 2026-11-19 (were scheduled nowhere; see docs/audit/OVERNIGHT_2026-11-19.md)
+0 2 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 fe_research_scheduler.py >> logs/fe_research_scheduler.log 2>&1
+0 7 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 ml_research_team_leader.py >> logs/ml_research_team_leader.log 2>&1

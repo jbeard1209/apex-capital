@@ -309,11 +309,27 @@ def run_reconciliation() -> dict:
 
     # ── CHECK 2: Position count ────────────────────────────────────────────
     logger.info("  [4/9] Position count...")
-    if n_positions > max_pos:
+    # The ETF pod's longs may occupy up to risk_gate.POD_ETF_SLOTS slots above
+    # the cap (2026-11-19). The reconciler allows exactly those and no more, so
+    # it and the gate keep one idea of the limit rather than this check
+    # flagging every legitimate pod order as a breach.
+    _pod_extra = 0
+    try:
+        import risk_gate as _rg
+        _pod = _rg._pod_universe()
+        if positions is not None and not positions.empty:
+            _pod_extra = min(_rg.POD_ETF_SLOTS, int(sum(
+                1 for _t, _q in zip(positions["ticker"], positions["qty"])
+                if str(_t).upper() in _pod and float(_q) > 0)))
+    except Exception as _pe:
+        logger.warning(f"    pod-slot allowance unavailable ({_pe}); using the bare cap")
+    if n_positions > max_pos + _pod_extra:
         _flag(flags, "HIGH", "MAX_POSITIONS",
-              f"{n_positions} positions open — exceeds {max_pos} maximum.")
+              f"{n_positions} positions open — exceeds {max_pos} maximum"
+              + (f" plus {_pod_extra} ETF-pod slot(s)." if _pod_extra else "."))
     else:
-        logger.info(f"    ✓ {n_positions}/{max_pos} positions")
+        logger.info(f"    ✓ {n_positions}/{max_pos} positions"
+                    + (f" (+{_pod_extra} ETF-pod)" if _pod_extra else ""))
 
     # ── CHECK 3 & 4: Per-position compliance ──────────────────────────────
     logger.info("  [5/9] Stop-loss compliance...")

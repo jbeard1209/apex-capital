@@ -37929,6 +37929,149 @@ class TestTwoSigmaIsTwoSigma(unittest.TestCase):
             self.assertEqual(c.execute(f"select count(*) from {t} where institution=?", (m.SCION_LABEL,)).fetchone()[0], 1)
         self.assertEqual(m.migrate(c, apply=True)["filings"], 0)   # idempotent
 
+class TestBoardPauseAndPodSlots(unittest.TestCase):
+    """Two board decisions that reached no actuator until 2026-11-19.
+
+    PAUSE_NEW_BUYS: the emergency board could vote to halt buys, and the vote
+    was queued to "Engineering" and enforced by nothing. ETF pod: the pod's
+    $30k budget and board-approved slate were refused at the 20-name cap on
+    every run, so the pod sat idle while its approvals accumulated.
+    """
+
+    NO_HEDGE = {"allowed": False, "consulted": False, "reason": ""}
+
+    def setUp(self):
+        import tempfile, risk_gate
+        self.G = risk_gate
+        self._real_pod_universe = risk_gate._pod_universe
+        risk_gate.clear_reservations()
+        self.addCleanup(risk_gate.clear_reservations)
+        self.tmp = Path(tempfile.mkdtemp())
+        for target, val in (
+            ("limits", lambda: {"cash_floor": 0.20, "max_positions": 20}),
+            ("PAUSE_PATH", self.tmp / "buy_pause.json"),
+            ("_hedge_verdict", lambda *a, **k: dict(self.NO_HEDGE)),
+            ("_pod_universe", lambda: frozenset({"XLP", "XLU", "XLV", "QQQ", "GLD"})),
+        ):
+            p = patch.object(risk_gate, target, val)
+            p.start()
+            self.addCleanup(p.stop)
+
+    @staticmethod
+    def _snap(positions, cash=50000.0, pv=100000.0):
+        return {"cash": cash, "portfolio_value": pv,
+                "positions": {s: {"qty": q, "price": px}
+                              for s, (q, px) in positions.items()}}
+
+    def _full(self, n=20):
+        return {"SYM%02d" % i: (10.0, 100.0) for i in range(n)}
+
+    # ── pause ────────────────────────────────────────────────────────────────
+
+    def test_a_pause_blocks_a_new_buy(self):
+        self.G.set_pause("test emergency", hours=24)
+        ok, verdict, _ = self.G.check("NVDA", "buy", 1, price=100.0,
+                                      snap=self._snap({}))
+        self.assertFalse(ok)
+        self.assertEqual("BLOCK_BOARD_PAUSE", verdict)
+
+    def test_a_pause_never_blocks_an_exit(self):
+        self.G.set_pause("test emergency", hours=24)
+        ok, verdict, _ = self.G.check("NVDA", "sell", 5, price=100.0,
+                                      snap=self._snap({"NVDA": (5.0, 100.0)}))
+        self.assertTrue(ok)
+        self.assertEqual("ALLOW_EXIT", verdict)
+
+    def test_a_pause_still_allows_a_genuine_hedge(self):
+        self.G.set_pause("test emergency", hours=24)
+        yes = {"allowed": True, "consulted": True, "reason": "reduces beta"}
+        with patch.object(self.G, "_hedge_verdict", lambda *a, **k: dict(yes)):
+            ok, _, _ = self.G.check("SH", "buy", 1, price=10.0, snap=self._snap({}))
+        self.assertTrue(ok)
+
+    def test_a_pause_expires_on_its_own(self):
+        from datetime import datetime, timezone, timedelta
+        past = datetime.now(timezone.utc) - timedelta(hours=30)
+        self.G.set_pause("old emergency", hours=24, now=past)
+        self.assertIsNone(self.G.pause_state())
+        ok, _, _ = self.G.check("NVDA", "buy", 1, price=100.0, snap=self._snap({}))
+        self.assertTrue(ok)
+
+    def test_a_cleared_pause_is_kept_but_not_in_force(self):
+        self.G.set_pause("test", hours=24)
+        self.assertTrue(self.G.clear_pause(by="test"))
+        self.assertTrue(self.G.PAUSE_PATH.exists(), "clearing must not delete the record")
+        self.assertIsNone(self.G.pause_state())
+
+    def test_an_unreadable_pause_file_fails_closed_for_buys(self):
+        self.G.PAUSE_PATH.write_text("{not json")
+        ok, verdict, _ = self.G.check("NVDA", "buy", 1, price=100.0, snap=self._snap({}))
+        self.assertFalse(ok)
+        self.assertEqual("BLOCK_BOARD_PAUSE", verdict)
+
+    def test_the_emergency_board_vote_sets_the_pause(self):
+        import board_meeting
+        consensus = {"actions": [{
+            "id": "PAUSE_NEW_BUYS", "action": "Halt all new BUY orders",
+            "urgency": "IMMEDIATE", "executor": "Engineering", "proceed": True}]}
+        cwd = os.getcwd()
+        os.chdir(self.tmp)
+        self.addCleanup(os.chdir, cwd)
+        (self.tmp / "data").mkdir(exist_ok=True)
+        res = board_meeting._implement_decisions(consensus, dry_run=False)
+        self.assertIsNotNone(self.G.pause_state(), "the vote reached no actuator")
+        self.assertTrue(any("EXECUTED" in e.get("status", "") for e in res["executed"]))
+        self.assertFalse(any(r["id"] == "PAUSE_NEW_BUYS" for r in res["requires_code"]),
+                         "an actuated pause must not also be queued as unfinished work")
+
+    def test_a_dry_run_vote_sets_no_pause(self):
+        import board_meeting
+        consensus = {"actions": [{
+            "id": "PAUSE_NEW_BUYS", "action": "Halt", "urgency": "IMMEDIATE",
+            "executor": "Engineering", "proceed": True}]}
+        cwd = os.getcwd()
+        os.chdir(self.tmp)
+        self.addCleanup(os.chdir, cwd)
+        (self.tmp / "data").mkdir(exist_ok=True)
+        board_meeting._implement_decisions(consensus, dry_run=True)
+        self.assertIsNone(self.G.pause_state())
+
+    # ── pod slots ────────────────────────────────────────────────────────────
+
+    def test_an_etf_pod_buy_gets_a_slot_above_a_full_cap(self):
+        ok, verdict, _ = self.G.check("XLP", "buy", 10, price=80.0,
+                                      snap=self._snap(self._full()))
+        self.assertTrue(ok)
+        self.assertEqual("ALLOW_POD_SLOT", verdict)
+
+    def test_a_single_name_is_still_blocked_at_the_cap(self):
+        ok, verdict, _ = self.G.check("NVDA", "buy", 1, price=100.0,
+                                      snap=self._snap(self._full()))
+        self.assertFalse(ok)
+        self.assertEqual("BLOCK_MAX_POSITIONS", verdict)
+
+    def test_pod_slots_are_bounded(self):
+        pos = self._full(18)
+        pos.update({e: (10.0, 80.0) for e in ("XLP", "XLU", "XLV", "QQQ")})
+        ok, verdict, _ = self.G.check("GLD", "buy", 1, price=180.0, snap=self._snap(pos))
+        self.assertFalse(ok)
+        self.assertEqual("BLOCK_MAX_POSITIONS", verdict)
+
+    def test_a_pod_slot_never_waives_the_cash_floor(self):
+        ok, verdict, _ = self.G.check("XLP", "buy", 10, price=80.0,
+                                      snap=self._snap(self._full(), cash=10000.0))
+        self.assertFalse(ok)
+        self.assertEqual("BLOCK_CASH_FLOOR", verdict)
+
+    def test_a_pod_short_does_not_get_a_pod_slot(self):
+        ok, _, _ = self.G.check("QQQ", "sell_short", 10, price=400.0,
+                                snap=self._snap(self._full()))
+        self.assertFalse(ok)
+
+    def test_the_gate_reads_the_pod_universe_from_the_pod_board(self):
+        from etf_pod_board import ETF_UNIVERSE
+        self.assertEqual(frozenset(ETF_UNIVERSE), self._real_pod_universe())
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

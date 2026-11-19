@@ -162,6 +162,33 @@ HARD_CASH_FLOOR_PCT = 0.05
 # exposure is highest. Two, because the book has at most two indices to hedge.
 MAX_HEDGE_SLOTS = 2
 
+# ── pod slots ────────────────────────────────────────────────────────────────
+# The ETF/Macro pod (Pod 3) has its own $30k budget and its own board, but until
+# 2026-11-19 its buys competed for the same 20 slots as single-name equities.
+# With the equity book full, every pod order was refused at the cap and the
+# pod's capital sat idle — a budget the firm granted and a limit that silently
+# revoked it. A sector ETF is not one more concentrated name: it is itself
+# diversified, so counting it against a cap whose job is to bound single-name
+# concentration charges it for a risk it does not carry. The pod therefore gets
+# a small number of slots ABOVE the cap, only for LONG orders in its own
+# universe, and only while the cash floor still holds (the floor is checked
+# after, never waived). Four, because the pod board's slate tops out at four
+# sector tilts plus the defensive sleeve it rotates within.
+POD_ETF_SLOTS = 4
+
+# ── board pause ──────────────────────────────────────────────────────────────
+# The emergency board can vote PAUSE_NEW_BUYS. Until 2026-11-19 that vote was
+# recorded, queued to "Engineering", and enforced by nothing — so the firm's
+# most urgent risk control was a sentence in a report. board_meeting now writes
+# this file when the vote proceeds; check() refuses every order that adds
+# exposure while it is in force. Exits are never paused (they are allowed above
+# the pause check), and a genuine beta-reducing hedge is still allowed, because
+# a pause called for risk must not forbid the trade that reduces it.
+# The record carries its own expiry: a pause that could only be lifted by hand
+# is a pause that outlives the emergency that called it.
+PAUSE_PATH = DATA / "buy_pause.json"
+PAUSE_DEFAULT_HOURS = 24.0
+
 _snapshot_cache = {"at": 0.0, "snap": None}
 _inflight: list = []          # [{"symbol", "cost", "at"}]
 
@@ -300,12 +327,88 @@ def _is_buy(side) -> bool:
     return "buy" in str(side).lower()
 
 
+def _pod_universe() -> frozenset:
+    """The ETF pod's tradeable universe, from the pod board itself.
+
+    Read from etf_pod_board so the gate and the pod cannot disagree about what
+    the pod trades. An import failure returns the empty set: no extra slots,
+    which is the strict reading, never the loose one.
+    """
+    try:
+        from etf_pod_board import ETF_UNIVERSE
+        return frozenset(str(x).upper() for x in ETF_UNIVERSE)
+    except Exception as e:                       # pragma: no cover — import guard
+        logger.warning(f"  [risk_gate] ETF pod universe unavailable: {e}")
+        return frozenset()
+
+
+def set_pause(reason: str, source: str = "emergency_board",
+              hours: float = PAUSE_DEFAULT_HOURS, now=None) -> dict:
+    """Put a buy pause in force for `hours`. Returns the record written."""
+    now = now or datetime.now(timezone.utc)
+    from datetime import timedelta
+    rec = {
+        "active": True,
+        "set_at": now.isoformat(),
+        "expires_at": (now + timedelta(hours=float(hours))).isoformat(),
+        "source": source,
+        "reason": str(reason)[:500],
+    }
+    PAUSE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp = PAUSE_PATH.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(rec, indent=2))
+    os.replace(tmp, PAUSE_PATH)
+    logger.warning(f"  [risk_gate] BUY PAUSE in force until {rec['expires_at']} "
+                   f"({source}: {rec['reason'][:80]})")
+    return rec
+
+
+def clear_pause(by: str = "manual") -> bool:
+    """Lift a pause early. The record is kept (marked inactive), not deleted."""
+    try:
+        rec = json.loads(PAUSE_PATH.read_text())
+    except Exception:
+        return False
+    rec["active"] = False
+    rec["cleared_at"] = datetime.now(timezone.utc).isoformat()
+    rec["cleared_by"] = by
+    PAUSE_PATH.write_text(json.dumps(rec, indent=2))
+    return True
+
+
+def pause_state(now=None) -> Optional[dict]:
+    """The pause in force, or None.
+
+    A file that exists but cannot be read is treated as a pause in force: the
+    only writer of this file is a vote to stop buying, so an unreadable one is
+    far more likely a half-written pause than an absent one (memory
+    `fallback-that-means-act`). Its expiry is unknown, so it says so, and the
+    fix is `python3 risk_gate.py --clear-pause`.
+    """
+    if not PAUSE_PATH.exists():
+        return None
+    try:
+        rec = json.loads(PAUSE_PATH.read_text())
+        if not rec.get("active"):
+            return None
+        exp = datetime.fromisoformat(str(rec["expires_at"]))
+        if exp.tzinfo is None:
+            exp = exp.replace(tzinfo=timezone.utc)
+        now = now or datetime.now(timezone.utc)
+        if now >= exp:
+            return None
+        return rec
+    except Exception as e:
+        return {"active": True, "unreadable": True, "expires_at": "unknown",
+                "source": "unknown", "reason": f"pause file unreadable: {e}"}
+
+
 def check(symbol="", side="", qty=0, price=None, snap=None, now=None) -> tuple:
     """(allowed, verdict, reason) for one order. Never raises.
 
     verdict is one of ALLOW_EXIT / ALLOW_WITHIN_LIMITS / ALLOW_UNVERIFIED /
     ALLOW_HEDGE_REDUCES_BETA / BLOCK_CASH_FLOOR / BLOCK_HARD_CASH_FLOOR /
-    BLOCK_MAX_POSITIONS, so the log names the rule that fired rather than only
+    BLOCK_MAX_POSITIONS / BLOCK_BOARD_PAUSE / ALLOW_POD_SLOT, so the log names the rule that fired rather than only
     that something did.
     """
     try:
@@ -319,6 +422,18 @@ def check(symbol="", side="", qty=0, price=None, snap=None, now=None) -> tuple:
         if reducing is True:
             return (True, "ALLOW_EXIT",
                     "reduces an open position — exits are never gated")
+
+        # ── board pause ──────────────────────────────────────────────────────
+        pause = pause_state(now if isinstance(now, datetime) else None)
+        if pause is not None:
+            hedge = (_hedge_verdict(symbol, side, qty, price, snap)
+                     if snap is not None else
+                     {"allowed": False, "consulted": False, "reason": ""})
+            if not hedge["allowed"]:
+                return (False, "BLOCK_BOARD_PAUSE",
+                        f"new exposure is paused until {pause.get('expires_at')} "
+                        f"by {pause.get('source')}: {str(pause.get('reason'))[:120]}"
+                        + (f". {hedge['reason']}" if hedge["consulted"] else ""))
 
         if snap is None:
             # Could not read the account, so no limit can be evaluated. Allowing
@@ -346,6 +461,7 @@ def check(symbol="", side="", qty=0, price=None, snap=None, now=None) -> tuple:
         # Adding to a position the firm already holds does not consume a slot,
         # so it is judged only by the cash floor below. A slot is consumed by a
         # symbol that is new to both the broker and the in-flight set.
+        pod_slot = None
         if sym not in held_syms and sym not in infl_syms:
             n_eff = len(held_syms | infl_syms)
             if n_eff >= lim["max_positions"]:
@@ -356,11 +472,25 @@ def check(symbol="", side="", qty=0, price=None, snap=None, now=None) -> tuple:
                             f"{lim['max_positions']}, but {hedge['reason']} — "
                             f"a slot above the cap is cheaper than carrying the "
                             f"exposure unhedged (max {MAX_HEDGE_SLOTS} such slots)")
-                pend = f" (+{len(infl_syms - held_syms)} in flight)" if infl_syms - held_syms else ""
-                return (False, "BLOCK_MAX_POSITIONS",
-                        f"{len(held_syms)} positions open{pend} against a cap of "
-                        f"{lim['max_positions']}; {sym} would be a new one"
-                        + (f". {hedge['reason']}" if hedge["consulted"] else ""))
+                pod = _pod_universe()
+                pod_long = {s for s, v in snap["positions"].items()
+                            if s.upper() in pod and v["qty"] > 0}
+                if (_is_buy(side) and sym in pod
+                        and len(pod_long) < POD_ETF_SLOTS
+                        and n_eff < lim["max_positions"] + POD_ETF_SLOTS
+                                    + MAX_HEDGE_SLOTS):
+                    pod_slot = (f"{sym} is in the ETF pod's universe and the pod "
+                                f"holds {len(pod_long)} long ETF position(s) "
+                                f"(limit {POD_ETF_SLOTS} above the cap of "
+                                f"{lim['max_positions']})")
+                else:
+                    pod_slot = None
+                if pod_slot is None:
+                    pend = f" (+{len(infl_syms - held_syms)} in flight)" if infl_syms - held_syms else ""
+                    return (False, "BLOCK_MAX_POSITIONS",
+                            f"{len(held_syms)} positions open{pend} against a cap of "
+                            f"{lim['max_positions']}; {sym} would be a new one"
+                            + (f". {hedge['reason']}" if hedge["consulted"] else ""))
 
         # ── cash floor ───────────────────────────────────────────────────────
         # Only orders that SPEND cash can breach it. A short open raises cash,
@@ -433,11 +563,15 @@ def check(symbol="", side="", qty=0, price=None, snap=None, now=None) -> tuple:
                 # The projection could not run. Say which half of the rule was
                 # actually applied — a reason that claims more than it checked
                 # is how a HIGH stops being read.
-                return (True, "ALLOW_WITHIN_LIMITS",
+                return (True, "ALLOW_POD_SLOT" if pod_slot else "ALLOW_WITHIN_LIMITS",
+                        (f"{pod_slot}; " if pod_slot else "") +
                         f"cash ${cash_eff:,.0f} ({cash_eff / pv * 100:.1f}%) is "
                         f"above the floor; {sym} could not be priced, so the "
                         f"post-trade projection did not run")
 
+        if pod_slot is not None:
+            return (True, "ALLOW_POD_SLOT",
+                    f"{pod_slot}; cash floor {lim['cash_floor'] * 100:.0f}% holds")
         return (True, "ALLOW_WITHIN_LIMITS",
                 f"within cap {lim['max_positions']} and floor "
                 f"{lim['cash_floor'] * 100:.0f}%")
@@ -685,7 +819,13 @@ def unverified_streak(entries=None) -> int:
 
 
 if __name__ == "__main__":
+    import sys
     logging.basicConfig(level=logging.INFO)
+    if "--clear-pause" in sys.argv:
+        print("pause cleared" if clear_pause(by="cli") else "no pause record to clear")
+        sys.exit(0)
+    _p = pause_state()
+    print(f"buy pause: {'IN FORCE until ' + str(_p.get('expires_at')) + ' (' + str(_p.get('source')) + ')' if _p else 'none'}")
     lim = limits()
     print(f"cash floor: {lim['cash_floor'] * 100:.0f}%   "
           f"position cap: {lim['max_positions']}")
