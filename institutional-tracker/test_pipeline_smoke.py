@@ -37337,6 +37337,43 @@ class TestM01OrderPathAudit(unittest.TestCase):
             self.assertNotIn("max(1, int(abs(qty_held) * 0.40))", src)
 
 
+
+class TestADesignedRiskRefusalIsNotAnError(unittest.TestCase):
+    """The risk gate refusing a buy at the position cap is the guardrail WORKING.
+
+    It was logged at ERROR, so cit_director's log sweep counted 24 designed
+    refusals a day as the firm's dominant error class (`risk_gate`), filed HIGH
+    issues ISS-5238/7357/7367/7372/7397, CoS meetings and watchdog re-escalations
+    for 1,455h -- a loop no fix could close, because nothing was broken. The
+    refusal is still recorded (risk_gate.log + RiskLimitBlocked to the caller);
+    it is simply not an ERROR.
+    """
+
+    def _submit_src(self):
+        import ast
+        src = (Path(__file__).parent / "order_ledger.py").read_text()
+        tree = ast.parse(src)
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == "_submit_order")
+        return fn
+
+    def test_blocked_line_is_logged_at_warning(self):
+        import ast
+        fn = self._submit_src()
+        levels = []
+        for n in ast.walk(fn):
+            if (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                    and isinstance(n.func.value, ast.Name) and n.func.value.id == "logger"):
+                txt = ast.unparse(n)
+                if "[risk_gate] BLOCKED" in txt:
+                    levels.append(n.func.attr)
+        self.assertTrue(levels, "the BLOCKED log line is gone -- the refusal must stay visible")
+        self.assertEqual(set(levels), {"warning"}, levels)
+
+    def test_cit_sweep_does_not_count_a_warning_line(self):
+        line = "13:45:01  WARNING       [risk_gate] BLOCKED OrderSide.BUY 5 XLV: 21 positions open"
+        self.assertNotIn("  ERROR ", line)
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

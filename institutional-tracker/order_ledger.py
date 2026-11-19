@@ -306,7 +306,10 @@ def install():
                 risk_gate.log(getattr(req, "symbol", ""), getattr(req, "side", ""),
                               getattr(req, "qty", 0), verdict, reason, allowed)
             if not allowed:
-                logger.error(f"  [risk_gate] BLOCKED {getattr(req, 'side', '')} "
+                # WARNING, not ERROR: a designed refusal is the guardrail
+                # working. At ERROR it became CIT's "dominant error class" and
+                # fed an unclosable HIGH-issue loop (2026-11-19).
+                logger.warning(f"  [risk_gate] BLOCKED {getattr(req, 'side', '')} "
                              f"{getattr(req, 'qty', '')} {getattr(req, 'symbol', '')}: {reason}")
                 # The verdict leads, not just the prose. Callers only ever see
                 # `str(e)`, and a caller that cannot tell a designed refusal
