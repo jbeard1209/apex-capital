@@ -2161,6 +2161,99 @@ class TestChairmanQueueDedup(unittest.TestCase):
                 "colliding ids make the SLA inbox drop items silently: %s" % ids)
 
 
+class TestStaleCronFindingClosesWhenItsLogIsFresh(unittest.TestCase):
+    """apex_system_cit_agent raised "Cron job stale on weekday -- <label> log
+    <age>" into the Chairman queue and never took it back. The age is in the
+    text, so the dedup key (sha1 of the description) changes every run and
+    chairman_queue.resolve() could never match it. On the VM on 2026-11-19, 28
+    such items from Jul-Sep were still awaiting_chairman, incl. "CIT pipeline
+    integrity log 668h old" and "FE pipeline log 673h old", while both logs
+    had been written that same afternoon. problem_lifecycle_sentinel read them
+    as present on every run, so loop rows loop-sig-4506b99ca0ee and
+    loop-sig-39e135893752 re-counted a resolved problem forever.
+
+    Fix: when the cron check actually runs and re-observes a label's log as
+    fresh, the agent closes its OWN open stale items for that label. A label
+    it did not measure this run (weekend skip, or a check no longer in the
+    table) is never closed: absence of a finding is not evidence."""
+
+    SRC = "apex_system_cit_agent"
+
+    def _queue(self, d):
+        path = os.path.join(d, "q.json")
+        rows = [
+            {"id": "a", "source": self.SRC, "status": "awaiting_chairman",
+             "description": "Cron job stale on weekday -- FE pipeline log 673h old (threshold 36h)"},
+            {"id": "b", "source": self.SRC, "status": "awaiting_chairman",
+             "dedup_key": "sha1:deadbeef",
+             "description": "Cron job stale on weekday -- FE pipeline log no log found (threshold 36h)"},
+            {"id": "c", "source": self.SRC, "status": "awaiting_chairman",
+             "description": "Cron job stale on weekday -- ML data watchdog log no log found (threshold 36h)"},
+            {"id": "d", "source": "someone_else", "status": "awaiting_chairman",
+             "description": "Cron job stale on weekday -- FE pipeline log 99h old (threshold 36h)"},
+            {"id": "e", "source": self.SRC, "status": "awaiting_chairman",
+             "description": "Cron job stale on weekday -- FE pipeline CIT log 50h old (threshold 36h)"},
+        ]
+        with open(path, "w") as f:
+            json.dump(rows, f)
+        return path
+
+    def _status(self, path):
+        with open(path) as f:
+            return {r["id"]: r["status"] for r in json.load(f)}
+
+    def test_fresh_label_closes_only_its_own_open_stale_items(self):
+        import apex_system_cit_agent as a
+        with tempfile.TemporaryDirectory() as d:
+            path = self._queue(d)
+            closed = a._close_cleared_stale_cron({"FE pipeline"}, path=path)
+            st = self._status(path)
+        self.assertEqual(sorted(e["id"] for e in closed), ["a", "b"])
+        self.assertEqual(st["a"], "resolved")
+        self.assertEqual(st["b"], "resolved")
+        self.assertEqual(st["c"], "awaiting_chairman",
+                         "a label not re-observed fresh must stay open")
+        self.assertEqual(st["d"], "awaiting_chairman",
+                         "another producer's item is never closed")
+        self.assertEqual(st["e"], "awaiting_chairman",
+                         "'FE pipeline' must not match a different label by prefix")
+
+    def test_no_fresh_labels_closes_nothing(self):
+        import apex_system_cit_agent as a
+        with tempfile.TemporaryDirectory() as d:
+            path = self._queue(d)
+            self.assertEqual(a._close_cleared_stale_cron(set(), path=path), [])
+            self.assertTrue(all(s == "awaiting_chairman"
+                                for s in self._status(path).values()))
+
+    def test_cron_check_reports_fresh_labels_on_weekdays_only(self):
+        import apex_system_cit_agent as a
+        orig_tbl, orig_wd = a._CRON_LOG_CHECKS, a._is_weekday
+        with tempfile.TemporaryDirectory() as d:
+            fresh = os.path.join(d, "fresh_1.log")
+            old = os.path.join(d, "old_1.log")
+            for p in (fresh, old):
+                open(p, "w").close()
+            import time as _t
+            past = _t.time() - 100 * 3600
+            os.utime(old, (past, past))
+            a._CRON_LOG_CHECKS = [
+                ("x", os.path.join(d, "fresh_*.log"), "Fresh job", 6),
+                ("y", os.path.join(d, "old_*.log"), "Old job", 6),
+                ("z", os.path.join(d, "none_*.log"), "Missing job", 6),
+            ]
+            try:
+                a._is_weekday = lambda: True
+                props = []
+                self.assertEqual(a.check_cron_jobs(props), {"Fresh job"})
+                self.assertEqual(len(props), 2, "old + missing still raise")
+                a._is_weekday = lambda: False
+                self.assertEqual(a.check_cron_jobs([]), set(),
+                                 "a skipped check observed nothing")
+            finally:
+                a._CRON_LOG_CHECKS, a._is_weekday = orig_tbl, orig_wd
+
+
 # =============================================================================
 # 7. System health check (module imports)
 # =============================================================================
@@ -38261,7 +38354,7 @@ def _instant(year, val):
     return _xbrl(f"{year}-12-31", val, filed=f"{year+1}-02-20")
 
 
-def _facts(usgaap: dict, dei: dict | None = None) -> dict:
+def _facts(usgaap: dict, dei: "dict | None" = None) -> dict:
     def wrap(d, unit):
         return {k: {"units": {(u or unit): v for u, v in [(None, vals)]}}
                 for k, vals in d.items()}
