@@ -711,6 +711,34 @@ def _iv_opportunity_scan(all_tickers: set, blocked_tickers: set, existing_ticker
     return opportunities
 
 
+# fe_board votes on a NUMERIC conviction (conv >= 3, "%d" logging); synthesis
+# writes a label. Unmapped, a string would crash the board's comparisons.
+_CONVICTION_LEVEL_TO_SCORE = {"HIGH": 5, "MEDIUM": 3, "LOW": 2}
+
+
+def _merge_deep_research(board_queue: list, research_ready: list) -> list:
+    """Append research-library picks (from _check_research_library) to the
+    quick-screen board queue, de-duplicated by ticker, in fe_board's schema."""
+    for _pick in board_queue:
+        _pick.setdefault("source", "quick_screen")
+    _seen = {p.get("ticker") for p in board_queue}
+    for _memo in research_ready or []:
+        _t = _memo.get("ticker")
+        if not _t or _t in _seen:
+            continue
+        _level = str(_memo.get("conviction_level") or "MEDIUM").upper()
+        board_queue.append({
+            **_memo,
+            "source":             "deep_research",
+            "conviction":         _CONVICTION_LEVEL_TO_SCORE.get(_level, 3),
+            "investment_horizon": "long",
+            "reasons":            [_memo.get("investment_thesis", "")],
+        })
+        _seen.add(_t)
+        logger.info(f"[ResearchLib] {_t} added to board queue from deep research library")
+    return board_queue
+
+
 def run_pipeline() -> dict:
     """Main pipeline entry point."""
     started_at = datetime.now(timezone.utc).isoformat()
@@ -719,34 +747,19 @@ def run_pipeline() -> dict:
     logger.info(f"  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info("=" * 60)
 
-    # Research Library: check for pre-researched deep-research memos
-    research_dir = DATA_DIR / "company_research"
-    research_ready = []
-    if research_dir.exists():
-        for ticker_dir in research_dir.iterdir():
-            if not ticker_dir.is_dir():
-                continue
-            synthesis = ticker_dir / "synthesis_memo.json"
-            if synthesis.exists():
-                try:
-                    memo = json.loads(synthesis.read_text())
-                    age_days = (
-                        datetime.utcnow() - datetime.fromisoformat(memo.get("synthesis_date", "2000-01-01"))
-                    ).days
-                    if (
-                        age_days <= 90
-                        and memo.get("overall_verdict") in ("BUY", "WATCH")
-                        and memo.get("margin_of_safety", 0) >= 0.25
-                    ):
-                        research_ready.append(memo)
-                        logger.info(
-                            f"[ResearchLib] {memo.get('ticker', '?')}: "
-                            f"{memo.get('overall_verdict')} | "
-                            f"MoS {memo.get('margin_of_safety', 0):.1%} | "
-                            f"deep research {age_days}d old"
-                        )
-                except Exception:
-                    pass
+    # Research Library: deep-research memos ready for the board.
+    # This block used to read synthesis_memo.json with keys synthesis_agent never
+    # writes ("synthesis_date", "intrinsic_value", "conviction", "summary"), so
+    # every memo aged as year 2000 and nothing ever reached the board; the loader
+    # with the producer's keys (_check_research_library) was only called from
+    # run_pipeline_v2, which nothing runs. Found overnight 2026-11-19; fixed after
+    # the valuation itself was fixed, since the memos on disk carried BRK-B at a
+    # 99.6% "margin of safety". _check_research_library refuses those memos.
+    try:
+        research_ready = _check_research_library()
+    except Exception as _rle:
+        logger.warning(f"[ResearchLib] research library check failed: {_rle}")
+        research_ready = []
     if research_ready:
         logger.info(f"[ResearchLib] {len(research_ready)} deep-researched tickers ready for board")
 
@@ -800,28 +813,7 @@ def run_pipeline() -> dict:
     logger.info(f"[Pipeline] {len(board_queue)} picks proceed to board review.")
 
     # Merge deep-research picks into board_queue (tagged by source)
-    for _pick in board_queue:
-        _pick.setdefault("source", "quick_screen")
-    if research_ready:
-        _seen = {p.get("ticker") for p in board_queue}
-        for _memo in research_ready:
-            _t = _memo.get("ticker")
-            if not _t or _t in _seen:
-                continue
-            _deep_pick = {
-                "ticker":            _t,
-                "source":            "deep_research",
-                "iv_verdict":        _memo.get("overall_verdict", "BUY"),
-                "margin_of_safety":  _memo.get("margin_of_safety", 0),
-                "conservative_iv":   _memo.get("intrinsic_value"),
-                "conviction":        _memo.get("conviction", 3),
-                "investment_horizon": "long",
-                "reasons":           [_memo.get("summary", "")],
-                "synthesis_date":    _memo.get("synthesis_date"),
-            }
-            board_queue.append(_deep_pick)
-            _seen.add(_t)
-            logger.info(f"[ResearchLib] {_t} added to board queue from deep research library")
+    board_queue = _merge_deep_research(board_queue, research_ready)
 
     # Save picks queue
     with open(PICKS_QUEUE_FILE, "w") as f:
@@ -969,10 +961,29 @@ def _check_research_library() -> list:
         # Check verdict
         if memo.get("overall_verdict") != "BUY":
             continue
+        # synthesis_agent's own "ready for board" call (>= 9 of 14 research
+        # components done, no going-concern / force-avoid).
+        if memo.get("ready_for_board") is False:
+            logger.info(f"[Pipeline Step 0] {ticker} BUY memo not ready_for_board -- skipping")
+            continue
+
+        # Built on a fixed valuation? Memos synthesised before 2026-11-19 carry
+        # per-share values in the wrong share class / year (BRK-B IV $144,538 vs
+        # $571). They must be re-researched, not trusted.
+        try:
+            from fe_research_agents.valuation_researcher import VALUATION_VERSION as _VV
+        except Exception:
+            _VV = 2
+        if (memo.get("valuation_version") or 0) < _VV:
+            logger.info(f"[Pipeline Step 0] {ticker} memo built on valuation "
+                        f"v{memo.get('valuation_version') or 1} (< v{_VV}) -- needs re-research, skipping")
+            continue
 
         # Check data freshness
         try:
             generated_at = datetime.fromisoformat(memo.get("generated_at", ""))
+            if generated_at.tzinfo is None:
+                generated_at = generated_at.replace(tzinfo=timezone.utc)
             age_days = (datetime.now(timezone.utc) - generated_at).days
             if age_days > RESEARCH_FRESH_DAYS_PIPELINE:
                 logger.info(f"[Pipeline Step 0] {ticker} research stale ({age_days}d) -- skipping")
@@ -994,7 +1005,16 @@ def _check_research_library() -> list:
             else:
                 live_mos = mos_stored
         except Exception:
+            live_price = None
             live_mos = mos_stored
+
+        # Plausibility: an IV outside [0.1x, 5x] of the price is a units/data
+        # error (same bounds as fe_intrinsic_value / valuation_researcher).
+        _px = live_price or memo.get("current_price")
+        if not _px or not (0.10 * _px <= current_iv <= 5.0 * _px):
+            logger.warning(f"[Pipeline Step 0] {ticker} IV ${current_iv:,.2f} vs price "
+                           f"{_px} implausible or unpriced -- skipping")
+            continue
 
         if live_mos < MIN_MOS_FOR_BOARD:
             logger.info(
