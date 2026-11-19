@@ -37477,6 +37477,70 @@ class TestAnIndexIsNotAPick(unittest.TestCase):
                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)}
         self.assertIn("_drop_untradeable", calls)
 
+
+class TestKalshiBoardReadsTheCalibrationVerdictOnce(unittest.TestCase):
+    """kalshi_board's Calibration Officer called
+    `kalshi_calibration.is_edge_proven()` once PER CANDIDATE, and each call
+    reloads and re-filters the whole calibration ledger. The verdict takes no
+    candidate argument, so it is one fact per session, not 380. On the VM a
+    session over 380 disagreement candidates ran for minutes, and agent_sweep's
+    75s `--report` probe recorded kalshi_board as AGENT_REPORT_FAILS (TIMEOUT)
+    every day (2026-11-19). The votes must be identical; only the count of
+    ledger reads changes."""
+
+    def test_one_session_asks_the_calibration_gate_once(self):
+        import kalshi_board as kb
+        import kalshi_calibration as cal
+        import unittest.mock as mock
+        scan = {"disagreement": [
+            {"strategy": "DISAGREEMENT", "ticker": f"T{i}",
+             "requires_estimate": True, "max_contracts": 500, "volume": 10,
+             "rules_primary": "Resolves YES if the official published value "
+                              "exceeds the stated threshold on the date."}
+            for i in range(25)]}
+        with mock.patch.object(cal, "is_edge_proven",
+                               return_value=(False, "not yet")) as gate, \
+             mock.patch.object(kb, "_save"):
+            r = kb.run_session(scan=scan)
+        self.assertEqual(r["considered"], 25)
+        self.assertEqual(gate.call_count, 1,
+                         f"is_edge_proven called {gate.call_count}x for one session")
+        for d in r["decisions"]:
+            self.assertIn("Calibration Officer", d["blocked_by"])
+
+    def test_a_new_session_reads_the_verdict_fresh(self):
+        """The cache is per session: a verdict must not outlive the session
+        that read it (memory `a-record-that-outlived-its-force`)."""
+        import kalshi_board as kb
+        import kalshi_calibration as cal
+        import unittest.mock as mock
+        c = {"strategy": "DISAGREEMENT", "ticker": "X", "requires_estimate": True,
+             "max_contracts": 500, "volume": 10, "p_hat": 0.9,
+             "rules_primary": "Resolves YES if the official published value "
+                              "exceeds the stated threshold on the date."}
+        with mock.patch.object(kb, "_save"):
+            with mock.patch.object(cal, "is_edge_proven", return_value=(False, "no")):
+                r1 = kb.run_session(scan={"disagreement": [c]})
+            with mock.patch.object(cal, "is_edge_proven", return_value=(True, "ok")):
+                r2 = kb.run_session(scan={"disagreement": [c]})
+        self.assertIn("Calibration Officer", r1["decisions"][0]["blocked_by"])
+        self.assertNotIn("Calibration Officer", r2["decisions"][0]["blocked_by"])
+
+    def test_a_gate_that_raises_still_fails_closed(self):
+        import kalshi_board as kb
+        import kalshi_calibration as cal
+        import unittest.mock as mock
+        c = {"strategy": "DISAGREEMENT", "ticker": "X", "requires_estimate": True,
+             "max_contracts": 500, "volume": 10, "p_hat": 0.9,
+             "rules_primary": "Resolves YES if the official published value "
+                              "exceeds the stated threshold on the date."}
+        with mock.patch.object(kb, "_save"), \
+             mock.patch.object(cal, "is_edge_proven", side_effect=RuntimeError("x")):
+            r = kb.run_session(scan={"disagreement": [c, dict(c, ticker="Y")]})
+        for d in r["decisions"]:
+            self.assertFalse(d["approved"])
+            self.assertIn("Calibration Officer", d["blocked_by"])
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.
