@@ -46,3 +46,24 @@ call). Check: `crontab -l | grep -v '^#' | grep -c <job>` on the VM, 2026-11-19:
 | `loop-sig-21837bc97ded` | `fe_cit_agent.py` | 0 | present | same |
 | `loop-sig-3616daec9161` | `portfolio_risk_dashboard.py` | 0 | present | same |
 | `loop-sig-e890ba6a27c3` | `fe_watchlist_monitor` | 0 | **missing** | premise moot: no such script; retire the freshness check, then supersede |
+
+## specialist-fixer-run 2026-11-19, afternoon (risk → ops → wiring)
+
+All checks read-only on the VM, 2026-11-19 ~15:45–16:00Z, VM at deploy stamp `56391cf`
+(11:17Z). Supersede each with
+`board_dispatch.py --supersede <id> --check "<check>" --reason "<reason>" --by specialist-fixer-run`
+**on the VM** (it is the VM's queue). Not run by this session.
+
+| Row(s) | Premise | Check | Verdict |
+|---|---|---|---|
+| `loop-sig-50cc501208bb` | `positions_conserve`: 1 ledger entry with no broker position | `data/coherence_report.json` 13:56Z: HOLDS, "20 broker position(s), same 20 in the ledger", n_examined=20; lifecycle status RESOLVED | false, close |
+| `loop-sig-018f54cc39f5` | `recorded_exits_are_executed`: XLK exit never executed | same report: HOLDS, 135 exits all match a broker fill, n_examined=135. **Caveat:** "predate the order window" rose 12 → 17; the September XLK `max_hold` rows (several `PENDING_NEW` order ids) have likely aged *out* of the window, not been fixed. The phantom P&L may still sit in `state.json` sell_log and in cit_director's win rate | **do not supersede yet**: needs a one-off broker lookup of the XLK order ids from 2026-09-22..29 (risk fixer, next run) |
+| 27× `LT-*-wiring_contract_violation` ("[orphan-agent] pregenerate_lessons.py …") | the file runs on the VM unscheduled | `ls pregenerate_lessons.py` → absent; only `agents/archive/pregenerate_lessons.py` exists. `logs/logic_team_20261119.log`: fired at 00:00Z (pre-deploy code), **did not fire at 12:00Z** (post-deploy). Newest row `LT-000034-…` (queued 13:30Z) is the board approving the 00:00Z submission | false. Supersede after the resolution tracker's 3rd clean run (VM 2026-11-20 12:00Z) so no straggler re-files |
+| `loop-sig-4506b99ca0ee` | CIT pipeline integrity log 668h old (threshold 36h) | `logs/pipeline_integrity_20261119.log` written 14:50Z; current `apex_system_cit_agent._CRON_LOG_CHECKS` threshold is 6h, not 36h — the row is from pre-fix code | false, close |
+| `loop-sig-39e135893752` | FE pipeline log 673h old (threshold 36h) | `logs/fe_20261119.log` written 15:02Z; current threshold 73h | false, close |
+| `loop-sig-52f253043d5e` | GCP disk 76% (threshold 70%) | `df -h /` → 69% | false today; recurring (20 occurrences) — close, it will re-file if it creeps back |
+| `loop-sig-f144f924c8e4` | email buffer > 50 ⇒ sender broken | `logs/digest_20261118.log`: "Daily digest sent (85 reports)"; buffer 64 at 15:55Z, all since the last 22:00Z flush | false; the check was miscalibrated — fixed in the `claude/fixer-ops-20261119-email` PR. Supersede after that PR is deployed |
+
+Skipped, not false: the 16-row "attribution stale" risk group and its 2 wiring twins
+(`LT-*-loss_no_attribution`) — the premise is true (no loss attribution since 2026-06-09)
+and the missing piece is a written judgment by the board/Chairman (see PR #63), not code.
