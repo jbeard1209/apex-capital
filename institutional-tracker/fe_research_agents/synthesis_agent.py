@@ -476,6 +476,9 @@ def run_synthesis(ticker: str) -> dict:
         "risk_level": risk_level,
         "going_concern_flag": going_concern,
         "valuation_verdict": val_verdict,
+        # fe_pipeline._check_research_library refuses memos built on a valuation
+        # older than valuation_researcher.VALUATION_VERSION (2026-11-19 fix).
+        "valuation_version": valuation.get("valuation_version"),
         "esg_verdict": esg_verdict,
         "esg_score": esg_score,
         "earnings_quality_verdict": eq_verdict,

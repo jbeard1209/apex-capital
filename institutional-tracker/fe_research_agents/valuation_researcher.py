@@ -28,6 +28,17 @@ TAX_RATE        = 0.25
 EPV_WACC        = 0.10
 DCF_YEARS       = 10
 
+# Stamped on every valuation_models.json and carried into synthesis_memo.json.
+# fe_pipeline only sends a deep-research memo to the board if it was built on a
+# valuation at least this version. v2 (2026-11-19): per-share values are per
+# QUOTED share and same-year (BRK-B had been valued at $144,538 vs $571, AEM at
+# $3.51 vs $159); memos synthesised from v1 valuations must be re-researched.
+VALUATION_VERSION = 2
+# Outside these bounds an IV is a data/units error, not an opinion — same
+# bounds fe_intrinsic_value uses on the quick-screen path.
+IV_MAX_PRICE_MULTIPLE = 5.0
+IV_MIN_PRICE_FRACTION = 0.10
+
 
 def _nonull(lst) -> list:
     return [v for v in (lst or []) if v is not None]
@@ -113,6 +124,35 @@ def run_valuation_research(ticker: str) -> dict:
             json.dump(result, fh, indent=2, default=str)
         return result
 
+    # Same reliability gate the quick-screen path (fe_intrinsic_value) applies.
+    # This deep-research path never called it, which is how BRK-B's 14-year-old
+    # Class A share count got all the way to a 99.6% "margin of safety".
+    try:
+        import fundamentals_sanity as _fs
+        _ok, _reasons = _fs.is_reliable({**f, "_ticker": ticker})
+    except Exception as _e:   # fail open like fe_intrinsic_value: a broken gate
+        _ok, _reasons = True, []  # must not blank the library; IV guard backstops
+        logger.debug(f"[Valuation] is_reliable() skipped for {ticker}: {_e}")
+    if not _ok:
+        result = {"ticker": ticker, "error": "fundamentals unreliable: " + "; ".join(_reasons[:3]),
+                  "verdict": "DATA_ERROR", "valuation_version": VALUATION_VERSION,
+                  "generated_at": datetime.now(timezone.utc).isoformat()}
+        with open(out_file, "w") as fh:
+            json.dump(result, fh, indent=2, default=str)
+        return result
+
+    # Currency guard (same lesson as fe_intrinsic_value, SBS/Sabesp 2026-07-03):
+    # yfinance-fallback statements can be in the home currency while the price
+    # is USD. TSM (TWD) came out at 6x its price on this path.
+    _ccy = str(f.get("financial_currency") or "USD").upper()
+    if _ccy != "USD":
+        result = {"ticker": ticker, "error": f"financials in {_ccy}, price in USD",
+                  "verdict": "DATA_ERROR", "valuation_version": VALUATION_VERSION,
+                  "generated_at": datetime.now(timezone.utc).isoformat()}
+        with open(out_file, "w") as fh:
+            json.dump(result, fh, indent=2, default=str)
+        return result
+
     revenue  = f.get("revenue", [])
     ocf      = f.get("operating_cf", [])
     capex_r  = f.get("capex", [])
@@ -134,17 +174,25 @@ def run_valuation_research(ticker: str) -> dict:
             json.dump(result, fh, indent=2, default=str)
         return result
 
-    # FCF series
+    # FCF series — aligned BY FISCAL YEAR when the source provides it. Indexing
+    # three oldest-first lists by position paired different years whenever the
+    # histories had different lengths (MCO: 5 revenue-years vs 14 OCF-years).
     fcf_list = []
-    for i in range(len(revenue)):
-        o = ocf[i] if i < len(ocf) else None
-        c = capex_r[i] if i < len(capex_r) else None
-        if o is not None and c is not None:
-            fcf_list.append(o - c)
-        elif o is not None:
-            fcf_list.append(o)
-        else:
-            fcf_list.append(None)
+    _by = f.get("by_year") or {}
+    if _by.get("operating_cf"):
+        _cap = _by.get("capex") or {}
+        for _y in sorted(_by["operating_cf"]):
+            _o = _by["operating_cf"][_y]
+            _c = _cap.get(_y)
+            fcf_list.append(_o - _c if _c is not None else _o)
+    else:
+        for i in range(len(ocf)):
+            o = ocf[i]
+            c = capex_r[i] if i < len(capex_r) else None
+            if o is not None and c is not None:
+                fcf_list.append(o - c)
+            elif o is not None:
+                fcf_list.append(o)
 
     fcf_nn = _nonull(fcf_list)
     avg_fcf_3 = _avg(fcf_nn[-3:]) if len(fcf_nn) >= 3 else _avg(fcf_nn)
@@ -250,9 +298,22 @@ def run_valuation_research(ticker: str) -> dict:
         composite_iv    = None
         conservative_iv = None
 
+    # Plausibility guard (2026-11-19). An IV 250x the price (BRK-B: Class A
+    # per-share value vs the B price) or 1/45th of it (AEM: 2013 EBIT on 2025
+    # shares) is a units/data error. Report it as one instead of a verdict —
+    # this path had no guard and BRK-B came out "BUY" with a 99.6% MoS.
+    implausible = None
+    if conservative_iv and conservative_iv > 0 and current_price:
+        _mult = conservative_iv / current_price
+        if _mult > IV_MAX_PRICE_MULTIPLE or _mult < IV_MIN_PRICE_FRACTION:
+            implausible = (f"IV ${conservative_iv:,.2f} is {_mult:,.2f}x the ${current_price:,.2f} "
+                           f"price — outside [{IV_MIN_PRICE_FRACTION}x, {IV_MAX_PRICE_MULTIPLE}x], "
+                           "treated as a data/units error")
+            logger.warning(f"[Valuation] {ticker}: {implausible}")
+
     # MoS calculation
     mos = None
-    if conservative_iv and conservative_iv > 0 and current_price:
+    if conservative_iv and conservative_iv > 0 and current_price and not implausible:
         mos = (conservative_iv - current_price) / conservative_iv
 
     # Verdict
@@ -273,6 +334,12 @@ def run_valuation_research(ticker: str) -> dict:
     result = {
         "ticker": ticker,
         "generated_at": datetime.now(timezone.utc).isoformat(),
+        "valuation_version": VALUATION_VERSION,
+        "data_source": f.get("source"),
+        "shares_used": shares,
+        "shares_source": f.get("shares_source"),
+        "stale_fields_dropped": f.get("stale_fields") or {},
+        "error": implausible,
         "current_price": round(current_price, 2) if current_price else None,
         # DCF scenarios
         "dcf_bear": round(dcf_bear, 2) if dcf_bear else None,
@@ -318,7 +385,7 @@ def run_valuation_research(ticker: str) -> dict:
     logger.info(
         f"[Valuation] {ticker}: price=${current_price:.2f} | IV_conservative=${conservative_iv:.2f} | "
         f"MoS={mos*100:.1f}% | verdict={verdict}"
-        if composite_iv else f"[Valuation] {ticker}: failed to compute IV"
+        if composite_iv and mos is not None else f"[Valuation] {ticker}: failed to compute IV"
     )
     return result
 
