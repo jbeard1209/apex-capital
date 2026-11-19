@@ -6334,6 +6334,47 @@ class TestPerformanceSnapshotProducer(unittest.TestCase):
                                 "having no producer")
 
 
+class TestStaleAttributionTellsTheTruthAboutItsProducer(unittest.TestCase):
+    """The STALE detail must not say the snapshots are unwritten once they are.
+
+    Until 2026-11 loss_attribution.status() ended every STALE detail with
+    "Nothing in the repo writes performance_history.json". performance_snapshot
+    now writes a row every pipeline run (76 rows on the VM by 2026-11-18), so
+    that sentence was false in all 16 open "attribution STALE" queue rows the
+    board approved, and it sent the reader to build a producer that already
+    exists. What is actually missing is a `loss_attribution` on a recent row,
+    which is a written judgment, not a job to schedule.
+    """
+
+    HIST = {"snapshots": [
+        {"snapshot_date": "2026-06-09", "loss_attribution": {"driver": "x"}},
+        {"snapshot_date": "2026-11-18", "portfolio_value": 94536.92,
+         "pnl_drivers": [{"ticker": "AAA", "pnl_usd": -214.24}],
+         "source": "performance_snapshot.py"}]}
+
+    def test_detail_names_the_current_snapshot_and_the_missing_field(self):
+        import loss_attribution
+        st = loss_attribution.status(self.HIST, today=date(2026, 11, 19))
+        self.assertEqual(st["label"], "STALE")
+        self.assertFalse(st["current"])
+        self.assertNotIn("Nothing in the repo writes", st["detail"],
+                         "performance_snapshot.py writes it; the sentence is false")
+        self.assertIn("2026-11-18", st["detail"],
+                      "name the newest snapshot so the reader sees the series is live")
+        self.assertIn("loss_attribution", st["detail"],
+                      "name the field that is actually missing")
+
+    def test_no_snapshot_rows_still_says_so(self):
+        import loss_attribution
+        st = loss_attribution.status(
+            {"snapshots": [{"snapshot_date": "2026-06-09",
+                            "loss_attribution": {"driver": "x"}}]},
+            today=date(2026, 11, 19))
+        self.assertEqual(st["label"], "STALE")
+        self.assertIn("no snapshot newer", st["detail"],
+                      "when the producer really is silent, say that instead")
+
+
 class TestLossAttributionMustBeCurrent(unittest.TestCase):
     """The "why is the firm down?" alarm must not be disarmed by an old file.
 

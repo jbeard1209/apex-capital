@@ -19,9 +19,11 @@ explain, and the board approved it (LO-20260707160101-unexplained_loss).
 An attribution written before the loss answers a different question. Presence is
 therefore the wrong test — currency is the test. That is this module.
 
-Note the underlying gap this does NOT fix: nothing writes the snapshots. Until a
-producer exists, `status()` will keep returning STALE, which is the honest
-answer and the point — a silent alarm looked like good news for seven weeks.
+Note the gap this does NOT fix: performance_snapshot.py now writes the daily
+rows, but nothing writes `loss_attribution` -- that is a judgment, deliberately
+left to the board or the Chairman. Until one is written, `status()` keeps
+returning STALE, which is the honest answer and the point — a silent alarm
+looked like good news for seven weeks.
 """
 
 from datetime import date, datetime
@@ -82,6 +84,13 @@ def status(perf_history, today=None):
 
     as_of, _ = max(dated, key=lambda pair: pair[0])
     age = (today - as_of).days
+    # Newest snapshot of ANY kind. performance_snapshot.py writes one per
+    # pipeline run, so the series is normally live and the gap is the judgment,
+    # not the producer. Until 2026-11-19 the STALE detail said "Nothing in the
+    # repo writes performance_history.json" unconditionally -- false once that
+    # producer shipped, and it was the text of 16 open board-approved rows.
+    newest = max((d for s in snapshots if isinstance(s, dict)
+                  if (d := _snapshot_date(s))), default=None)
     if age <= MAX_ATTRIBUTION_AGE_DAYS:
         return {
             "current": True, "label": "provided", "as_of": as_of.isoformat(),
@@ -89,12 +98,21 @@ def status(perf_history, today=None):
             "detail": ("Loss attribution is documented in "
                        "performance_history.json (dated %s)." % as_of.isoformat()),
         }
+    head = ("The newest loss attribution is dated %s — %d days ago — so it "
+            "cannot explain the current drawdown. " % (as_of.isoformat(), age))
+    if newest and newest > as_of:
+        tail = ("Daily snapshots are being written (newest %s, by "
+                "performance_snapshot.py); what is missing is a written "
+                "`loss_attribution` on a snapshot from the last %d days. That is "
+                "a judgment for the board or the Chairman -- the row's "
+                "`pnl_drivers` are the factual starting point, not the answer."
+                % (newest.isoformat(), MAX_ATTRIBUTION_AGE_DAYS))
+    else:
+        tail = ("There is no snapshot newer than that attribution in "
+                "performance_history.json, so performance_snapshot.py is not "
+                "writing on this host; the daily rows have to be produced before "
+                "this alarm can clear.")
     return {
         "current": False, "label": "STALE", "as_of": as_of.isoformat(),
-        "age_days": age,
-        "detail": ("The newest loss attribution is dated %s — %d days ago — so "
-                   "it cannot explain the current drawdown. Nothing in the repo "
-                   "writes performance_history.json; the snapshots have to be "
-                   "produced before this alarm can clear."
-                   % (as_of.isoformat(), age)),
+        "age_days": age, "detail": head + tail,
     }
