@@ -37762,6 +37762,74 @@ class TestTheBoardDoesNotPresentAFrozenStatusAsCurrent(unittest.TestCase):
         self.assertTrue(ml["drift_status"].startswith("STALE"), ml["drift_status"])
 
 
+class TestImportDoesNotOpenALogFile(unittest.TestCase):
+    """Five agents opened their log file merely by being imported.
+
+    Each ran `logging.basicConfig(handlers=[..., FileHandler(LOGS_DIR / "x.log")])`
+    at module level, and FileHandler opens its file in __init__. agent_sweep's
+    import probe refuses that write and files AGENT_WRITES_ON_IMPORT; the VM's
+    sweep has reported these same five since 2026-08-01 (loop-sig-1d44314ebd26,
+    "Sweep: 5 finding(s) - agents that mutate firm state at import time"), and the
+    row sat queued because no fixer owned it. Import must be side-effect free: a
+    consumer (or a test, or the sweep) that only wants a function should not
+    create logs/ files. `delay=True` makes the handler open on first emit, so a
+    cron run logs exactly as before.
+
+    The oracle is the sweep's own probe, run on the real modules, so this test
+    and the production finding cannot disagree about what counts as a write.
+    """
+
+    STEMS = ("dynamic_position_sizer", "institution_performance_tracker",
+             "ml_data_watchdog", "ml_drift_monitor", "ml_feature_drift_monitor")
+
+    @staticmethod
+    def _third_party_stub(stem, into):
+        """A module holding only `stem`'s top-level imports of packages that are
+        not files in this repo. Probing it says whether the HOST's library stack
+        trips the sandbox by itself: the Mac's scikit-learn spawns a subprocess on
+        import and the VM's does not (measured 2026-11-19), which is not the
+        agent's fault and must not make this test pass or fail by host."""
+        import ast
+        base = Path(__file__).parent
+        tree = ast.parse((base / (stem + ".py")).read_text())
+        keep = []
+        for node in tree.body:
+            if isinstance(node, (ast.Import, ast.ImportFrom)):
+                if isinstance(node, ast.ImportFrom) and node.module == "__future__":
+                    continue
+                roots = ([a.name for a in node.names] if isinstance(node, ast.Import)
+                         else [node.module or ""])
+                if all(not (base / (r.split(".")[0] + ".py")).exists() for r in roots):
+                    keep.append(ast.unparse(node))
+        (into / ("stub_" + stem + ".py")).write_text("\n".join(keep) + "\n")
+        return "stub_" + stem
+
+    def test_importing_each_agent_writes_nothing(self):
+        import agent_sweep as S
+        d = Path(tempfile.mkdtemp(prefix="import_stub_"))
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        for stem in self.STEMS:
+            with self.subTest(stem=stem):
+                got = S._run_probe(stem, "import")
+                if got["outcome"] == "SANDBOX" and ".log" not in got["detail"]:
+                    ctl = S._run_probe(self._third_party_stub(stem, d), "import",
+                                       syspath=str(d))
+                    if ctl["outcome"] == "SANDBOX" and ctl["detail"] == got["detail"]:
+                        # The probe stops at the first refusal, and the host's
+                        # libraries reached one first: this host cannot see the
+                        # agent's own import. The static test below still covers it.
+                        continue
+                self.assertEqual("OK", got["outcome"], got)
+
+    def test_the_log_file_is_still_configured_for_a_real_run(self):
+        """The fix must not silently drop the log: each module still names its
+        log file in a FileHandler, now opened lazily."""
+        for stem in self.STEMS:
+            with self.subTest(stem=stem):
+                src = (Path(__file__).parent / (stem + ".py")).read_text()
+                self.assertRegex(src, r"FileHandler\([^)]*\.log\"[^)]*delay=True")
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

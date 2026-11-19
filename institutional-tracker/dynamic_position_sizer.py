@@ -94,7 +94,8 @@ logging.basicConfig(
     format="%(asctime)s  %(levelname)-8s  %(name)s — %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler(LOGS_DIR / "position_sizer.log", encoding="utf-8"),
+        logging.FileHandler(LOGS_DIR / "position_sizer.log", encoding="utf-8",
+                            delay=True),  # opened on first emit: import must not write
     ],
 )
 log = logging.getLogger("dynamic_position_sizer")
