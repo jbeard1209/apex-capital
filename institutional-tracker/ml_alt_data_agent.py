@@ -36,6 +36,10 @@ DATA_DIR = Path(__file__).parent / "data"
 SIGNALS_PATH = DATA_DIR / "alt_data_signals.json"
 SUGGESTIONS_PATH = DATA_DIR / "ml_suggestions.json"
 SECTOR_FILE = DATA_DIR / "sector_assignments.json"
+# Written by this agent ONLY, about itself (ok=true/false). alt_data_signals.json
+# cannot carry that verdict: short_interest_monitor and edgar_transcript_agent
+# rewrite it too, so its mtime stays fresh even when this agent's FRED leg dies.
+FRED_STATUS_PATH = DATA_DIR / "fred_status.json"
 
 DEFAULT_WATCHLIST = [
     "SPY", "QQQ", "NVDA", "MSFT", "GOOGL",
@@ -66,6 +70,12 @@ FRED_SERIES = {
     "UMCSENT": "consumer_sentiment",
 }
 FRED_3M_SURPRISE_SERIES = "UMCSENT"   # series for which we compute surprise
+# Oldest acceptable latest observation, in calendar days. VIXCLS and T10Y2Y
+# publish each business day with ~1 day lag (Fri value read Mon is 3 days;
+# a Monday holiday makes 4). UMCSENT is monthly, dated the 1st, and FRED posts
+# it about a month late: on 2026-11-19 the newest row was 2026-09-01 (79 days),
+# so its budget is 100 days, not a guess at "two months".
+FRED_MAX_OBS_AGE_DAYS = {"VIXCLS": 5, "T10Y2Y": 5, "UMCSENT": 100}
 
 # Alert thresholds
 ALERT_NEWS_SENTIMENT = -0.5
@@ -325,10 +335,23 @@ def _fetch_fred_series(series_id: str) -> Optional[pd.DataFrame]:
         resp = requests.get(url, timeout=FRED_TIMEOUT)
         resp.raise_for_status()
         from io import StringIO
-        df = pd.read_csv(StringIO(resp.text), parse_dates=["DATE"])
+        # 2026-11-19: FRED renamed the date column `DATE` -> `observation_date`.
+        # This line read parse_dates=["DATE"], so all three series raised
+        # "Missing column provided to 'parse_dates'", were logged as a non-fatal
+        # ERROR and written as None. VIX alt-data was silently missing while
+        # alt_data_signals.json stayed fresh. Take the columns by POSITION (date,
+        # value) so a header rename cannot break it again, and refuse anything
+        # that is not exactly two columns (an HTML error page, a new layout).
+        df = pd.read_csv(StringIO(resp.text), header=0, na_values=".")
+        if df.shape[1] != 2:
+            raise ValueError(f"expected 2 columns (date, {series_id}), got "
+                             f"{list(df.columns)[:5]}")
         df.columns = ["date", "value"]
+        df["date"] = pd.to_datetime(df["date"], errors="coerce")
         df["value"] = pd.to_numeric(df["value"], errors="coerce")
-        df = df.dropna(subset=["value"]).sort_values("date")
+        df = df.dropna(subset=["date", "value"]).sort_values("date")
+        if df.empty:
+            raise ValueError(f"no parseable rows (header {resp.text[:60]!r})")
         log.debug("FRED %s: %d rows fetched, latest: %s = %.4f",
                   series_id, len(df), df["date"].iloc[-1].date(), df["value"].iloc[-1])
         return df
@@ -386,6 +409,7 @@ def fetch_fred_data() -> dict[str, Any]:
 
         latest_val = round(float(df["value"].iloc[-1]), 4)
         result[output_key] = latest_val
+        result[f"{output_key}_as_of"] = str(df["date"].iloc[-1].date())
         log.info("FRED %s (%s) = %.4f", series_id, output_key, latest_val)
 
         if series_id == FRED_3M_SURPRISE_SERIES:
@@ -403,6 +427,49 @@ def fetch_fred_data() -> dict[str, Any]:
         result["errors"] = errors
 
     return result
+
+def write_fred_status(fred: dict[str, Any], now: Optional[datetime] = None) -> dict[str, Any]:
+    """Write data/fred_status.json: this agent's verdict on its own FRED leg.
+
+    ok is True only if EVERY series parsed AND its latest observation is within
+    FRED_MAX_OBS_AGE_DAYS. freshness_sentinel (verdict_key "ok") and
+    job_failure_monitor (STATUS_FILE_NAMES) both read it, so a parse break or a
+    series that stops updating is reported instead of becoming a quiet None.
+    """
+    now = now or datetime.now(timezone.utc)
+    series: dict[str, Any] = {}
+    problems: list[str] = []
+    for series_id, key in FRED_SERIES.items():
+        val, as_of = fred.get(key), fred.get(f"{key}_as_of")
+        row: dict[str, Any] = {"value": val, "as_of": as_of, "ok": False}
+        if val is None or not as_of:
+            problems.append(f"{series_id} unavailable")
+        else:
+            age = (now.date() - datetime.fromisoformat(as_of).date()).days
+            row["age_days"] = age
+            budget = FRED_MAX_OBS_AGE_DAYS.get(series_id, 5)
+            if age > budget:
+                problems.append(f"{series_id} latest observation {as_of} is "
+                                f"{age}d old (budget {budget}d)")
+            else:
+                row["ok"] = True
+        series[series_id] = row
+    status = {
+        "ok": not problems,
+        "finished_at": now.isoformat(),
+        "n_series": len(series),
+        "n_ok": sum(1 for r in series.values() if r["ok"]),
+        "series": series,
+        "fatal_error": "; ".join(problems) if problems else None,
+    }
+    try:
+        FRED_STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
+        FRED_STATUS_PATH.write_text(json.dumps(status, indent=2, default=str))
+    except OSError as exc:
+        log.error("Could not write %s: %s", FRED_STATUS_PATH, exc)
+    if problems:
+        log.error("FRED status NOT ok: %s", status["fatal_error"])
+    return status
 
 # ---------------------------------------------------------------------------
 # Output writer
@@ -423,6 +490,7 @@ def write_signals(
         "market_news_sentiment": news.get("market_news_sentiment"),
         "insider_buy_pressure": insider.get("insider_buy_pressure"),
         "fred_vix": fred.get("fred_vix"),
+        "fred_vix_as_of": fred.get("fred_vix_as_of"),
         "fred_yield_spread_10y2y": fred.get("fred_yield_spread_10y2y"),
         "consumer_sentiment": fred.get("consumer_sentiment"),
         "consumer_sentiment_surprise": fred.get("consumer_sentiment_surprise"),
@@ -626,6 +694,8 @@ def run() -> None:
             "consumer_sentiment_surprise": None,
             "errors": [f"Unhandled exception: {exc}"],
         }
+
+    write_fred_status(fred_result)
 
     # --- Write combined output ---
     signals = write_signals(news_result, insider_result, fred_result)

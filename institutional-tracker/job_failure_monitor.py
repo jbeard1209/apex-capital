@@ -74,6 +74,10 @@ MAX_LOG_BYTES = 20_000_000     # read the tail of anything bigger
 # follow a test (or a redirected run) that rebinds DATA.
 STATUS_FILE_NAMES = {
     "board_vote": "board_vote_status.json",
+    # 2026-11-19: FRED's CSV header change broke VIX/yield-spread/sentiment
+    # reads for days with only a "non-fatal" log line. ml_alt_data_agent now
+    # reports on its own FRED leg; two failed daily runs in a row escalate.
+    "fred_alt_data": "fred_status.json",
 }
 
 
