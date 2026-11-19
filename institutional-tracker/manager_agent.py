@@ -1316,9 +1316,14 @@ def build_management_report(decisions: list[dict], executions: list[dict],
             pnl_s = f"{pnl:+.1f}%" if pnl is not None else "—"
             # Guard empty reasons list — IndexError if Review Agent returned no reasons
             _first_reason = (d.get('reasons') or [''])[0]
+            # hold_days is None when the entry date is unknown (review_agent);
+            # .get(k, 0) only defaults a MISSING key, so None reached format()
+            # and killed Step 5/5 on the Mac, which has no entry-date ledger.
+            _hd = d.get("hold_days")
+            hold_s = "?" if _hd is None else str(_hd)
             lines.append(
                 f"  [{flag:<5}] {d['ticker']:<6}  P&L: {pnl_s:>7}  "
-                f"Hold: {d.get('hold_days', 0):>3}d  {_first_reason[:45]}"
+                f"Hold: {hold_s:>3}d  {_first_reason[:45]}"
             )
         lines.append("")
 
@@ -1385,7 +1390,7 @@ def build_html_report(decisions: list[dict], executions: list[dict],
               <td style="padding:10px 8px;color:{action_color};font-weight:bold;">
                 {d['manager_action']}</td>
               <td style="padding:10px 8px;color:#c9d1d9;">{pnl_str}</td>
-              <td style="padding:10px 8px;color:#c9d1d9;">{d.get('hold_days', 0)}d</td>
+              <td style="padding:10px 8px;color:#c9d1d9;">{'?' if d.get('hold_days') is None else d.get('hold_days')}d</td>
               <td style="padding:10px 8px;">{status_html}</td>
             </tr>
             <tr>

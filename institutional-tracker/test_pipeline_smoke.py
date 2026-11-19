@@ -37082,6 +37082,35 @@ class TestFixerRoutingContract(unittest.TestCase):
         self.assertEqual(fr.route({"proposal_id": "LTIA-20261112015815",
                                    "title": "[LTIA] Loss needs corrective action, not just "
                                             "documentation"})[0], "risk")
+class TestManagerReportUnknownHoldDays(unittest.TestCase):
+    """review_agent sets hold_days=None when a position's entry date is unknown
+    (always, on a host with no entry-date ledger). `d.get('hold_days', 0):>3`
+    defaults only a MISSING key, so None reached format() and Step 5/5 died with
+    'unsupported format string passed to NoneType.__format__' (Mac catch-up log
+    2026-11-12 14:22) -- the Manager's report for that cycle was never built."""
+
+    ACCT = {"portfolio_value": 1000.0, "cash": 10.0, "buying_power": 10.0,
+            "n_positions": 1, "pnl_today": -1.0, "pnl_today_pct": -0.1}
+
+    def _decisions(self):
+        return [{"ticker": "KEY", "action": "HOLD", "manager_action": "HOLD",
+                 "manager_decision": "APPROVED", "manager_rationale": [],
+                 "reasons": ["Entry date unknown"], "unrealized_pnl_pct": None,
+                 "hold_days": None}]
+
+    def test_text_report_renders_with_unknown_hold_days(self):
+        import manager_agent as m
+        txt = m.build_management_report(self._decisions(), [], self.ACCT, False)
+        self.assertIn("KEY", txt)
+        self.assertIn("Hold:   ?d", txt)
+
+    def test_html_report_never_prints_None_days(self):
+        import manager_agent as m
+        html = m.build_html_report(self._decisions(), [], self.ACCT, False) \
+            if hasattr(m, "build_html_report") else None
+        if html is None:
+            self.skipTest("no HTML builder")
+        self.assertNotIn("Noned", html)
 
 
 if __name__ == "__main__":
