@@ -37053,6 +37053,15 @@ class TestFixerLifecycle(unittest.TestCase):
         backup = json.loads((self.bd.DATA / row["supersede_backup"]).read_text())
         self.assertEqual(backup[-1]["status"], "queued")   # the state BEFORE
 
+    def test_back_to_back_supersedes_keep_every_before_state(self):
+        self._q([{"proposal_id": f"s{i}", "status": "queued"} for i in range(4)])
+        backups = [self.bd.supersede(f"s{i}", "checked", "moot")["supersede_backup"]
+                   for i in range(4)]
+        self.assertEqual(len(set(backups)), 4)
+        for i, name in enumerate(backups):
+            rows = json.loads((self.bd.DATA / name).read_text())
+            self.assertEqual(sum(r["status"] == "superseded" for r in rows), i)
+
     def test_stale_claim_returns_to_queued_fresh_one_stays(self):
         from datetime import datetime, timedelta
         now = datetime(2026, 11, 19, 12, 0)

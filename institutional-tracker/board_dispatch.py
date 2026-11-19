@@ -596,8 +596,15 @@ def backfill_open_rows(dry_run: bool = False, queue_copy: list = None) -> dict:
 
 
 def _backup_queue(rows: list, tag: str) -> str:
+    # Never overwrite an earlier backup. With a seconds-only stamp, 11 supersedes run
+    # back to back on 2026-11-19 wrote 3 files, and the one taken before the first
+    # close was replaced by a later one: the "state before" was lost.
     ts = datetime.now().strftime("%Y%m%d%H%M%S")
     path = DATA / f"cit_implementation_queue.{tag}.{ts}.json"
+    n = 1
+    while path.exists():
+        n += 1
+        path = DATA / f"cit_implementation_queue.{tag}.{ts}-{n}.json"
     aj.write(str(path), rows)
     return path.name
 
