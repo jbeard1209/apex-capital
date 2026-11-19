@@ -134,6 +134,13 @@ MANIFEST = {
     # weekdays 13:30 UTC, so 80h survives a weekend.
     "data/board_vote_status.json":       {"max_age_h": 80, "critical": True, "owner": VM,
                                           "verdict_key": "ok"},
+    # Added 2026-11-19. FRED renamed its CSV date column and VIX/T10Y2Y/UMCSENT
+    # all read as None while alt_data_signals.json stayed fresh (three agents
+    # rewrite it). ml_alt_data_agent now writes this verdict about itself
+    # (every series parsed and recent). It runs daily 07:00 UTC under
+    # ml_research_team_leader, so 30h allows one late run before STALE.
+    "data/fred_status.json":             {"max_age_h": 30, "critical": False, "owner": VM,
+                                          "verdict_key": "ok"},
     # The monitor that reads every job's log for repeated crashes. Hourly; a
     # monitor that stops running must not read as "no failures".
     "data/job_failure_report.json":      {"max_age_h": 3, "critical": True, "owner": VM,

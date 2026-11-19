@@ -38122,6 +38122,115 @@ class TestBoardPauseAndPodSlots(unittest.TestCase):
         self.assertEqual(frozenset(ETF_UNIVERSE), self._real_pod_universe())
 
 
+class TestFredVixReaderSurvivesTheHeaderChange(unittest.TestCase):
+    """2026-11-19: FRED renamed the date column of its fredgraph CSV from `DATE`
+    to `observation_date`. `ml_alt_data_agent._fetch_fred_series` passed
+    parse_dates=["DATE"], so every series (VIXCLS, T10Y2Y, UMCSENT) raised
+    "Missing column provided to 'parse_dates': 'DATE'", was logged as a
+    non-fatal ERROR and written as None. alt_data_signals.json stayed fresh on
+    the VM, so mtime freshness could not see it. Two pins: the reader takes the
+    date column by position, and the agent writes data/fred_status.json about
+    itself, which the freshness sentinel and job_failure_monitor both read."""
+
+    NEW = "observation_date,VIXCLS\n2026-11-16,22.91\n2026-11-17,25.46\n2026-11-18,.\n"
+    OLD = "DATE,VIXCLS\n2026-11-16,22.91\n2026-11-17,25.46\n"
+
+    def _resp(self, text):
+        r = MagicMock()
+        r.text = text
+        r.raise_for_status = lambda: None
+        return r
+
+    def _fetch(self, text):
+        import ml_alt_data_agent as m
+        with patch.object(m.requests, "get", return_value=self._resp(text)):
+            return m._fetch_fred_series("VIXCLS")
+
+    def test_reads_the_new_observation_date_header(self):
+        df = self._fetch(self.NEW)
+        self.assertIsNotNone(df, "the current FRED CSV format failed to parse")
+        self.assertEqual(float(df["value"].iloc[-1]), 25.46, "the '.' row must drop")
+        self.assertEqual(str(df["date"].iloc[-1].date()), "2026-11-17")
+
+    def test_still_reads_the_old_DATE_header(self):
+        df = self._fetch(self.OLD)
+        self.assertIsNotNone(df)
+        self.assertEqual(float(df["value"].iloc[-1]), 25.46)
+
+    def test_an_html_error_page_is_none_not_a_number(self):
+        self.assertIsNone(self._fetch("<html><body>Service unavailable</body></html>\n"))
+
+    def _status(self, fetch_map, today="2026-11-19"):
+        import ml_alt_data_agent as m
+        import pandas as pd
+        with tempfile.TemporaryDirectory() as d:
+            sp = Path(d) / "fred_status.json"
+            frames = {}
+            for sid, rows in fetch_map.items():
+                frames[sid] = None if rows is None else pd.DataFrame(
+                    {"date": pd.to_datetime([r[0] for r in rows]),
+                     "value": [r[1] for r in rows]})
+            with patch.object(m, "FRED_STATUS_PATH", sp), \
+                 patch.object(m, "_fetch_fred_series", side_effect=lambda s: frames[s]):
+                fred = m.fetch_fred_data()
+                m.write_fred_status(fred, now=datetime.fromisoformat(today + "T07:00:00+00:00"))
+                return fred, json.loads(sp.read_text())
+
+    def _good(self):
+        return {"VIXCLS": [("2026-11-18", 24.56)],
+                "T10Y2Y": [("2026-11-18", 0.55)],
+                "UMCSENT": [("2026-08-01", 60.0), ("2026-10-01", 61.0)]}
+
+    def test_all_series_parsed_and_recent_is_ok(self):
+        fred, st = self._status(self._good())
+        self.assertEqual(fred["fred_vix"], 24.56)
+        self.assertEqual(fred["fred_vix_as_of"], "2026-11-18")
+        self.assertIs(st["ok"], True, st)
+        self.assertEqual(st["n_series"], 3)
+        self.assertEqual(st["series"]["VIXCLS"]["as_of"], "2026-11-18")
+
+    def test_a_series_that_failed_to_parse_is_not_ok(self):
+        g = self._good(); g["VIXCLS"] = None
+        _, st = self._status(g)
+        self.assertIs(st["ok"], False)
+        self.assertIn("VIXCLS", st["fatal_error"])
+        self.assertTrue(st.get("finished_at"))
+
+    def test_a_vix_reading_older_than_its_budget_is_not_ok(self):
+        g = self._good(); g["VIXCLS"] = [("2026-11-09", 18.0)]
+        _, st = self._status(g)
+        self.assertIs(st["ok"], False, "a 10-day-old VIX is not today's VIX")
+        self.assertIn("VIXCLS", st["fatal_error"])
+
+    def test_the_run_writes_status_even_when_fred_raises(self):
+        import ml_alt_data_agent as m
+        with tempfile.TemporaryDirectory() as d:
+            with patch.object(m, "FRED_STATUS_PATH", Path(d) / "fs.json"), \
+                 patch.object(m, "SIGNALS_PATH", Path(d) / "sig.json"), \
+                 patch.object(m, "SUGGESTIONS_PATH", Path(d) / "sug.json"), \
+                 patch.object(m, "load_watchlist", return_value=[]), \
+                 patch.object(m, "fetch_news_sentiment", return_value={}), \
+                 patch.object(m, "fetch_insider_sentiment", return_value={}), \
+                 patch.object(m, "fetch_fred_data", side_effect=RuntimeError("boom")), \
+                 patch.object(m, "maybe_send_alert", lambda s: None), \
+                 patch.object(m, "maybe_add_negative_signal_suggestion", lambda s: None):
+                m.run()
+                st = json.loads((Path(d) / "fs.json").read_text())
+        self.assertIs(st["ok"], False)
+
+    def test_the_status_file_is_watched_by_both_monitors_and_its_producer_is_scheduled(self):
+        import freshness_sentinel as fs, job_failure_monitor as jfm
+        spec = fs.MANIFEST.get("data/fred_status.json")
+        self.assertIsNotNone(spec, "freshness_sentinel does not watch fred_status.json")
+        self.assertEqual(spec.get("verdict_key"), "ok")
+        self.assertEqual(spec.get("owner"), fs.VM)
+        self.assertIn("fred_status.json", jfm.STATUS_FILE_NAMES.values())
+        snap = (Path(__file__).parent / "data" / "vm_crontab_snapshot.txt").read_text()
+        self.assertRegex(snap, r"(?m)^[^#].*ml_research_team_leader\.py")
+        lead_src = (Path(__file__).parent / "ml_research_team_leader.py").read_text()
+        self.assertRegex(lead_src, r'\("ml_alt_data_agent",\s*"ml_alt_data_agent"\)')
+
+
 # ── FE valuation: per-share numbers must be per *quoted* share, same year ────
 # 2026-11-19 overnight run: BRK-B valued at $144,538/share against a $571 price
 # (MoS 99.6%, verdict BUY) and AEM at $3.51 against $159. Two root causes in
