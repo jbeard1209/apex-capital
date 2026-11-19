@@ -38,7 +38,18 @@ REGISTRY = HERE / "config" / "liveness.json"
 
 
 def _hb_dir():
-    return Path(os.environ.get("APEX_HEARTBEAT_DIR", DATA / "heartbeats"))
+    env = os.environ.get("APEX_HEARTBEAT_DIR")
+    if env:
+        return Path(env)
+    # A test is not a run of the firm. Once 16 production paths beat, any test
+    # that drives one of them (run_audit, run_deputy_board, ...) would refresh
+    # the REAL heartbeat and prove the job alive by the act of testing it --
+    # the coherence_report checked_at trap. No production module imports
+    # unittest (pinned in test_liveness), so its presence means "under test".
+    if "unittest" in sys.modules or "pytest" in sys.modules:
+        import tempfile
+        return Path(tempfile.gettempdir()) / "apex_heartbeats_under_test"
+    return DATA / "heartbeats"
 
 
 def _host():
@@ -78,6 +89,30 @@ def _age_hours(rec, now):
         return None
 
 
+def _weekday_hours(rec, now):
+    """Age in hours with Saturday and Sunday (UTC) removed.
+
+    A weekdays_only job last beat on Friday afternoon is ~70 wall-clock hours
+    old on Monday morning; judged on wall time it would page every Monday.
+    """
+    try:
+        ts = datetime.fromisoformat(rec["ts"])
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+    except Exception:
+        return None
+    if ts >= now:
+        return 0.0
+    total, cur = 0.0, ts
+    from datetime import timedelta
+    while cur < now:
+        nxt = min(now, (cur + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0))
+        if cur.weekday() < 5:
+            total += (nxt - cur).total_seconds()
+        cur = nxt
+    return total / 3600.0
+
+
 def check(registry=None, now=None, host=None):
     """Judge every registered feature. Returns {'n_examined', 'alarms', 'results'}.
 
@@ -107,7 +142,8 @@ def check(registry=None, now=None, host=None):
             if st == "MISSING":
                 alarms.append((name, "no heartbeat file but feature is marked instrumented"))
             continue
-        age = _age_hours(rec, now)
+        age = (_weekday_hours(rec, now) if spec.get("weekdays_only")
+               else _age_hours(rec, now))
         if age is None or age > float(spec["max_silence_hours"]):
             results[name] = {"status": "STALE", "age_h": age}
             alarms.append((name, "last outcome %s h ago (limit %s h)"

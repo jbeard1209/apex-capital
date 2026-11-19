@@ -2191,6 +2191,12 @@ def run_irm_daily(send_email: bool = True) -> dict:
     except Exception as e:
         logger.warning(f"  [IRM Daily] Board consultation error: {e}")
 
+    # Liveness (G19): the daily review reached its end.
+    try:
+        import liveness
+        liveness.beat("irm_review", 1, 1)
+    except Exception:
+        pass
     return irm_output
 
 

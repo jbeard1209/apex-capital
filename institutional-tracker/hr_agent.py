@@ -2330,6 +2330,13 @@ def run_hr_review(send_email: bool = False) -> dict:
     # only in this dict, and neither caller reads them (see _persist_hr_report).
     _persist_hr_report()
 
+    # Liveness (G18): agents evaluated. A review of zero agents is NO_OUTCOME.
+    try:
+        import liveness
+        _n = int(report.get("agents_reviewed") or 0)
+        liveness.beat("hr_evaluation", _n, max(_n, 1))
+    except Exception:
+        pass
     return report
 
 

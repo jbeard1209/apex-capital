@@ -353,6 +353,16 @@ def main():
     for f in rep["failures"]:
         mark = "ACTIVE  " if f["active"] else ("known   " if f["repeated"] else "once    ")
         print(f"  {mark} x{f['count']:<4} {','.join(f['jobs'])[:40]:40s} {f['signature'][:110]}")
+    # Liveness (G09): logs examined. Zero logs, or CANNOT_TELL, is NO_OUTCOME
+    # -- a pass on zero items is not a pass. --report runs beat nothing.
+    if not args.report:
+        try:
+            import liveness
+            _n = int(rep.get("n_logs_examined") or 0)
+            liveness.beat("job_failure_monitor",
+                          0 if rep["status"] == "CANNOT_TELL" else _n, max(_n, 1))
+        except Exception:
+            pass
     if rep["status"] == "CANNOT_TELL":
         sys.exit(2)
     sys.exit(0)   # FAILING is the detector working; only CANNOT_TELL is an error

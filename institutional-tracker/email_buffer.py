@@ -371,7 +371,7 @@ def _save_buffer(buffer: list):
                 f.flush()
                 os.fsync(f.fileno())
             os.replace(tmp, BUFFER_PATH)
-        except Exception:
+        except BaseException:  # interrupts too: 107 orphaned temp files on the Mac, 2026-11-19
             if tmp and os.path.exists(tmp):
                 try:
                     os.unlink(tmp)

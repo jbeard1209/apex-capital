@@ -1196,6 +1196,17 @@ def run_canary(test_level: Optional[str] = None) -> dict:
     }
     _save_state(state)
 
+    # Liveness (G10): n_examined = the three core feeds, n_done = the ones that
+    # returned a reading. A canary with every feed down is blind, not GREEN.
+    if test_level is None:
+        try:
+            import liveness
+            _got = sum(1 for k in ("spy_pct", "qqq_pct", "vix_level")
+                       if _last_readings.get(k) is not None)
+            liveness.beat("canary", _got, 3)
+        except Exception:
+            pass
+
     return assessment
 
 

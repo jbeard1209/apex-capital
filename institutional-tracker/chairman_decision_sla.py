@@ -402,6 +402,14 @@ def main():
 
     rep = run(write=not args.report)
     now = _now()
+    # Liveness (G17): the SLA pass completed (ingest + escalation). An empty
+    # queue is a legitimate result, so a completed pass is the outcome.
+    if not args.report:
+        try:
+            import liveness
+            liveness.beat("chairman_sla", 1, 1)
+        except Exception:
+            pass
 
     # Trigger the proxy chairman AFTER ingest/escalation but BEFORE printing —
     # rules-based autoresolve, dual-approved, reversible. The agent's internal

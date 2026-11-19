@@ -42,6 +42,7 @@
 
 import argparse
 import json
+import re
 import logging
 import os
 import sys
@@ -66,6 +67,7 @@ FINDINGS_PATH       = DATA_DIR / "logic_officer_findings.json"
 BRIEFING_PATH       = DATA_DIR / "chairman_briefing.json"
 FIRM_CHANNEL_PATH   = DATA_DIR / "firm_channel.json"
 CIT_PENDING_PATH    = DATA_DIR / "cit_pending_proposals.json"
+IMPL_QUEUE_PATH     = DATA_DIR / "cit_implementation_queue.json"
 
 
 # =============================================================================
@@ -461,6 +463,22 @@ def _build_state() -> dict:
 # BOARD PROPOSAL WRITER
 # =============================================================================
 
+def _open_approved_rules() -> set:
+    """Rules with an approved Logic Officer row whose execution is not finished."""
+    try:
+        from board_dispatch import DONE_STATUSES
+    except Exception:
+        DONE_STATUSES = frozenset({"implemented", "executed", "superseded"})
+    rows = _load(IMPL_QUEUE_PATH, [])
+    out = set()
+    for r in rows if isinstance(rows, list) else []:
+        pid = str((r or {}).get("proposal_id") or "")
+        m = re.match(r"^LO-\d{14}-(.+)$", pid)
+        if m and r.get("status") not in DONE_STATUSES:
+            out.add(m.group(1))
+    return out
+
+
 def _write_board_proposals(findings: list) -> int:
     """Write HIGH/CRITICAL findings as board proposals for a vote."""
     serious = [f for f in findings if f.get("severity") in ("HIGH", "CRITICAL")]
@@ -476,6 +494,15 @@ def _write_board_proposals(findings: list) -> int:
     # the literal title let the same unresolved issue re-queue every cycle
     # instead of being recognized as already pending.
     existing_keys = {p.get("dedup_key") or p.get("title","") for p in pending}
+    # ...and on the rows the board already APPROVED. Approval moves a row out of
+    # pending into cit_implementation_queue.json, so a pending-only check saw an
+    # empty queue on the next run and re-filed the same rule under a fresh
+    # timestamped id: 15 open LO-*-unexplained_loss rows on the VM by
+    # 2026-11-19, one per pipeline run, each a new ballot for a decision already
+    # taken. board_dispatch.standing_ids is keyed on id, so it cannot see these.
+    # A finished row (DONE_STATUSES) does not block: a recurrence after a real
+    # fix is a new problem and gets a fresh vote.
+    existing_keys |= _open_approved_rules()
     added = 0
     now   = datetime.now().isoformat()
 

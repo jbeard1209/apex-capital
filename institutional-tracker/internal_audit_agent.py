@@ -1459,6 +1459,12 @@ def run_audit() -> dict:
         REPORT.write_text(json.dumps(report, indent=1))
     except OSError as e:
         logger.warning("could not write %s: %s", REPORT.name, e)
+    # Liveness (G12): controls put to a poison pill. Zero is NO_OUTCOME.
+    try:
+        import liveness
+        liveness.beat("internal_audit", len(falsify), max(len(falsify), 1))
+    except Exception:
+        pass
     return report
 
 

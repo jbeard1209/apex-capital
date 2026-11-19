@@ -1633,6 +1633,49 @@ def _load_energy_research_picks() -> list[dict]:
         return []
 
 
+def _liveness_beats(decisions: list, executions: list, dry_run: bool,
+                    cro_level: Optional[str] = None) -> dict:
+    """Heartbeats for the liveness watcher (docs/audit/LIVENESS_GAPS.md G04/G05/G07).
+
+    pod_orders     beats only when orders were attempted; an all-failed cycle
+                   is NO_OUTCOME and a stretch with no orders at all goes STALE
+                   (G04: "pod places 0 orders for N days").
+    short_covers   n_examined = approved SELL/TRIM on short positions, n_done =
+                   those that reached the broker. Nothing to cover is OK; covers
+                   that all fail is the "shorts could open but never cover" bug.
+    cro_buy_block  beats only while buys are NOT blocked by the CRO (level not
+                   HIGH/CRITICAL), so a block that lasts longer than the
+                   registry's window goes STALE (G07).
+    Dry runs beat nothing: a rehearsal must not prove the live thing alive.
+    Returns what it beat (for tests); never raises.
+    """
+    out = {}
+    if dry_run:
+        return out
+    try:
+        import liveness
+        if executions:
+            ok = sum(1 for e in executions if e.get("executed"))
+            liveness.beat("pod_orders", ok, len(executions))
+            out["pod_orders"] = (ok, len(executions))
+        exec_by_t = {e.get("ticker"): e for e in executions}
+        covers = [d for d in decisions
+                  if d.get("side") == "short"
+                  and d.get("manager_decision") == "APPROVED"
+                  and d.get("manager_action") in ("SELL", "TRIM")]
+        done = sum(1 for d in covers if (exec_by_t.get(d.get("ticker")) or {}).get("executed"))
+        liveness.beat("short_covers", done, len(covers))
+        out["short_covers"] = (done, len(covers))
+        if cro_level is None:
+            cro_level = (_load_cro_bulletin() or {}).get("risk_level", "UNKNOWN")
+        if cro_level not in ("HIGH", "CRITICAL"):
+            liveness.beat("cro_buy_block", 1, 1)
+            out["cro_buy_block"] = (1, 1)
+    except Exception as e:
+        logger.warning(f"  [liveness] beat failed: {e}")
+    return out
+
+
 def run_manager(dry_run: bool = False, skip_review: bool = False,
                 skip_email: bool = False,
                 extra_recommendations: Optional[list] = None,
@@ -1813,6 +1856,8 @@ def run_manager(dry_run: bool = False, skip_review: bool = False,
             )
     else:
         logger.info("  No trades to execute this cycle.")
+
+    _liveness_beats(decisions, executions, dry_run)
 
     # ── Step 4: Persist decision log ──────────────────────────────────────
     logger.info("  Step 4/5: Saving decision log...")
