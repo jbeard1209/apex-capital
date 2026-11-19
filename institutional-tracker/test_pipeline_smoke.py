@@ -9596,6 +9596,71 @@ class TestDeadmansSwitchHasOneDefinition(unittest.TestCase):
                              f"{mod} still carries the flat-24h weekend subtraction")
 
 
+class TestHeartbeatStalenessSkipsTheWeekend(unittest.TestCase):
+    """A Friday-evening heartbeat read on Monday morning is not an outage.
+
+    main.py runs on `1-5` crontab lines only; the last run of the week is Fri
+    20:15 UTC and the first is Mon 12:00/13:45. Both heartbeat checks in
+    cit_pipeline_integrity_agent compared the RAW age to the 26h threshold and
+    gated only on "is it a weekday NOW", so every Monday before the first run
+    reported "pipeline_heartbeat.json is 52.6h old on a weekday": loop-sig
+    3e4b3877067e recurred after resolution 63 times, b80ccaa0ece2 and
+    6e402d7a3919 the same, and each recurrence re-queued a board row that no
+    fix could close. deadmans_switch already subtracts weekend hours for the
+    Manager-decision age; the heartbeat paths never used it.
+    """
+
+    MON_0100 = datetime(2026, 11, 16, 1, 0)      # Monday 01:00
+    FRI_2017 = datetime(2026, 11, 13, 20, 17)    # last run of the week
+
+    def _peer(self, now, age_h):
+        import cit_pipeline_integrity_agent as pia
+        issues, skipped = [], {}
+        with patch.object(pia.sys, "platform", "darwin"), \
+             patch.object(pia, "_now_dt", return_value=now, create=True), \
+             patch.object(pia, "_probe_peer", return_value=(True, age_h, "host answered")), \
+             patch.object(pia, "_load_json", return_value={}), \
+             patch.object(pia, "_write_liveness", return_value=None):
+            pia.check_peer_host_liveness(issues, skipped)
+        return [i for i in issues if "heartbeat" in i.get("message", "")]
+
+    def test_weekend_gap_does_not_fire_on_monday(self):
+        age = (self.MON_0100 - self.FRI_2017).total_seconds() / 3600
+        self.assertGreater(age, 26, "the fixture must reproduce the 52h reading")
+        self.assertEqual(self._peer(self.MON_0100, age), [],
+                         "Fri 20:17 -> Mon 01:00 is 52.7h raw but under 5h of "
+                         "weekday time; reporting it as a stopped pipeline is "
+                         "the false alarm that re-filed 63 times")
+
+    def test_a_missed_monday_still_fires(self):
+        tue = datetime(2026, 11, 17, 13, 0)
+        age = (tue - self.FRI_2017).total_seconds() / 3600   # 88.7h raw, ~40.7h weekday
+        got = self._peer(tue, age)
+        self.assertEqual(len(got), 1, "a whole missed trading day must still alarm")
+        self.assertIn("excl. weekends", got[0]["message"],
+                      "report both ages, or 88h reads as 40h to the Chairman")
+
+    def test_trading_age_helper(self):
+        import cit_pipeline_integrity_agent as pia
+        age = (self.MON_0100 - self.FRI_2017).total_seconds() / 3600
+        self.assertLess(pia._trading_age_h(age, now=self.MON_0100), 5.0)
+        self.assertEqual(pia._trading_age_h(float("inf"), now=self.MON_0100), float("inf"),
+                         "no heartbeat at all is never explained by a weekend")
+        wed = datetime(2026, 11, 18, 12, 0)
+        self.assertAlmostEqual(pia._trading_age_h(30.0, now=wed), 30.0, places=6)
+
+    def test_no_raw_heartbeat_age_reaches_the_threshold(self):
+        """Per site, not a union: every comparison to _HEARTBEAT_STALE_H must be
+        on a weekend-adjusted age."""
+        src = Path(__file__).with_name("cit_pipeline_integrity_agent.py").read_text()
+        code = [ln for ln in src.splitlines() if not ln.lstrip().startswith("#")]
+        sites = [ln for ln in code if re.search(r">\s*_HEARTBEAT_STALE_H", ln)]
+        self.assertGreaterEqual(len(sites), 2, "both heartbeat checks must be found")
+        for ln in sites:
+            self.assertRegex(ln, r"_eff_h\s*>\s*_HEARTBEAT_STALE_H",
+                             f"raw age compared to the threshold: {ln.strip()}")
+
+
 class TestPipelineIntegrityVerdicts(unittest.TestCase):
     """A check that did not run must never close a Chairman finding.
 
@@ -9711,7 +9776,7 @@ class TestPipelineIntegrityVerdicts(unittest.TestCase):
         import unittest.mock as mock
         import cit_pipeline_integrity_agent as pia
         issues, skipped = [], {}
-        with mock.patch.object(pia.sys, "platform", "linux"):
+        with patch.object(pia.sys, "platform", "linux"):
             pia.check_peer_host_liveness(issues, skipped)
         self.assertIn("peer_host_liveness", skipped,
                       "on the VM this must SKIP — a host that cannot reach its "
@@ -9775,11 +9840,11 @@ class TestPipelineIntegrityVerdicts(unittest.TestCase):
         import cit_pipeline_integrity_agent as pia
         issues, skipped = [], {}
         long_ago = (datetime.now() - timedelta(hours=72)).isoformat()
-        with mock.patch.object(pia.sys, "platform", "darwin"), \
-             mock.patch.object(pia, "_probe_peer",
+        with patch.object(pia.sys, "platform", "darwin"), \
+             patch.object(pia, "_probe_peer",
                                return_value=(False, None, "ssh timed out")), \
-             mock.patch.object(pia, "_load_json", return_value={"last_ok": long_ago}), \
-             mock.patch.object(pia, "_write_liveness"):
+             patch.object(pia, "_load_json", return_value={"last_ok": long_ago}), \
+             patch.object(pia, "_write_liveness"):
             pia.check_peer_host_liveness(issues, skipped)
         self.assertEqual(len(issues), 1, "a 72h-dead always-on host must raise")
         self.assertEqual(issues[0]["severity"], "CRITICAL")
@@ -9833,14 +9898,14 @@ class TestPipelineIntegrityVerdicts(unittest.TestCase):
         if last_ok_h is not None:
             state["last_ok"] = (datetime.now()
                                 - timedelta(hours=last_ok_h)).isoformat()
-        with mock.patch.object(pia.sys, "platform", "darwin"), \
-             mock.patch.object(pia, "_probe_peer",
+        with patch.object(pia.sys, "platform", "darwin"), \
+             patch.object(pia, "_probe_peer",
                                return_value=(False, None, "ssh timed out")), \
-             mock.patch.object(pia, "_load_json", return_value=state), \
-             mock.patch.object(pia, "_write_liveness"), \
-             mock.patch.object(pia.sched, "peer_crontab", return_value="* * * * * main.py"), \
-             mock.patch.object(pia.sched, "missed_fires_since", return_value=missed), \
-             mock.patch.object(pia.sched, "fires_per_busiest_day", return_value=4):
+             patch.object(pia, "_load_json", return_value=state), \
+             patch.object(pia, "_write_liveness"), \
+             patch.object(pia.sched, "peer_crontab", return_value="* * * * * main.py"), \
+             patch.object(pia.sched, "missed_fires_since", return_value=missed), \
+             patch.object(pia.sched, "fires_per_busiest_day", return_value=4):
             pia.check_peer_host_liveness(issues, skipped)
         assert "peer_host_liveness" not in skipped, (
             "an unreachable peer is a finding or a not-yet, never an "
@@ -9929,8 +9994,8 @@ class TestPipelineIntegrityVerdicts(unittest.TestCase):
         import unittest.mock as mock
         import cit_pipeline_integrity_agent as pia
         issues, skipped = [], {}
-        with mock.patch.object(pia.sys, "platform", "darwin"), \
-             mock.patch.object(pia, "_probe_peer",
+        with patch.object(pia.sys, "platform", "darwin"), \
+             patch.object(pia, "_probe_peer",
                                return_value=(None, None, "no ssh client on this host")):
             pia.check_peer_host_liveness(issues, skipped)
         self.assertIn("peer_host_liveness", skipped,

@@ -230,8 +230,30 @@ def _get_timestamp_from_json(data, *keys) -> str:
     return ""
 
 
+def _now_dt() -> datetime:
+    return datetime.now()
+
+
 def _is_weekday() -> bool:
-    return datetime.now().weekday() < 5  # Mon=0 … Fri=4
+    return _now_dt().weekday() < 5  # Mon=0 … Fri=4
+
+
+def _trading_age_h(raw_age_h: float, now: datetime | None = None) -> float:
+    """A heartbeat age with the Saturday/Sunday hours inside it removed.
+
+    main.py runs on `1-5` crontab lines only, so Fri 20:15 -> Mon 12:00 is a
+    scheduled 64h gap. Both heartbeat checks compared the RAW age to the 26h
+    threshold and asked only whether NOW is a weekday, so every Monday before
+    the first run read "52.6h old on a weekday": loop-sig 3e4b3877067e
+    recurred after resolution 63 times on a pipeline that was working. Same
+    policy as deadmans_switch.effective_age_hours (the Manager-decision age);
+    inf stays inf, because no weekend explains a heartbeat that never existed.
+    """
+    if raw_age_h is None or raw_age_h == float("inf"):
+        return raw_age_h
+    now = now or _now_dt()
+    start = now - timedelta(hours=raw_age_h)
+    return max(0.0, raw_age_h - dms.weekend_hours_between(start, now))
 
 
 def _now_iso() -> str:
@@ -368,10 +390,12 @@ def check_deadmans_switch(issues: list, skipped: dict):
         return
 
     # Pattern 2: heartbeat stale on a weekday → genuine pipeline issue
-    if hb_age_h > _HEARTBEAT_STALE_H and _is_weekday():
+    hb_eff_h = _trading_age_h(hb_age_h)
+    if hb_eff_h > _HEARTBEAT_STALE_H and _is_weekday():
         msg = (
-            f"pipeline_heartbeat.json is {hb_age_h:.1f}h old on a weekday "
-            f"(threshold {_HEARTBEAT_STALE_H}h) — possible genuine pipeline outage or VM issue."
+            f"pipeline_heartbeat.json is {hb_age_h:.1f}h old ({hb_eff_h:.1f}h excl. "
+            f"weekends) on a weekday (threshold {_HEARTBEAT_STALE_H}h) — possible "
+            f"genuine pipeline outage or VM issue."
         )
         logger.warning(f"    HIGH: {msg}")
         issues.append({
@@ -796,9 +820,11 @@ def check_peer_host_liveness(issues: list, skipped: dict):
         # Reachable but its pipeline has stopped is a different failure from
         # unreachable, and a quieter one — the box answers, so every ssh-based
         # sync keeps working and nothing else notices.
-        if remote_hb_h is not None and remote_hb_h > _HEARTBEAT_STALE_H and _is_weekday():
+        remote_eff_h = _trading_age_h(remote_hb_h)
+        if remote_hb_h is not None and remote_eff_h > _HEARTBEAT_STALE_H and _is_weekday():
             msg = (f"{_PEER_HOST} is reachable but its pipeline_heartbeat.json is "
-                   f"{remote_hb_h:.1f}h old on a weekday (threshold {_HEARTBEAT_STALE_H}h) — "
+                   f"{remote_hb_h:.1f}h old ({remote_eff_h:.1f}h excl. weekends) on a "
+                   f"weekday (threshold {_HEARTBEAT_STALE_H}h) — "
                    f"the always-on host is up but its pipeline has stopped.")
             logger.warning(f"    HIGH: {msg}")
             issues.append({"severity": "HIGH", "check": me,

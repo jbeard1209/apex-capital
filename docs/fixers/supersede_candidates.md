@@ -22,3 +22,27 @@ Not a close, a new problem found during the check: the Manager step failed with
 1x on 2026-11-12 20:45Z), at "Step 5/5: Building management report", after the decision log
 was saved. Trading was not blocked; the report was. Last seen 2026-11-12, none today. A
 None reaching an f-string format spec: Risk/Ops fixer, with a test that feeds a None metric.
+
+## specialist-fixer-run 2026-11-19 (ops area)
+
+**Heartbeat "52.6h old on a weekday" rows** (`loop-sig-3e4b3877067e`, `loop-sig-6e402d7a3919`,
+`loop-sig-b80ccaa0ece2`): premise false today. Check, run read-only on the VM 2026-11-19 09:46Z:
+`ls -la data/pipeline_heartbeat.json` and its `last_started` = 2026-11-18T20:15:02 (13.5h old).
+The 52.6h reading is Fri 20:17Z → Mon ~01:00Z: a weekend gap that the two heartbeat checks
+compared raw to the 26h threshold. Fixed on branch `claude/fixer-ops-20261119` (weekend hours
+subtracted, both ages reported). Supersede these three after that PR is merged **and deployed**
+(`board_dispatch.py --supersede <id> --check "<above>" --reason "weekend gap read as outage; fixed in PR"`).
+Note the message text changes ("… (Nh excl. weekends) …"), so a genuine future outage will
+file under a new signature rather than re-open these.
+
+**Stale-cron rows whose job runs nowhere** — NOT given cron lines (that is a VM deploy, Jack's
+call). Check: `crontab -l | grep -v '^#' | grep -c <job>` on the VM, 2026-11-19:
+
+| Row | Job | crontab entries | script on VM | Decision needed |
+|---|---|---|---|---|
+| `loop-sig-b0725b67137e`, `loop-sig-b62d906d23a8` | `ml_data_watchdog.py` | 0 | present | schedule it, or retire job + its freshness check |
+| `loop-sig-41b3f4a76a2c`, `loop-sig-38b8a2c066e0` | `ml_alpha_decay_monitor.py` | 0 | present | same |
+| `loop-sig-6910a9e170de`, `loop-sig-0f72893682f3` | `ml_research_team_leader.py` | 0 | present | same |
+| `loop-sig-21837bc97ded` | `fe_cit_agent.py` | 0 | present | same |
+| `loop-sig-3616daec9161` | `portfolio_risk_dashboard.py` | 0 | present | same |
+| `loop-sig-e890ba6a27c3` | `fe_watchlist_monitor` | 0 | **missing** | premise moot: no such script; retire the freshness check, then supersede |
