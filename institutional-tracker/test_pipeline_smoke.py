@@ -2325,6 +2325,23 @@ def _hr_publishes(key: str) -> bool:
 
 class TestWiringContracts(unittest.TestCase):
 
+    def test_fe_research_library_reads_only_keys_the_synthesis_memo_writes(self):
+        """synthesis_agent.run_synthesis -> synthesis_memo.json ->
+        fe_pipeline._check_research_library (called by run_pipeline, the cron
+        entry point). Until 2026-11-19 run_pipeline read 'synthesis_date',
+        'intrinsic_value', 'conviction', 'summary' — none written — so no deep-
+        research memo ever reached the FE board."""
+        import inspect
+        import fe_pipeline as P
+        from fe_research_agents import synthesis_agent as S
+        produced = set(re.findall(r'^\s{8}"(\w+)":', inspect.getsource(S.run_synthesis), re.M))
+        consumed = set(re.findall(r'memo\.get\("(\w+)"', inspect.getsource(P._check_research_library)))
+        self.assertTrue(consumed, "loader reads no memo keys?")
+        self.assertIn("generated_at", produced)
+        self.assertEqual(consumed - produced, set(),
+                         "fe_pipeline reads memo keys synthesis_agent never writes")
+        self.assertIn("_check_research_library(", inspect.getsource(P.run_pipeline))
+
     def test_board_sla_verdicts_have_a_consumer_on_the_same_path(self):
         """board_sla_verdicts.json: board_meeting._record_sla_verdicts ->
         chairman_decision_sla._apply_board_verdicts (2026-11-09). Two paths
@@ -38071,6 +38088,271 @@ class TestBoardPauseAndPodSlots(unittest.TestCase):
     def test_the_gate_reads_the_pod_universe_from_the_pod_board(self):
         from etf_pod_board import ETF_UNIVERSE
         self.assertEqual(frozenset(ETF_UNIVERSE), self._real_pod_universe())
+
+
+# ── FE valuation: per-share numbers must be per *quoted* share, same year ────
+# 2026-11-19 overnight run: BRK-B valued at $144,538/share against a $571 price
+# (MoS 99.6%, verdict BUY) and AEM at $3.51 against $159. Two root causes in
+# fe_edgar_fundamentals, both proven against live SEC companyfacts:
+#   1. Stale concepts mixed with current ones. Each field took the FIRST XBRL
+#      concept that had any data, however old. BRK's share count came from a 2011
+#      cover page (943,242 Class A shares only), its EBIT from 2012; AEM stopped
+#      filing us-gaap in 2013 (IFRS since) so 2013 EBIT was divided by 2025 shares.
+#      MCO's revenue CAGR came from a "Revenues" tag abandoned in 2017.
+#   2. Share class / units. A share count in Class A units (1 A = 1,500 B) was
+#      divided into dollars and compared with the B-share price.
+# The fix lives at the source (every FE consumer reads shares_outstanding[-1]):
+# merge concepts per year, drop fields that lag the filing year, fall back to
+# yfinance when EDGAR is stale overall, and reconcile the share count with the
+# market-implied count for the ticker actually being priced.
+def _xbrl(end, val, start=None, form="10-K", filed=None):
+    e = {"end": end, "val": val, "form": form, "filed": filed or end}
+    if start:
+        e["start"] = start
+    return e
+
+
+def _annual(year, val):
+    return _xbrl(f"{year}-12-31", val, start=f"{year}-01-01", filed=f"{year+1}-02-20")
+
+
+def _instant(year, val):
+    return _xbrl(f"{year}-12-31", val, filed=f"{year+1}-02-20")
+
+
+def _facts(usgaap: dict, dei: dict | None = None) -> dict:
+    def wrap(d, unit):
+        return {k: {"units": {(u or unit): v for u, v in [(None, vals)]}}
+                for k, vals in d.items()}
+    out = {"facts": {"us-gaap": {}, "dei": {}}}
+    for k, (unit, vals) in usgaap.items():
+        out["facts"]["us-gaap"][k] = {"units": {unit: vals}}
+    for k, (unit, vals) in (dei or {}).items():
+        out["facts"]["dei"][k] = {"units": {unit: vals}}
+    return out
+
+
+def _brk_like_facts():
+    """Shape of Berkshire's real companyfacts (trimmed): pre-tax income is the
+    only current EBIT tag, OperatingIncomeLoss stopped in 2012, and the only
+    share count is a 2011 dei cover-page Class A count."""
+    return _facts({
+        "Revenues": ("USD", [_annual(y, 3.7e11) for y in (2023, 2024, 2025)]),
+        "OperatingIncomeLoss": ("USD", [_annual(y, 2.0e10) for y in (2010, 2011, 2012)]),
+        "IncomeLossFromContinuingOperationsBeforeIncomeTaxes":
+            ("USD", [_annual(y, 9.0e10) for y in (2023, 2024, 2025)]),
+        "NetIncomeLoss": ("USD", [_annual(2023, 9.6e10), _annual(2024, 8.9e10), _annual(2025, 6.7e10)]),
+        "NetCashProvidedByUsedInOperatingActivities": ("USD", [_annual(y, 4.0e10) for y in (2023, 2024, 2025)]),
+        "PaymentsToAcquirePropertyPlantAndEquipment": ("USD", [_annual(y, 1.9e10) for y in (2023, 2024, 2025)]),
+        "Assets": ("USD", [_instant(y, 1.2e12) for y in (2023, 2024, 2025)]),
+        "Liabilities": ("USD", [_instant(y, 5.0e11) for y in (2023, 2024, 2025)]),
+    }, dei={
+        "EntityCommonStockSharesOutstanding": ("shares", [_instant(2011, 943242)]),
+    })
+
+
+class TestFEValuationIsPerQuotedShare(unittest.TestCase):
+
+    def setUp(self):
+        import fe_edgar_fundamentals as E
+        self.E = E
+        self.tmp = tempfile.TemporaryDirectory(prefix="fe_val_")
+        self._cache = E.CACHE_DIR
+        E.CACHE_DIR = Path(self.tmp.name) / "cache"
+
+    def tearDown(self):
+        self.E.CACHE_DIR = self._cache
+        self.tmp.cleanup()
+
+    def _fundamentals(self, facts, market_shares, ticker="BRK-B"):
+        E = self.E
+        with patch.object(E, "_get_cik", return_value="0001067983"), \
+             patch.object(E, "_fetch_facts_json", return_value=facts), \
+             patch.object(E, "_market_implied_shares", return_value=market_shares), \
+             patch.object(E, "_fetch_yfinance_fundamentals", return_value=None):
+            return E.get_edgar_fundamentals(ticker)
+
+    def test_a_concept_abandoned_years_ago_does_not_win_over_a_current_one(self):
+        """MCO: 'Revenues' ends 2017, RevenueFromContract... runs to 2025."""
+        facts = _facts({
+            "Revenues": ("USD", [_annual(y, 3.5e9) for y in range(2013, 2018)]),
+            "RevenueFromContractWithCustomerExcludingAssessedTax":
+                ("USD", [_annual(y, 4.5e9 + y) for y in range(2018, 2026)]),
+        })
+        by_year = self.E._extract_by_year(
+            facts, "Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax")
+        self.assertIn("2025", by_year)
+        self.assertIn("2013", by_year)
+        self.assertEqual(by_year["2025"], 4.5e9 + 2025)
+
+    def test_brk_b_share_count_is_in_b_share_units_and_current(self):
+        f = self._fundamentals(_brk_like_facts(), market_shares=2.1245e9)
+        self.assertAlmostEqual(f["shares_outstanding"][-1], 2.1245e9, delta=1e6)
+        # the stale 2012 OperatingIncomeLoss must not be the "latest EBIT"
+        self.assertEqual(max(f["by_year"]["ebit"]), "2025")
+
+    def test_brk_b_valuation_is_within_an_order_of_magnitude_of_price(self):
+        from fe_research_agents import valuation_researcher as V
+        f = self._fundamentals(_brk_like_facts(), market_shares=2.1245e9)
+        with patch.object(V, "RESEARCH_DIR", Path(self.tmp.name) / "res"), \
+             patch("fe_edgar_fundamentals.get_edgar_fundamentals", return_value=f), \
+             patch("fe_edgar_fundamentals.get_current_price", return_value=571.62):
+            r = V.run_valuation_research("BRK-B")
+        self.assertLess(r["eps_used"], 1000, r)
+        iv = r["conservative_iv"]
+        self.assertIsNotNone(iv, r)
+        self.assertTrue(0.1 * 571.62 < iv < 5 * 571.62, r)
+
+    def test_share_class_mismatch_on_fresh_data_rescales_the_whole_series(self):
+        """A fresh EDGAR count in other-class units (ADR ratio, A vs B) is scaled
+        as a series, so year-over-year dilution checks don't see a fake 1,500x."""
+        facts = _facts({
+            "NetIncomeLoss": ("USD", [_annual(y, 1e9) for y in (2023, 2024, 2025)]),
+            "Revenues": ("USD", [_annual(y, 1e10) for y in (2023, 2024, 2025)]),
+            "CommonStockSharesOutstanding": ("shares", [_instant(2024, 1.00e6), _instant(2025, 0.99e6)]),
+        })
+        f = self._fundamentals(facts, market_shares=1.485e9)
+        s = f["shares_outstanding"]
+        self.assertAlmostEqual(s[-1], 1.485e9, delta=1e6)
+        self.assertAlmostEqual(s[-2] / s[-1], 1.00e6 / 0.99e6, places=4)
+
+    def test_edgar_that_stopped_years_ago_falls_back_to_yfinance(self):
+        """AEM: us-gaap financials end 2013 (IFRS since); only the dei share
+        count is current. Valuing 2013 EBIT on 2025 shares gave $3.51 vs $159."""
+        E = self.E
+        facts = _facts({
+            "OperatingIncomeLoss": ("USD", [_annual(y, 4.0e8) for y in (2011, 2012, 2013)]),
+            "Revenues": ("USD", [_annual(y, 1.9e9) for y in (2011, 2012, 2013)]),
+        }, dei={"EntityCommonStockSharesOutstanding": ("shares", [_instant(2025, 5.0e8)])})
+        yf_result = {"source": "YFINANCE", "revenue": [1.19e10], "shares_outstanding": [5.05e8]}
+        with patch.object(E, "_get_cik", return_value="0000002809"), \
+             patch.object(E, "_fetch_facts_json", return_value=facts), \
+             patch.object(E, "_market_implied_shares", return_value=5.05e8), \
+             patch.object(E, "_fetch_yfinance_fundamentals", return_value=yf_result):
+            f = E.get_edgar_fundamentals("AEM")
+        self.assertEqual(f["source"], "YFINANCE")
+
+    def test_deep_research_valuation_refuses_an_implausible_iv(self):
+        """Last line of defence: an IV 250x the price is a data error, never a BUY."""
+        from fe_research_agents import valuation_researcher as V
+        bad = {"source": "EDGAR", "revenue": [1e11] * 3, "operating_cf": [5e10] * 3,
+               "capex": [1e10] * 3, "ebit": [9e10] * 3, "net_income": [7e10] * 3,
+               "total_assets": [1e12] * 3, "total_liabilities": [5e11] * 3,
+               "shares_outstanding": [943242.0], "long_term_debt": [], "da": []}
+        with patch.object(V, "RESEARCH_DIR", Path(self.tmp.name) / "res"), \
+             patch("fe_edgar_fundamentals.get_edgar_fundamentals", return_value=bad), \
+             patch("fe_edgar_fundamentals.get_current_price", return_value=571.62):
+            r = V.run_valuation_research("BRK-B")
+        self.assertEqual(r["verdict"], "DATA_ERROR", r)
+        self.assertIn("price", r.get("error") or "", r)
+
+    def test_old_cache_entries_from_before_the_fix_are_not_served(self):
+        E = self.E
+        E.CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        (E.CACHE_DIR / "BRK-B.json").write_text(json.dumps(
+            {"source": "EDGAR", "shares_outstanding": [943242.0], "revenue": [1.0]}))
+        self.assertIsNone(E._load_cache("BRK-B"))
+
+
+class TestFEDeepResearchReachesTheBoard(unittest.TestCase):
+    """synthesis_agent writes synthesis_memo.json; fe_pipeline.run_pipeline (the
+    entry point cron runs) read it with keys the producer never wrote —
+    'synthesis_date', 'intrinsic_value', 'conviction', 'summary' — so every memo
+    aged as year 2000 and none ever reached the board (overnight 2026-11-19).
+    The loader with the right keys, _check_research_library, was only called by
+    run_pipeline_v2, which nothing calls."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix="fe_lib_")
+        self.root = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _write_memo_via_producer(self, ticker, valuation):
+        from fe_research_agents import synthesis_agent as S
+        d = self.root / ticker
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "valuation_models.json").write_text(json.dumps(valuation))
+        for name, body in {
+            "financial_forensics.json": {"forensics_score": 80, "forensics_verdict": "CLEAN"},
+            "moat_analysis.json": {"moat_score": 70, "moat_width": "WIDE"},
+            "management_quality.json": {"management_score": 70},
+            "risk_assessment.json": {"risk_score": 70, "risk_level": "LOW"},
+            "executive_background.json": {"management_integrity_score": 70},
+            "competitive_intelligence.json": {"competitive_position_score": 70},
+            "industry_dynamics.json": {"industry_score": 70},
+            "capital_structure_deep.json": {"debt_quality_score": 70},
+            "esg_controversy.json": {"esg_score": 70},
+            "earnings_quality_deep.json": {"earnings_quality_score": 70},
+            "business_model_analysis.json": {"business_model_score": 70},
+            "activist_monitor.json": {"signal": "NEUTRAL"},
+            "supply_chain_risk.json": {"supply_chain_risk_score": 70, "supply_chain_verdict": "LOW"},
+        }.items():
+            (d / name).write_text(json.dumps(body))
+        with patch.object(S, "RESEARCH_DIR", self.root):
+            return S.run_synthesis(ticker)
+
+    def _good_valuation(self, **kw):
+        from fe_research_agents import valuation_researcher as V
+        v = {"ticker": "XYZ", "current_price": 60.0, "conservative_iv": 100.0,
+             "composite_iv": 110.0, "margin_of_safety": 0.40, "verdict": "BUY",
+             "target_entry_price_30pct_mos": 70.0,
+             "valuation_version": V.VALUATION_VERSION}
+        v.update(kw)
+        return v
+
+    def _load(self, live_price):
+        import fe_pipeline as P
+        with patch.object(P, "RESEARCH_LIBRARY_DIR", self.root), \
+             patch("fe_edgar_fundamentals.get_current_price", return_value=live_price):
+            return P._check_research_library()
+
+    def test_a_buy_memo_written_by_the_producer_reaches_the_board_queue(self):
+        memo = self._write_memo_via_producer("XYZ", self._good_valuation())
+        self.assertEqual(memo["overall_verdict"], "BUY", memo)
+        picks = self._load(live_price=60.0)
+        self.assertEqual([p["ticker"] for p in picks], ["XYZ"])
+        self.assertAlmostEqual(picks[0]["conservative_iv"], 100.0)
+
+    def test_a_memo_built_on_the_pre_fix_valuation_is_not_trusted(self):
+        """Memos on disk were synthesised from the broken valuation (BRK-B at
+        MoS 99.6%). Until re-researched they must not reach the board."""
+        v = self._good_valuation()
+        v.pop("valuation_version")
+        self._write_memo_via_producer("XYZ", v)
+        self.assertEqual(self._load(live_price=60.0), [])
+
+    def test_an_implausible_iv_against_the_live_price_is_not_trusted(self):
+        self._write_memo_via_producer("XYZ", self._good_valuation(conservative_iv=144538.0))
+        self.assertEqual(self._load(live_price=571.62), [])
+
+    def test_a_deep_research_pick_survives_the_fe_board_vote(self):
+        """Producer -> loader -> merge -> fe_board.run_board, rule-based votes.
+        conviction must be numeric: fe_board compares conv >= 3."""
+        import fe_pipeline as P
+        import fe_board as B
+        self._write_memo_via_producer("XYZ", self._good_valuation())
+        queue = P._merge_deep_research([], self._load(live_price=60.0))
+        self.assertIsInstance(queue[0]["conviction"], int)
+        qf = self.root / "fe_picks_queue.json"
+        qf.write_text(json.dumps(queue))
+        with patch.object(B, "PICKS_QUEUE", qf), \
+             patch.object(B, "APPROVED_PICKS", self.root / "approved.json"), \
+             patch.object(B, "BOARD_LOG", self.root / "board_log.json"), \
+             patch.object(B, "DATA_DIR", self.root), \
+             patch.object(B, "_fe_llm_vote", return_value=(None, None)):
+            report = B.run_board()
+        approved = report.get("approved", report.get("approved_picks", []))
+        self.assertEqual([p["ticker"] for p in approved], ["XYZ"], report)
+
+    def test_run_pipeline_uses_the_loader_that_reads_the_producers_keys(self):
+        import inspect
+        import fe_pipeline as P
+        src = inspect.getsource(P.run_pipeline)
+        self.assertIn("_check_research_library(", src)
+        self.assertNotIn('.get("synthesis_date"', src)
+
 
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly

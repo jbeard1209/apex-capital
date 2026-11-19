@@ -131,7 +131,12 @@ def _calculate_iv_yfinance_fallback(ticker: str, current_price: float) -> Option
                        "skipping valuation (FX mismatch would fabricate margin of safety)")
         return None
 
-    shares   = _safe_float(info.get("sharesOutstanding"))
+    # Whole-company count in units of THIS ticker's price (marketCap/price), not
+    # sharesOutstanding, which is one class only (BRK-B 1.40B of 2.12B
+    # B-equivalents, GOOGL 5.9B of 12.3B) and overstates per-share FCF/book.
+    _mcap, _px = _safe_float(info.get("marketCap")), _safe_float(info.get("currentPrice"))
+    shares   = (_mcap / _px) if (_mcap and _px) else _safe_float(
+        info.get("impliedSharesOutstanding") or info.get("sharesOutstanding"))
     eps      = _safe_float(info.get("trailingEps"))
     fcf_raw  = _safe_float(info.get("freeCashflow"))
     pb       = _safe_float(info.get("priceToBook"))
@@ -292,12 +297,23 @@ def calculate_iv(ticker: str) -> Optional[dict]:
         return None
 
     # ── 3yr avg FCF (operating_cf - capex) ───────────────────────────────────
+    # Aligned BY FISCAL YEAR when available (2026-11-19): zip() of two
+    # oldest-first lists pairs different years whenever their histories differ
+    # in length, and stops at the shorter one — dropping the newest OCF years.
     fcf_vals = []
-    for ocf, capex in zip(ocf_list, capex_list):
-        if ocf is not None and capex is not None:
-            fcf_vals.append(ocf - capex)
-        elif ocf is not None:
-            fcf_vals.append(ocf)   # capex unknown, use OCF conservatively
+    _by = fundamentals.get("by_year") or {}
+    if _by.get("operating_cf"):
+        _cap = _by.get("capex") or {}
+        for _y in sorted(_by["operating_cf"]):
+            _o = _by["operating_cf"][_y]
+            _c = _cap.get(_y)
+            fcf_vals.append(_o - _c if _c is not None else _o)
+    else:
+        for ocf, capex in zip(ocf_list, capex_list):
+            if ocf is not None and capex is not None:
+                fcf_vals.append(ocf - capex)
+            elif ocf is not None:
+                fcf_vals.append(ocf)   # capex unknown, use OCF conservatively
     recent_fcf = [v for v in fcf_vals[-3:] if v is not None]
     avg_fcf = sum(recent_fcf) / len(recent_fcf) if recent_fcf else None
 
