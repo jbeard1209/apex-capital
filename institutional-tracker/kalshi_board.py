@@ -116,14 +116,36 @@ def _liquidity_officer(candidate):
     return "YES", f"{int(n)} contracts resting on the thinnest leg"
 
 
+# The calibration verdict takes no candidate argument: it is one fact per
+# session. It used to be recomputed for EVERY candidate, and each call reloads
+# and re-filters the whole ledger, so a 380-candidate session ran for minutes
+# and agent_sweep's 75s --report probe logged kalshi_board as TIMEOUT daily
+# (2026-11-19). The cache exists only while run_session() is running, so a
+# verdict never outlives the session that read it, and a bare vote() outside a
+# session reads fresh. An exception is cached too, and still fails closed.
+_SESSION_CACHE = None
+
+
+def _edge_verdict():
+    if _SESSION_CACHE is not None and "edge" in _SESSION_CACHE:
+        return _SESSION_CACHE["edge"]
+    try:
+        import kalshi_calibration as cal
+        verdict = ("ok", cal.is_edge_proven())
+    except Exception as e:
+        verdict = ("error", type(e).__name__)
+    if _SESSION_CACHE is not None:
+        _SESSION_CACHE["edge"] = verdict
+    return verdict
+
+
 def _calibration_officer(candidate):
     if not candidate.get("requires_estimate"):
         return "YES", "structural lock — arithmetic, no estimate to calibrate"
-    try:
-        import kalshi_calibration as cal
-        ok, why = cal.is_edge_proven()
-    except Exception as e:
-        return "NO", f"calibration unreadable ({type(e).__name__}) — fail closed"
+    kind, val = _edge_verdict()
+    if kind == "error":
+        return "NO", f"calibration unreadable ({val}) — fail closed"
+    ok, why = val
     if not ok:
         return "NO", f"quarantined: {why}"
     if candidate.get("p_hat") is None:
@@ -154,6 +176,15 @@ def vote(candidate):
 # ----------------------------------------------------------------- session --
 
 def run_session(scan=None):
+    global _SESSION_CACHE
+    _SESSION_CACHE = {}
+    try:
+        return _run_session(scan)
+    finally:
+        _SESSION_CACHE = None
+
+
+def _run_session(scan=None):
     scan = scan if scan is not None else _load(SCAN_LOG, {})
     candidates = (list(scan.get("structural_pair", []))
                   + list(scan.get("structural_field", []))
