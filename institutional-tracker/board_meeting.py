@@ -2584,6 +2584,24 @@ def _llm_board_vote(prop: dict) -> "tuple[str, str]":
 BOARD_VOTE_STATUS_PATH = "data/board_vote_status.json"
 
 
+def _board_vote_beat_counts(status: dict) -> "tuple[int, int]":
+    """(n_done, n_examined) for the liveness watcher's board_vote row.
+
+    A deferral is an outcome: the board put a recorded question to the CIT
+    Director instead of voting (_board_clarify_check). Until 2026-11-19 only
+    `voted` counted as done, so the 19:45 meeting that deferred its single
+    proposal alarmed "ran but did 0 of 1" though it had done exactly its job.
+    Proposals held for the next meeting by the batch cap are in `pending` but
+    are NOT outcomes, so they stay out of n_done. A crash counts as at least one examined and
+    none done, so it can never read as idle.
+    """
+    pending = int(status.get("pending") or 0)
+    if status.get("fatal_error"):
+        return 0, max(pending, 1)
+    done = int(status.get("voted") or 0) + int(status.get("deferred") or 0)
+    return min(done, pending), pending
+
+
 def _vote_confidence(prop: dict) -> float:
     """The proposal's confidence as a 0-100 number for the rule-based tally.
 
@@ -3206,11 +3224,7 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
     # before the vote counts as examined-at-least-one so it cannot read idle.
     try:
         import liveness
-        if _vote_status.get("fatal_error"):
-            liveness.beat("board_vote", 0, max(int(_vote_status.get("pending") or 0), 1))
-        else:
-            liveness.beat("board_vote", int(_vote_status.get("voted") or 0),
-                          int(_vote_status.get("pending") or 0))
+        liveness.beat("board_vote", *_board_vote_beat_counts(_vote_status))
     except Exception:
         pass
 

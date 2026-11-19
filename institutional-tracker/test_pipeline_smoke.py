@@ -2323,6 +2323,38 @@ def _hr_publishes(key: str) -> bool:
                for n in ast.walk(fn))
 
 
+class TestBoardVoteHeartbeatCountsDeferrals(unittest.TestCase):
+    """2026-11-19: the 19:45 meeting deferred its only proposal to the CIT
+    Director for clarification, and the liveness watcher alarmed "board_vote
+    ran but did 0 of 1". A deferral is a recorded outcome, not inaction."""
+
+    def _counts(self, **status):
+        import board_meeting as bm
+        return bm._board_vote_beat_counts(status)
+
+    def test_the_1945_meeting_is_not_a_no_outcome(self):
+        # The exact board_vote_status.json the VM wrote at 19:45.
+        self.assertEqual(self._counts(pending=1, deferred=1, voted=0), (1, 1))
+
+    def test_loaded_but_voted_and_deferred_nothing_still_alarms(self):
+        done, examined = self._counts(pending=3, deferred=0, voted=0)
+        self.assertEqual((done, examined), (0, 3))
+
+    def test_held_for_next_meeting_is_not_counted_done(self):
+        self.assertEqual(self._counts(pending=25, deferred=0, voted=20,
+                                      held_for_next_meeting=5), (20, 25))
+
+    def test_a_crash_is_never_idle_and_never_done(self):
+        self.assertEqual(self._counts(pending=0, voted=0, fatal_error="X"), (0, 1))
+        self.assertEqual(self._counts(pending=4, deferred=2, fatal_error="X"), (0, 4))
+
+    def test_the_meeting_beats_through_the_helper(self):
+        # Pin the wiring: the beat must use the helper, not re-derive counts.
+        src = Path(__file__).with_name("board_meeting.py").read_text()
+        self.assertIn('liveness.beat("board_vote", *_board_vote_beat_counts(_vote_status))', src)
+        self.assertEqual(src.count('liveness.beat("board_vote"'), 1)
+
+
 class TestWiringContracts(unittest.TestCase):
 
     def test_board_sla_verdicts_have_a_consumer_on_the_same_path(self):
