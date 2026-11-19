@@ -1781,6 +1781,30 @@ def _implement_decisions(consensus: dict, dry_run: bool = False) -> dict:
         and a.get("executor") != "Engineering"
     ]
 
+    # PAUSE_NEW_BUYS is the one engineering action with an actuator: a pause
+    # record that risk_gate.check() refuses new exposure against. Until
+    # 2026-11-19 it was queued to Engineering like the rest and enforced by
+    # nothing, so the board's most urgent vote was a sentence in a report.
+    for action in [a for a in engineering if a.get("id") == "PAUSE_NEW_BUYS"]:
+        if dry_run:
+            results["executed"].append({"id": action["id"], "action": action["action"],
+                                        "status": "DRY_RUN: buy pause not set"})
+            continue
+        try:
+            import risk_gate as _rg_pause
+            _rec = _rg_pause.set_pause(reason=action.get("action", "emergency board vote"),
+                                       source="emergency_board")
+            results["executed"].append({
+                "id": action["id"], "action": action["action"],
+                "status": f"EXECUTED: new buys paused until {_rec['expires_at']}",
+            })
+        except Exception as _pause_e:
+            # Not actuated, so it stays in the engineering queue below rather
+            # than being reported as done.
+            logger.error(f"  PAUSE_NEW_BUYS could not be set: {_pause_e}")
+            continue
+        engineering = [a for a in engineering if a is not action]
+
     for action in engineering:
         results["requires_code"].append({
             "action":  action["action"],
