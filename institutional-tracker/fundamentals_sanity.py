@@ -102,9 +102,22 @@ def check_ticker(ticker: str, data: dict) -> list[dict]:
     la = _aligned_latest(by_year, "long_term_debt")
     ta = _aligned_latest(by_year, "total_assets")
     if la and ta and la[1] == ta[1] and ta[0] > 0 and la[0] > ta[0] * 1.05:
-        add("long_term_debt/total_assets", round(la[0] / ta[0], 2),
-            f"FY{la[1]}: long-term debt ${la[0]/1e9:.2f}B exceeds total assets "
-            f"${ta[0]/1e9:.2f}B — physically impossible; likely a bad EDGAR source value.")
+        # Debt is a SUBSET of liabilities. Debt above assets is real when
+        # liabilities cover it: negative equity from buybacks (FICO, MSCI,
+        # TDG, BBIO all flagged RED on 2026-11-19). Only debt above
+        # liabilities is impossible. No same-year liabilities: fail closed.
+        tl = _aligned_latest(by_year, "total_liabilities")
+        neg_equity = bool(tl and tl[1] == la[1] and tl[0] >= la[0] * 0.95)
+        if neg_equity:
+            add("long_term_debt/total_assets", round(la[0] / ta[0], 2),
+                f"FY{la[1]}: long-term debt ${la[0]/1e9:.2f}B exceeds total assets "
+                f"${ta[0]/1e9:.2f}B but liabilities ${tl[0]/1e9:.2f}B cover it — "
+                f"negative equity, consistent data. Gated pending a valuation rule.",
+                gate=True, impossible=False, severity="LOW")
+        else:
+            add("long_term_debt/total_assets", round(la[0] / ta[0], 2),
+                f"FY{la[1]}: long-term debt ${la[0]/1e9:.2f}B exceeds total assets "
+                f"${ta[0]/1e9:.2f}B — physically impossible; likely a bad EDGAR source value.")
     elif la is None and by_year.get("long_term_debt") == {} and ta:
         pass  # zero-debt company; fine
 

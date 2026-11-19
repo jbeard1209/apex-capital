@@ -37414,6 +37414,47 @@ class TestHedgeGradingLoadsBrokerCredentials(unittest.TestCase):
                          "grader never loaded .env")
         self.assertTrue(seen.get("path", "").endswith(".env"))
 
+
+class TestNegativeEquityIsNotImpossibleFundamentals(unittest.TestCase):
+    """fundamentals_sanity called debt > assets 'physically impossible' and
+    turned data_integrity RED on BBIO, FICO, MSCI, TDG. Each of those has
+    total liabilities above its debt (FICO: debt $5.26B, liabilities $5.95B,
+    assets $2.08B): negative equity from buybacks, real and consistent.
+    Debt is a subset of liabilities, so the impossible case is debt above
+    LIABILITIES. Debt above assets with liabilities that cover it still gates
+    valuation (that call is Jack's), but is not a bad-source bug (2026-11-19)."""
+
+    @staticmethod
+    def _data(debt, assets, liabs=None):
+        by = {"long_term_debt": {"2026": debt}, "total_assets": {"2026": assets}}
+        if liabs is not None:
+            by["total_liabilities"] = {"2026": liabs}
+        return {"by_year": by, "shares_outstanding": [[0, 1e8]],
+                "revenue": [1], "net_income": [1]}
+
+    def _debt_finding(self, data):
+        import fundamentals_sanity as fs
+        hits = [v for v in fs.check_ticker("ZZZ", data)
+                if v["metric"] == "long_term_debt/total_assets"]
+        return hits[0] if hits else None
+
+    def test_negative_equity_gates_but_is_not_impossible(self):
+        f = self._debt_finding(self._data(5.26e9, 2.08e9, 5.95e9))
+        self.assertIsNotNone(f, "debt above assets must still gate valuation")
+        self.assertTrue(f["gate"])
+        self.assertFalse(f["impossible"],
+                         "liabilities cover the debt: negative equity, not bad data")
+
+    def test_debt_above_liabilities_is_still_impossible(self):
+        f = self._debt_finding(self._data(19.09e9, 2.3e9, 1.79e9))
+        self.assertIsNotNone(f)
+        self.assertTrue(f["impossible"])
+
+    def test_no_liabilities_to_check_stays_impossible(self):
+        f = self._debt_finding(self._data(12.9e9, 11.58e9))
+        self.assertIsNotNone(f)
+        self.assertTrue(f["impossible"], "cannot verify, so fail closed")
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.
