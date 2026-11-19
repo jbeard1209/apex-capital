@@ -22,6 +22,8 @@ WHAT IT CHECKS (every 15 minutes)
                       like a quiet day, so it is named, not inferred.
   KEY_FAILED          the signed balance read fails (key revoked, expired, or
                       wiped from .env by a deploy).
+  RATE_LIMITED        the balance read was throttled (HTTP 429). The key works;
+                      digest only, never the urgent pager.
   LOW_BALANCE         Kalshi cash below one day's cap: orders will bounce.
   ORDER_ERRORS        any order error in the last 24h.
   NO_LEADERS          nobody to copy.
@@ -81,6 +83,12 @@ LOSS_LIMIT_DAYS = 2.0          # 7-day loss (settled + open) > 2 days' cap trips
 ALERT_COOLDOWN_H = 6
 URGENT = {"COPIER_NOT_RUNNING", "HALTED", "ARMED_BUT_PAPER", "KEY_FAILED",
           "LOSING", "NO_LEADERS"}
+
+
+def _is_rate_limit(exc) -> bool:
+    """True when a Kalshi call failed because we were throttled, not refused."""
+    text = str(exc)
+    return "HTTP 429" in text or "too_many_requests" in text
 
 
 # ------------------------------------------------------------ performance --
@@ -265,7 +273,18 @@ def check_health(now=None, rows=None, balance=None, market=None, fetch=None):
                 else:
                     balance = float(b.get("balance", 0)) / 100.0
             except Exception as e:
-                add("KEY_FAILED", f"Kalshi key check failed: {str(e)[:160]}")
+                # 2026-11-19 06:45 UTC: a 429 "too_many_requests" on this read
+                # was filed as KEY_FAILED and emailed the Chairman a CRITICAL
+                # "key failing" alert. The key was fine; the exchange was
+                # throttling us. Kalshi only answers 429 to a request it has
+                # authenticated, so a throttle proves the key works. It is
+                # named for what it is and goes to the digest, not the pager.
+                if _is_rate_limit(e):
+                    add("RATE_LIMITED", "Kalshi throttled the balance check (HTTP 429, "
+                        "too many requests); the key works. Will retry next check.",
+                        "MEDIUM")
+                else:
+                    add("KEY_FAILED", f"Kalshi key check failed: {str(e)[:160]}")
         if balance is not None and balance < cfg["per_day_usd"]:
             add("LOW_BALANCE", f"Kalshi cash on the shard(s) we trade is ${balance:.2f}, below the "
                 f"${cfg['per_day_usd']:.2f} daily cap; orders will bounce", "MEDIUM")

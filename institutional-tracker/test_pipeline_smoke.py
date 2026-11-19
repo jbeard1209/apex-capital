@@ -36622,6 +36622,31 @@ class TestKalshiCopytradeManagerCatchesWhatWentWrong(unittest.TestCase):
             self.assertIn("ARMED_BUT_PAPER", kinds)
             self.assertNotIn("COPIER_NOT_RUNNING", kinds)
 
+    def test_a_rate_limit_is_not_reported_as_a_failed_key(self):
+        """2026-11-19 06:45 UTC: a 429 on the balance read emailed the Chairman a
+        CRITICAL "key failed" alert while the key was fine. A throttle is named
+        RATE_LIMITED and goes to the digest; a real auth failure still pages."""
+        import kalshi_copytrade_manager as kmm
+        for err, kind, sev in (
+                ('HTTP 429 on GET /portfolio/balance: {"error":{"code":"too_many_requests"}}',
+                 "RATE_LIMITED", "MEDIUM"),
+                ("HTTP 401 on GET /portfolio/balance: unauthorized", "KEY_FAILED", "CRITICAL")):
+            with tempfile.TemporaryDirectory() as td:
+                ct, km = self._sandbox(td)
+                ct.ARM_FILE.write_text(json.dumps({"env": "live", "armed": True}))
+                def boom():
+                    raise RuntimeError(err)
+                with patch.object(kmm.kc, "get_balance", boom), \
+                     patch.object(kc_mod(), "_ensure_env_loaded", lambda: None):
+                    f, _, _ = km.check_health(now=datetime.now(timezone.utc), rows=[],
+                                              market=lambda t: None,
+                                              fetch=lambda n: {"trades": []})
+                got = {x["kind"]: x["severity"] for x in f}
+                self.assertEqual(got.get(kind), sev, (err, got))
+                other = "KEY_FAILED" if kind == "RATE_LIMITED" else "RATE_LIMITED"
+                self.assertNotIn(other, got)
+                self.assertEqual(km._worst(f) in ("MEDIUM", "HIGH", "CRITICAL"), True)
+
     def test_a_dead_copier_and_a_private_leader_are_flagged(self):
         with tempfile.TemporaryDirectory() as td:
             ct, km = self._sandbox(td)
