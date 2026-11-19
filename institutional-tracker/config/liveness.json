@@ -15,6 +15,7 @@
     "chairman_sla":      {"max_silence_hours": 26, "min_n_done": 1, "instrumented": false, "gap": "G17"},
     "hr_evaluation":     {"max_silence_hours": 170,"min_n_done": 1, "instrumented": false, "gap": "G18"},
     "irm_review":        {"max_silence_hours": 26, "min_n_done": 1, "instrumented": false, "gap": "G19"},
-    "backup":            {"max_silence_hours": 50, "min_n_done": 1, "instrumented": false, "gap": "G20"}
+    "backup":            {"max_silence_hours": 50, "min_n_done": 1, "instrumented": false, "gap": "G20"},
+    "order_gate":        {"max_silence_hours": 26, "min_n_done": 1, "instrumented": false, "weekdays_only": true, "gap": "M01"}
   }
 }
