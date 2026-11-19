@@ -73,6 +73,7 @@ _MEMORY_LOW_MB          = 500
 _DB_STALE_DAYS          = 120
 _DB_LARGE_GB            = 10
 _EMAIL_OVERFLOW         = 50
+_EMAIL_MAX_AGE_H        = 26     # one daily digest (22:00 UTC) + 2h grace
 _EMAIL_LOOP_THRESHOLD   = 3
 _EDGAR_STALE_DAYS       = 30
 _CHAIRMAN_MAX_ENTRIES   = 20
@@ -422,11 +423,34 @@ def check_email_buffer(proposals):
 
     logger.info("    Email buffer size: %d", len(buffer))
 
-    if len(buffer) > _EMAIL_OVERFLOW:
+    # A broken sender shows as AGE, not size. The buffer is batched by design:
+    # everything non-urgent waits for the 22:00 UTC digest, which sent 85 reports
+    # on 2026-11-18. A count threshold of 50 therefore fired on every healthy
+    # weekday afternoon ("email sender may be broken", loop-sig-f144f924c8e4),
+    # and stayed silent for a dead sender on a quiet day. A working digest
+    # empties the buffer once a day, so an unsent email older than one cycle
+    # plus grace is the evidence that a flush was missed.
+    from time_utils import age_hours
+    ages_h = []
+    for entry in buffer:
+        raw = entry.get("buffered_at") if isinstance(entry, dict) else None
+        # default=None: no enqueue time is no evidence either way, never a fake age
+        age = age_hours(raw, default=None)
+        if age is not None:
+            ages_h.append(age)
+    oldest_h = max(ages_h) if ages_h else None
+    if oldest_h is not None:
+        logger.info("    Oldest unsent email: %.1fh (flush overdue at %dh)",
+                    oldest_h, _EMAIL_MAX_AGE_H)
+    if oldest_h is not None and oldest_h > _EMAIL_MAX_AGE_H:
         _raise_issue(proposals, "HIGH", "BUG_FIX",
-                     "Email buffer overflow -- %d unsent emails in buffer "
-                     "(threshold %d); email sender may be broken"
-                     % (len(buffer), _EMAIL_OVERFLOW))
+                     "Email digest has not flushed -- oldest of %d unsent emails "
+                     "is %.0fh old (threshold %dh); email sender may be broken"
+                     % (len(buffer), oldest_h, _EMAIL_MAX_AGE_H))
+    elif len(buffer) > _EMAIL_OVERFLOW:
+        logger.info("    %d emails buffered (> %d) but the oldest is inside one "
+                    "digest cycle -- a busy day, not a broken sender",
+                    len(buffer), _EMAIL_OVERFLOW)
 
     # Loop detection: a genuine loop is a BURST (an agent's bug regenerating the
     # same mail in seconds), not four scheduled re-runs over the trading day. The

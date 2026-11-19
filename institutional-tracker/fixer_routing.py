@@ -23,7 +23,7 @@ _RULES = [
     ("chairman:capital", "chairman", r"idle pod capital|risk limit|capital allocation|terminat"),
     ("chairman:arm-gate", "chairman", r"\barm gate\b|\barm_gate\b"),
     ("prefix:fund-sanity", "fe", r"^fund-sanity-"),
-    ("ops", "ops", r"cron job stale|disk usage|email buffer|email subjects|heartbeat|"
+    ("ops", "ops", r"cron job stale|disk usage|email buffer|email digest|email subjects|heartbeat|"
                    r"runs_match_schedule|unreachable|deployed_set_matches_repo|"
                    r"shipped_config_matches_repo|ERROR lines|mail_guard|catch_up|INDEX_GAP|"
                    r"None score|None canary|canary_state"),
