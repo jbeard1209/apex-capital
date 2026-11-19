@@ -354,12 +354,19 @@ def check_database_health(proposals):
 # CHECK C -- ALL CRON JOBS RUNNING
 # =============================================================================
 
+_STALE_CRON_FMT = "Cron job stale on weekday -- %s log %s (threshold %dh)"
+
+
 def check_cron_jobs(proposals):
+    """Raise a stale item per job whose log is old or missing. Returns the set of
+    labels this run measured and found FRESH (empty when the check is skipped):
+    the only evidence _close_cleared_stale_cron() may close on."""
     logger.info("\n  [C] Cron job log freshness...")
 
+    fresh = set()
     if not _is_weekday():
         logger.info("    Weekend -- skipping stale log checks.")
-        return
+        return fresh
 
     stale_jobs = []
     for keyword, log_pattern, label, max_age_h in _CRON_LOG_CHECKS:
@@ -372,16 +379,50 @@ def check_cron_jobs(proposals):
             stale_jobs.append((label, "%.0fh old" % age_hours, max_age_h))
         else:
             logger.info("    %s: %.1fh old -- OK (threshold %dh)", label, age_hours, max_age_h)
+            fresh.add(label)
 
     if stale_jobs:
         for label, reason, max_age_h in stale_jobs:
             _raise_issue(proposals, "MEDIUM", "BUG_FIX",
-                         "Cron job stale on weekday -- %s log %s (threshold %dh)"
-                         % (label, reason, max_age_h))
+                         _STALE_CRON_FMT % (label, reason, max_age_h))
     else:
         logger.info("    All cron job logs are current.")
 
     logger.info("    Cron job check done.")
+    return fresh
+
+
+def _close_cleared_stale_cron(fresh_labels, path=None):
+    """Close this agent's OPEN "Cron job stale -- <label> log ..." items for every
+    label this run re-observed as fresh.
+
+    The stale text carries the age ("668h old"), so each run's item has a new
+    dedup key and chairman_queue.resolve() never matched an old one: 28 items
+    from Jul-Sep sat awaiting_chairman on the VM on 2026-11-19, and
+    problem_lifecycle_sentinel re-counted them as present every run, although
+    the CIT-integrity and FE-pipeline logs had been written that afternoon.
+
+    Only labels measured fresh THIS run close; a label not in this run's table
+    or a skipped (weekend) check closes nothing."""
+    path = path or _CHAIRMAN_PATH
+    prefixes = tuple("Cron job stale on weekday -- %s log " % l for l in fresh_labels)
+    if not prefixes:
+        return []
+    try:
+        existing = chairman_queue._load(path)
+    except Exception as e:
+        logger.warning("  Could not read chairman queue to close stale-cron items: %s", e)
+        return []
+    keys = {chairman_queue._derive_dedup_key(e) for e in existing
+            if e.get("source") == "apex_system_cit_agent"
+            and e.get("status") in chairman_queue.OPEN_STATUSES
+            and str(e.get("description", "")).startswith(prefixes)}
+    if not keys:
+        return []
+    return chairman_queue.resolve(
+        keys, "apex_system_cit_agent", path=path,
+        note="log re-observed fresh by apex_system_cit_agent check_cron_jobs at %s"
+             % _now_iso()[:19])
 
 
 # =============================================================================
@@ -647,7 +688,11 @@ def main():
 
         check_gcp_health(proposals)
         check_database_health(proposals)
-        check_cron_jobs(proposals)
+        fresh_cron = check_cron_jobs(proposals)
+        try:
+            _close_cleared_stale_cron(fresh_cron)
+        except Exception as e:
+            logger.warning("  closing cleared stale-cron items failed: %s", e)
         check_critical_files(proposals)
         check_email_buffer(proposals)
         check_edgar_cache(proposals)

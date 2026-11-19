@@ -46,3 +46,35 @@ call). Check: `crontab -l | grep -v '^#' | grep -c <job>` on the VM, 2026-11-19:
 | `loop-sig-21837bc97ded` | `fe_cit_agent.py` | 0 | present | same |
 | `loop-sig-3616daec9161` | `portfolio_risk_dashboard.py` | 0 | present | same |
 | `loop-sig-e890ba6a27c3` | `fe_watchlist_monitor` | 0 | **missing** | premise moot: no such script; retire the freshness check, then supersede |
+
+## specialist-fixer-run 2026-11-19 evening (ops, then wiring)
+
+**Stale-cron rows that are alive only because the Chairman item was never retracted**
+(`loop-sig-4506b99ca0ee` CIT pipeline integrity "668h old", `loop-sig-39e135893752` FE pipeline
+"673h old"). Check, read-only on the VM 2026-11-19 ~21:45Z: `ls -la logs/pipeline_integrity_*`
+newest 20:50Z today, `logs/fe_*` newest 20:20Z today. The sentinel's "present" source is
+`data/chairman_action_required.json`, which still holds 28 `apex_system_cit_agent`
+"Cron job stale" items from 2026-07-30 to 09-09, all `awaiting_chairman`. Their text carries
+the age, so their dedup keys never repeat and nothing could close them. Fixed on branch
+`claude/fixer-ops-20261119-cronclose`: the agent closes its own items for a label it
+re-observes fresh. A dry run on a copy of the VM file closes 5 (1 CIT integrity, 4 FE pipeline).
+Once deployed and one weekday run has happened, the two rows are `superseded`/`implemented`.
+
+**The other 23 old stale-cron Chairman items name labels the current check no longer
+measures** (ML data watchdog, ML alpha decay monitor, ML research team leader, ML improvement
+agent, ML drift monitor, FE CIT agent, FE watchlist monitor, Portfolio risk dashboard, EDGAR
+scraper). The fix deliberately does not close them: a check that no longer runs is not
+evidence the job recovered. They match the no-schedule table above. Jack decides per job:
+schedule it, or retire it; then the items can be resolved by hand with a backup.
+
+**`[orphan-agent] pregenerate_lessons.py` (28 `LT-*-wiring_contract_violation` rows, wiring).**
+Premise false as of today's deploy. Check, read-only on the VM 2026-11-19 ~21:45Z:
+`ls ~/institutional-tracker/pregenerate_lessons.py` → No such file; the copy is in
+`~/archive_20261119/` and `agents/archive/`. Last row filed 2026-11-19T13:30Z, before the
+20:28Z deploy (stamp `0d7764b`). Supersede all 28 after the next `logic_team.py` run (cron
+12:00Z) files no new row: `board_dispatch.py --supersede <id> --check "file absent on VM,
+archived 2026-11-19; no row after deploy" --reason "orphan file removed" --by fixer`.
+
+**Also skipped this run:** risk `loss attribution stale` (2 risk + 5 wiring rows): premise true,
+the missing piece is a written attribution, which is a board/Chairman judgment, not code
+(see PR #63). `positions_conserve` and `runs_match_schedule` "N starts": HOLDS (PR #68 notes).
