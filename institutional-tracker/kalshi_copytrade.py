@@ -668,6 +668,7 @@ def run_for(seconds):
             return 0
         end = time.time() + seconds
         cash, cash_at = None, 0.0
+        n_done = n_tried = 0
         while time.time() < end:
             cfg = load_config()
             state = _read_json(STATE_FILE, {})
@@ -680,11 +681,23 @@ def run_for(seconds):
                     cash = None
                 cash_at = time.time()
             for r in poll_once(cfg, state, cash=cash):
+                if r.get("status") != "skipped":
+                    n_tried += 1
+                    if r.get("status") in ("placed", "paper"):
+                        n_done += 1
                 print(f"{r['at'][11:19]} {r['leader']:<20} {r['status']:<8} "
                       f"{r.get('ticker')} {r.get('side', '')} x{r.get('count', '')} "
                       f"@{r.get('price', '')} {r.get('reason', '')}", flush=True)
             _write_json(STATE_FILE, state)
             time.sleep(cfg["poll_s"])
+        # Liveness (G06): one beat per copier run. Copies attempted that all
+        # errored is NO_OUTCOME; leaders who did not trade is (0, 0) = OK; a
+        # copier that stopped running goes STALE. Reads nothing new from Kalshi.
+        try:
+            import liveness
+            liveness.beat("kalshi_copy_trader", n_done, n_tried)
+        except Exception:
+            pass
     return 0
 
 

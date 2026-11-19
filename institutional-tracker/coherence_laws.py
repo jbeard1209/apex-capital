@@ -2943,6 +2943,15 @@ def _write_report(results: List[LawResult]) -> None:
         "cannot_tell": sum(1 for r in results if r.verdict == CANNOT_TELL),
         "results": [r.to_dict() for r in results],
     }, indent=2))
+    # Liveness (G11): laws that could judge, of laws run. Every law at
+    # CANNOT_TELL is NO_OUTCOME. Only written-report runs beat (not --dry-run).
+    try:
+        import liveness
+        liveness.beat("coherence_laws",
+                      sum(1 for r in results if r.verdict != CANNOT_TELL),
+                      max(len(results), 1))
+    except Exception:
+        pass
 
 
 def main() -> int:

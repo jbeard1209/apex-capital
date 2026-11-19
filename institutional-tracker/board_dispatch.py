@@ -749,6 +749,16 @@ def run(dry_run: bool = False) -> dict:
     }
     if not dry_run:
         aj.write(str(_report_path()), report)
+        # Liveness (2026-11-19): board_execution. n_examined = rows a handler
+        # was run on; n_done = handlers that returned a decision. All handlers
+        # raising is NO_OUTCOME. Rows with no handler at all are not counted
+        # here -- they are a backlog (no_handler_count), not a dead executor.
+        try:
+            import liveness
+            _decided = len(executed) + len(standing) + len(needs_human) + len(deferred)
+            liveness.beat("board_execution", _decided, _decided + len(errors))
+        except Exception:
+            pass
     logger.info(f"  [Dispatch] executed={len(executed)} standing={len(standing)} "
                 f"needs_human={len(needs_human)} no_handler={len(no_handler)} "
                 f"errors={len(errors)}")

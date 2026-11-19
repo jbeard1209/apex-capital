@@ -138,6 +138,13 @@ def run_backup(quiet: bool = False) -> dict:
     # backup is ever found missing, this file is where you would look.
     with open(dest / "_manifest.json", "w") as f:
         json.dump(manifest, f, indent=2)
+    # Liveness (G20): files copied. A backup that copied nothing is NO_OUTCOME.
+    try:
+        import liveness
+        _n = int(manifest.get("file_count") or 0)
+        liveness.beat("backup", _n, max(_n, 1))
+    except Exception:
+        pass
     return {"status": "ok", **manifest}
 
 

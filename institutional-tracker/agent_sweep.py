@@ -158,6 +158,11 @@ def _install_sandbox() -> None:
     os.remove = _refuse("os.remove")
     os.unlink = _refuse("os.unlink")
     shutil.rmtree = _refuse("shutil.rmtree")
+    # mkstemp CREATES a file. Allowing it while refusing os.replace meant every
+    # module-level atomic writer left its temp file in data/ — 138 of them on
+    # the VM, one per nightly sweep since 2026-08-25. Refuse at creation.
+    import tempfile
+    tempfile.mkstemp = _refuse("tempfile.mkstemp")
     # mkdir/makedirs stay allowed on purpose: they are idempotent, create no
     # content, and blocking them turns a harmless `logs/` bootstrap into a
     # fake import failure.

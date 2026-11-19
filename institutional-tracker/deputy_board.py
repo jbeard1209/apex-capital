@@ -1073,6 +1073,18 @@ def run_deputy_board(dry_run: bool = False) -> dict:
     with open(REPORT_PATH, "w") as f:
         json.dump(report, f, indent=2, default=str)
 
+    # Liveness (2026-11-19): deputy_board. A hand-off to the full board is a
+    # decision (deputies cannot decide VISION/STRATEGY by design); reviewing
+    # N proposals and deciding none of them is NO_OUTCOME.
+    if not dry_run:
+        try:
+            import liveness
+            liveness.beat("deputy_board",
+                          len(approved) + len(rejected) + report["handed_to_full_board_count"],
+                          len(bug_proposals))
+        except Exception:
+            pass
+
     # Post to firm channel
     try:
         from firm_channel import post

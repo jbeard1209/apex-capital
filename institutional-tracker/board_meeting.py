@@ -3181,6 +3181,18 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
         _vote_status["fatal_error"] = f"{type(_cit_e).__name__}: {_cit_e}"
     _vote_status["finished_at"] = datetime.now().isoformat()
     _write_vote_status(_vote_status)
+    # Liveness (2026-11-19): the watcher's board_vote row. A meeting that loaded
+    # N pending proposals and voted none is NO_OUTCOME, not quiet; a crash
+    # before the vote counts as examined-at-least-one so it cannot read idle.
+    try:
+        import liveness
+        if _vote_status.get("fatal_error"):
+            liveness.beat("board_vote", 0, max(int(_vote_status.get("pending") or 0), 1))
+        else:
+            liveness.beat("board_vote", int(_vote_status.get("voted") or 0),
+                          int(_vote_status.get("pending") or 0))
+    except Exception:
+        pass
 
     # 4d. Capital Deployment Review
     # Board checks current deployment level against the firm's minimum target (50%).

@@ -1989,6 +1989,37 @@ class TestChairmanQueueDedup(unittest.TestCase):
             finally:
                 lo.CIT_PENDING_PATH = orig_cit_pending
 
+    def test_logic_officer_does_not_refile_a_rule_the_board_already_approved(self):
+        """2026-11-19: 15 queued LO-*-unexplained_loss rows on the VM, one per
+        pipeline run since 11-12. Dedup read only cit_pending_proposals.json; the
+        board approves a row OUT of pending into cit_implementation_queue.json, so
+        the next run saw an empty pending queue and filed the same rule again with a
+        fresh timestamped id -- which board_dispatch.standing_ids (id-keyed) cannot
+        recognise. An approved-and-open row must suppress the re-file; a finished
+        one must not (a recurrence after a real fix is a new problem)."""
+        import logic_officer as lo
+
+        with tempfile.TemporaryDirectory() as d:
+            pend = Path(d) / "cit_pending_proposals.json"
+            impl = Path(d) / "cit_implementation_queue.json"
+            orig = (lo.CIT_PENDING_PATH, lo.IMPL_QUEUE_PATH)
+            lo.CIT_PENDING_PATH, lo.IMPL_QUEUE_PATH = pend, impl
+            try:
+                f = {"rule": "unexplained_loss", "severity": "HIGH",
+                     "title": "Portfolio is -5.5% below starting capital", "observation": "x",
+                     "why_its_wrong": "x", "suggested_resolution": "x"}
+                impl.write_text(json.dumps([{"proposal_id": "LO-20261118201625-unexplained_loss",
+                                             "status": "queued"}]))
+                self.assertEqual(lo._write_board_proposals([f]), 0,
+                                 "an approved, still-open row for this rule must block a re-file")
+                self.assertFalse(pend.exists() and json.loads(pend.read_text()))
+                impl.write_text(json.dumps([{"proposal_id": "LO-20261118201625-unexplained_loss",
+                                             "status": "implemented"}]))
+                self.assertEqual(lo._write_board_proposals([f]), 1,
+                                 "after the fix is done, a recurrence goes to a fresh vote")
+            finally:
+                lo.CIT_PENDING_PATH, lo.IMPL_QUEUE_PATH = orig
+
     def test_board_meeting_route_approved_dedups_by_key(self):
         import board_meeting as bm
 
@@ -8973,6 +9004,29 @@ class TestSweepTaxonomyIsClosed(unittest.TestCase):
     every category is one the deputy board actually recognises. If someone adds
     a finding kind next year and stops here, the finding never reaches anyone.
     """
+
+    def test_a_probe_leaves_no_temp_file_behind(self):
+        """The VM's data/ held 138 empty-ish tmpXXXX.tmp files, one per day at
+        04:10, since 2026-08-25. The sweep refused os.replace but allowed
+        tempfile.mkstemp, so every module-level atomic writer created its temp
+        file, was denied the rename, and was killed before it could clean up.
+        A read-only probe must not write ANY file, temp files included.
+        """
+        import agent_sweep as S
+        d = Path(tempfile.mkdtemp(prefix="sweep_tmp_"))
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        out = d / "out"
+        out.mkdir()
+        (d / "eager_writer.py").write_text(
+            "import os, tempfile\n"
+            "fd, tmp = tempfile.mkstemp(dir=%r, suffix='.tmp')\n"
+            "os.write(fd, b'{}')\n"
+            "os.close(fd)\n"
+            "os.replace(tmp, os.path.join(%r, 'x.json'))\n" % (str(out), str(out)))
+        got = S._run_probe("eager_writer", "import", syspath=str(d))
+        self.assertEqual("SANDBOX", got["outcome"], got)
+        self.assertEqual([], sorted(p.name for p in out.iterdir()),
+                         "the probe left files behind in a directory it may only read")
 
     def test_the_sandbox_must_not_manufacture_the_failure_it_reports(self):
         """POISON PILL. An agent that HANDLES a denied side effect is healthy.
@@ -29227,6 +29281,39 @@ class TestTheManagerReadsTheBulletinsCvar(unittest.TestCase):
             self.assertNotRegex(src, r'get\("var_context"[^)]*\)\s*(or \{\}\))?\s*\.get\(',
                                 f + " treats the prose var_context as a dict")
             self.assertNotIn('var_context.get(', src, f)
+
+
+class TestAnInterruptedWriteLeavesNoTempFile(unittest.TestCase):
+    """The Mac's data/ held 104 empty .email_buffer.*.tmp and 3 .issue_tracker
+    .*.tmp files. Both writers unlinked their temp file on `except Exception`,
+    which a KeyboardInterrupt or SystemExit (a job timeout, a Ctrl-C, a
+    launchd stop) walks straight past. Cleanup must run on ANY exit.
+    """
+
+    def _boom(self, *a, **k):
+        raise KeyboardInterrupt("simulated interrupt mid-dump")
+
+    def test_atomic_json_write_cleans_up_on_interrupt(self):
+        import atomic_json as aj
+        from unittest import mock
+        d = Path(tempfile.mkdtemp(prefix="aj_interrupt_"))
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        with mock.patch.object(aj.json, "dump", self._boom):
+            with self.assertRaises(KeyboardInterrupt):
+                aj.write(d / "q.json", [1])
+        self.assertEqual([], [p.name for p in d.iterdir()])
+
+    def test_email_buffer_save_cleans_up_on_interrupt(self):
+        import email_buffer as eb
+        from unittest import mock
+        d = Path(tempfile.mkdtemp(prefix="eb_interrupt_"))
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        with mock.patch.object(eb, "BUFFER_PATH", str(d / "email_buffer.json")), \
+             mock.patch.object(eb, "_buffer_dir", lambda: str(d)), \
+             mock.patch.object(eb.json, "dump", self._boom):
+            with self.assertRaises(KeyboardInterrupt):
+                eb._save_buffer([{"x": 1}])
+        self.assertEqual([], [p.name for p in d.iterdir()])
 
 
 class TestAtomicJsonIsActuallyAtomic(unittest.TestCase):
