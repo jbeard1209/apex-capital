@@ -51,7 +51,10 @@ def get_recent_13f_filings(cik: str, institution_name: str, limit: int = 4) -> l
 
         results = []
         for form, date, acc in zip(forms, dates, accessions):
-            if form in ("13F-HR", "13F-HR/A"):
+            # Originals only. An amendment (13F-HR/A) is often a partial
+            # filing — a few late positions — so diffing this quarter against
+            # one made every other holding look NEW.
+            if form == "13F-HR":
                 results.append({
                     "institution": institution_name,
                     "cik": cik,
@@ -111,25 +114,28 @@ def _parse_via_edgar_api(cik: str, accession: str) -> pd.DataFrame:
     acc_nodash  = accession.replace("-", "")
     base        = f"https://www.sec.gov/Archives/edgar/data/{int(cik_padded)}/{acc_nodash}/"
 
-    # Fetch filing index
-    idx_url = base + accession + "-index.json"
+    # Fetch filing index. The directory listing is `<folder>/index.json`.
+    # This read `<accession>-index.json` until 2026-11-19 — a path EDGAR
+    # answers with an HTML page and status 200, so `.json()` raised, the
+    # bare except returned an empty frame, and the scanner reported
+    # "0 block purchase signals" for every institution on every run: 860
+    # logged runs on the Mac, zero signals, ever. An empty result here is a
+    # parser failure until proven otherwise, so it now says so.
+    idx_url = base + "index.json"
     try:
         r = requests.get(idx_url, headers=SEC_HEADERS, timeout=10)
         if r.status_code != 200:
+            logger.warning(f"  13F index {idx_url} -> HTTP {r.status_code}")
             return pd.DataFrame()
         files = r.json().get("directory", {}).get("item", [])
-    except Exception:
+    except Exception as e:
+        logger.warning(f"  13F index {idx_url} unreadable: {e}")
         return pd.DataFrame()
 
-    # Find the InfoTable XML
-    xml_file = None
-    for f in files:
-        name = f.get("name", "").lower()
-        if "infotable" in name and name.endswith(".xml"):
-            xml_file = f["name"]
-            break
+    xml_file = _pick_infotable(files)
 
     if not xml_file:
+        logger.warning(f"  13F {accession}: no information-table XML in {idx_url}")
         return pd.DataFrame()
 
     xml_url = base + xml_file
@@ -146,22 +152,73 @@ def _parse_via_edgar_api(cik: str, accession: str) -> pd.DataFrame:
                 shares_tag = entry.find("sshPrnamt")
                 value_tag  = entry.find("value")
                 type_tag   = entry.find("sshPrnamtType")
+                # An option row is not a share purchase, and a PUT is a bet
+                # the other way. Counting them made a bought put look like
+                # a block buy of the stock.
+                if entry.find("putCall") is not None:
+                    continue
 
                 rows.append({
                     "name":       name_tag.text.strip()   if name_tag   else "",
                     "cusip":      cusip_tag.text.strip()  if cusip_tag  else "",
                     "shares":     int(shares_tag.text.replace(",", "")) if shares_tag else 0,
-                    "value_usd":  int(value_tag.text.replace(",", "")) * 1000 if value_tag else 0,
+                    # Whole dollars. SEC moved the <value> field from
+                    # thousands to dollars for filings from 2023-01-03; the
+                    # old `* 1000` made every holding 1000x too large, so the
+                    # $1M block threshold passed everything.
+                    "value_usd":  int(value_tag.text.replace(",", "")) if value_tag else 0,
                     "type":       type_tag.text.strip()   if type_tag   else "",
                 })
             except Exception:
                 continue
 
-        return pd.DataFrame(rows)
+        return _aggregate_by_cusip(pd.DataFrame(rows))
 
     except Exception as e:
-        logger.debug(f"  XML parse error: {e}")
+        logger.warning(f"  13F XML parse error for {accession}: {e}")
         return pd.DataFrame()
+
+
+# A 13F-HR is due 45 days after quarter end, so a filer that is current has
+# a latest filing no older than ~one quarter + 45 days. Past that, the newest
+# filing describes a quarter the firm has already traded through.
+MAX_13F_AGE_DAYS = 140
+
+
+def _filing_is_stale(filing_date: str, today=None) -> bool:
+    from datetime import date
+    try:
+        filed = date.fromisoformat(str(filing_date)[:10])
+    except ValueError:
+        return True          # no usable date is not evidence of currency
+    return ((today or date.today()) - filed).days > MAX_13F_AGE_DAYS
+
+
+def _pick_infotable(files: list):
+    """The information-table XML. Most filers name it *infotable*.xml; some
+    use a numeric name. primary_doc.xml is the cover page, never the table."""
+    xmls = [f.get("name", "") for f in files
+            if f.get("name", "").lower().endswith(".xml")]
+    for n in xmls:
+        if "infotable" in n.lower():
+            return n
+    rest = [n for n in xmls if n.lower() != "primary_doc.xml"]
+    return rest[0] if len(rest) == 1 else None
+
+
+def _aggregate_by_cusip(df: pd.DataFrame) -> pd.DataFrame:
+    """One row per CUSIP. A large filer reports the same security on many
+    rows (one per manager / discretion type); comparing row-by-row against a
+    dict keyed by CUSIP kept only the LAST row of the prior filing, so a
+    position split across managers looked like a giant increase."""
+    if df.empty:
+        return df
+    df = df[df["type"].isin(["SH", ""])] if "type" in df.columns else df
+    if df.empty:
+        return df
+    return (df.groupby("cusip", as_index=False)
+              .agg(name=("name", "first"), shares=("shares", "sum"),
+                   value_usd=("value_usd", "sum"), type=("type", "first")))
 
 
 # ---------------------------------------------------------------------------
@@ -242,14 +299,19 @@ def build_confluence_signals(all_signals: list[dict]) -> pd.DataFrame:
     A stock with signals from >= MIN_INSTITUTIONS_SIGNAL institutions is a BUY.
     When Renaissance + Citadel both signal → HIGH_CONVICTION weight applied.
     """
-    # Group by company name (normalized)
+    # Group by CUSIP, not by name. The issuer name is typed by each FILER, so
+    # the same security reaches us as "BANK OF AMER CORP" from one fund and
+    # "BANK OF AMERICA CORP" from another; grouping on the string split one
+    # stock's confluence into two sub-threshold halves. The CUSIP is the
+    # security's identity. Name is the fallback only for a row with no CUSIP.
     name_groups = defaultdict(list)
     for sig in all_signals:
-        key = sig["name"].upper().strip()
+        key = (sig.get("cusip") or "").strip().upper() or sig["name"].upper().strip()
         name_groups[key].append(sig)
 
     rows = []
-    for name, sigs in name_groups.items():
+    for key, sigs in name_groups.items():
+        name = sigs[0]["name"].upper().strip()
         institutions = [s["institution"] for s in sigs]
         n_institutions = len(set(institutions))
 
@@ -267,6 +329,7 @@ def build_confluence_signals(all_signals: list[dict]) -> pd.DataFrame:
 
         rows.append({
             "company":          name,
+            "cusip":            sigs[0].get("cusip", ""),
             "institutions":     ", ".join(sorted(set(institutions))),
             "n_institutions":   n_institutions,
             "total_value_usd":  total_value,
@@ -288,35 +351,61 @@ def build_confluence_signals(all_signals: list[dict]) -> pd.DataFrame:
 
 CUSIP_TO_TICKER_CACHE = {}
 
-def name_to_ticker(company_name: str, universe=STOCK_UNIVERSE):
+# CUSIP -> ticker for the universe's 13F-reportable names. Every entry was
+# checked against the issuer name in a live 13F-HR information table
+# (Citadel / Renaissance / Millennium / Point72 / D.E. Shaw, filed 2026) on
+# 2026-11-19, and every check digit validates (`_cusip_check_digit`).
+#
+# This replaced a substring match on the issuer name ("META" in name), which
+# mapped METALLUS, KENNAMETAL, COMMERCIAL METALS and ARDAGH METAL to META,
+# APPLE HOSPITALITY REIT to AAPL, JOHNSON CONTROLS to JNJ, INTELLIGENT-anything
+# to INTC, HONEYWELL AEROSPACE to HON, and BLACKROCK ETF TRUST to BLK — and
+# MISSED the real Bank of America and Coca-Cola, which filers write as
+# "BANK OF AMER CORP" and "COCA COLA CO". A confluence signal is a BUY, so a
+# false mapping is an order in the wrong company. An unknown CUSIP maps to
+# None: no signal is the safe failure, a wrong ticker is not.
+CUSIP_TO_TICKER = {
+    "037833100": "AAPL",  "594918104": "MSFT",  "023135106": "AMZN",
+    "02079K305": "GOOGL", "02079K107": "GOOGL", "67066G104": "NVDA",
+    "30303M102": "META",  "88160R101": "TSLA",  "084670702": "BRK.B",
+    "46625H100": "JPM",   "478160104": "JNJ",
+    "30233Q108": "XOM",   # filed as EXXONMOBIL HOLDINGS CORP
+    "91324P102": "UNH",   "92826C839": "V",     "57636Q104": "MA",
+    "437076102": "HD",    "742718109": "PG",    "060505104": "BAC",
+    "11135F101": "AVGO",  "58933Y105": "MRK",   "166764100": "CVX",
+    "532457108": "LLY",   "00287Y109": "ABBV",  "22160K105": "COST",
+    "713448108": "PEP",   "191216100": "KO",    "883556102": "TMO",
+    "17275R102": "CSCO",  "580135101": "MCD",   "931142103": "WMT",
+    "254687106": "DIS",   "79466L302": "CRM",   "00724F101": "ADBE",
+    "64110L106": "NFLX",  "007903107": "AMD",   "458140100": "INTC",
+    "747525103": "QCOM",  "882508104": "TXN",
+    "438516205": "HON",   # HONEYWELL INTL INC (not 43849R105, HONEYWELL AEROSPACE)
+    "38141G104": "GS",    "617446448": "MS",    "09290D101": "BLK",
+    "911312106": "UPS",   "149123101": "CAT",   "78409V104": "SPGI",
+    "H1467J104": "CB",    "571748102": "MMC",   "025816109": "AXP",
+    "172967424": "C",
+}
+
+
+def _cusip_check_digit(first8: str) -> str:
+    """The standard CUSIP modulus-10 'double-add-double' check digit."""
+    total = 0
+    for i, ch in enumerate(first8.upper()):
+        v = int(ch) if ch.isdigit() else ord(ch) - 55
+        if i % 2 == 1:
+            v *= 2
+        total += v // 10 + v % 10
+    return str((10 - total % 10) % 10)
+
+
+def name_to_ticker(company_name: str, universe=STOCK_UNIVERSE, cusip: str = ""):
+    """Map a 13F holding to a ticker in the universe — by CUSIP only.
+
+    `company_name` is kept for the call signature and log lines; it is no
+    longer matched on (see CUSIP_TO_TICKER for why).
     """
-    Attempt to map a 13F company name to a ticker symbol.
-    Uses a simple keyword match against the stock universe.
-    """
-    name_upper = company_name.upper()
-
-    KNOWN_MAPPINGS = {
-        "APPLE": "AAPL", "MICROSOFT": "MSFT", "AMAZON": "AMZN",
-        "ALPHABET": "GOOGL", "GOOGLE": "GOOGL", "NVIDIA": "NVDA",
-        "META": "META", "TESLA": "TSLA", "BERKSHIRE": "BRK.B",
-        "JPMORGAN": "JPM", "JOHNSON": "JNJ", "EXXON": "XOM",
-        "UNITEDHEALTH": "UNH", "VISA": "V", "MASTERCARD": "MA",
-        "HOME DEPOT": "HD", "PROCTER": "PG", "BANK OF AMERICA": "BAC",
-        "BROADCOM": "AVGO", "MERCK": "MRK", "CHEVRON": "CVX",
-        "ELI LILLY": "LLY", "ABBVIE": "ABBV", "COSTCO": "COST",
-        "PEPSICO": "PEP", "COCA-COLA": "KO", "THERMO FISHER": "TMO",
-        "CISCO": "CSCO", "MCDONALD": "MCD", "WALMART": "WMT",
-        "DISNEY": "DIS", "SALESFORCE": "CRM", "ADOBE": "ADBE",
-        "NETFLIX": "NFLX", "ADVANCED MICRO": "AMD", "INTEL": "INTC",
-        "QUALCOMM": "QCOM", "TEXAS INSTRUMENTS": "TXN", "HONEYWELL": "HON",
-        "GOLDMAN": "GS", "MORGAN STANLEY": "MS", "BLACKROCK": "BLK",
-    }
-
-    for keyword, ticker in KNOWN_MAPPINGS.items():
-        if keyword in name_upper:
-            return ticker if ticker in universe else None
-
-    return None
+    ticker = CUSIP_TO_TICKER.get((cusip or "").strip().upper())
+    return ticker if ticker and ticker in universe else None
 
 
 # ---------------------------------------------------------------------------
@@ -348,9 +437,25 @@ def run_signal_scan(verbose: bool = True) -> pd.DataFrame:
         current_filing = filings[0]
         prior_filing   = filings[1]
 
+        if _filing_is_stale(current_filing.get("filing_date", "")):
+            # A fund that stopped filing still has two "recent" 13Fs; diffing
+            # them re-reports a year-old quarter as this quarter's buying
+            # (Two Sigma's tracked CIK last filed 2025-11-03).
+            logger.warning(f"  {institution}: latest 13F-HR filed "
+                           f"{current_filing.get('filing_date')} — older than "
+                           f"{MAX_13F_AGE_DAYS}d, skipped as stale")
+            continue
+
         current_holdings = parse_13f_holdings(cik, current_filing["accession"])
         time.sleep(0.5)
         prior_holdings   = parse_13f_holdings(cik, prior_filing["accession"])
+        if current_holdings.empty or prior_holdings.empty:
+            # A 13F-HR always has holdings. Zero is the parser failing, and
+            # it must not be reported as "0 signals", which reads as a quiet
+            # quarter.
+            logger.warning(f"  {institution}: parsed 0 holdings from "
+                           f"{current_filing['accession'] if current_holdings.empty else prior_filing['accession']}"
+                           f" — 13F parser failure, not a quiet quarter")
 
         signals = detect_block_purchases(current_holdings, prior_holdings, institution)
         logger.info(f"  {institution}: {len(signals)} block purchase signals detected")
@@ -363,7 +468,9 @@ def run_signal_scan(verbose: bool = True) -> pd.DataFrame:
 
     # Map names to tickers
     if not confluence_df.empty:
-        confluence_df["ticker"] = confluence_df["company"].apply(name_to_ticker)
+        confluence_df["ticker"] = [
+            name_to_ticker(n, cusip=c)
+            for n, c in zip(confluence_df["company"], confluence_df["cusip"])]
         confluence_df = confluence_df[confluence_df["ticker"].notna()].copy()
         logger.info(f"Signals with known tickers: {len(confluence_df)}")
 

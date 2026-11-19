@@ -116,7 +116,7 @@ _apply_risk_overrides()
 TRACKED_INSTITUTIONS = {
     "Citadel":              "0001423053",
     "Renaissance Tech":     "0001037389",
-    "Two Sigma":            "0001649339",
+    "Two Sigma":            "0001179392",   # Two Sigma Investments, LP. Was 0001649339 = Scion (EDGAR, 2026-11-19); see migrate_two_sigma_cik.py
     "Millennium Mgmt":      "0001273087",
     "Point72":              "0001603466",
     "D.E. Shaw":            "0001009207",

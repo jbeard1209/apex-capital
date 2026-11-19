@@ -37762,6 +37762,173 @@ class TestTheBoardDoesNotPresentAFrozenStatusAsCurrent(unittest.TestCase):
         self.assertTrue(ml["drift_status"].startswith("STALE"), ml["drift_status"])
 
 
+class TestThe13FSignalEngineReadsRealFilings(unittest.TestCase):
+    """signal_engine.py logged "Total raw signals: 0" on all 860 Mac runs and
+    every VM run, so Step 4 never had a 13F confluence to act on and
+    pipeline_snapshots got no live rows. The parser asked EDGAR for
+    `<accession>-index.json` (an HTML page served with status 200), and the
+    bare except turned that into an empty frame. Each case below is a defect
+    found when the parser was made to read a real filing, 2026-11-19."""
+
+    INFOTABLE = b"""<?xml version="1.0"?>
+<informationTable xmlns="http://www.sec.gov/edgar/document/thirteenf/informationtable">
+ <infoTable><nameOfIssuer>APPLE INC</nameOfIssuer><cusip>037833100</cusip>
+  <value>2500000</value><shrsOrPrnAmt><sshPrnamt>10000</sshPrnamt><sshPrnamtType>SH</sshPrnamtType></shrsOrPrnAmt></infoTable>
+ <infoTable><nameOfIssuer>APPLE INC</nameOfIssuer><cusip>037833100</cusip>
+  <value>2500000</value><shrsOrPrnAmt><sshPrnamt>10000</sshPrnamt><sshPrnamtType>SH</sshPrnamtType></shrsOrPrnAmt></infoTable>
+ <infoTable><nameOfIssuer>APPLE INC</nameOfIssuer><cusip>037833100</cusip>
+  <value>9000000</value><shrsOrPrnAmt><sshPrnamt>40000</sshPrnamt><sshPrnamtType>SH</sshPrnamtType></shrsOrPrnAmt><putCall>Put</putCall></infoTable>
+</informationTable>"""
+
+    def _fake_get(self, seen):
+        engine = self.engine
+        outer = self
+
+        class R:
+            def __init__(self, url):
+                self.url = url
+                self.status_code = 200
+                if url.endswith("/index.json"):
+                    self._json = {"directory": {"item": [
+                        {"name": "primary_doc.xml"}, {"name": "50240.xml"}]}}
+                    self.content = b""
+                elif url.endswith(".xml"):
+                    self._json = None
+                    self.content = outer.INFOTABLE
+                else:   # what EDGAR really does for the old path
+                    self._json = None
+                    self.content = b"<html>not json</html>"
+
+            def json(self):
+                if self._json is None:
+                    raise ValueError("Expecting value: line 1 column 1")
+                return self._json
+
+        def get(url, **kw):
+            seen.append(url)
+            return R(url)
+        return get
+
+    def setUp(self):
+        import importlib
+        import signal_engine
+        self.engine = importlib.reload(signal_engine)
+
+    def _parse(self):
+        seen = []
+        with patch.object(self.engine.requests, "get", self._fake_get(seen)):
+            df = self.engine._parse_via_edgar_api("1423053", "0001423053-26-000123")
+        return df, seen
+
+    def test_the_filing_index_is_read_from_the_folder_index_json(self):
+        df, seen = self._parse()
+        self.assertTrue(seen[0].endswith("/000142305326000123/index.json"), seen[0])
+        self.assertFalse(df.empty, "a 13F-HR with holdings parsed to an empty frame")
+
+    def test_a_numerically_named_infotable_is_found_and_the_cover_page_is_not(self):
+        self.assertEqual(self.engine._pick_infotable(
+            [{"name": "primary_doc.xml"}, {"name": "50240.xml"}]), "50240.xml")
+        self.assertIsNone(self.engine._pick_infotable([{"name": "primary_doc.xml"}]))
+
+    def test_value_is_whole_dollars_options_are_skipped_and_rows_aggregate(self):
+        df, _ = self._parse()
+        self.assertEqual(len(df), 1, "one CUSIP must be one row")
+        row = df.iloc[0]
+        self.assertEqual(int(row["shares"]), 20000, "the PUT row was counted as shares")
+        self.assertEqual(int(row["value_usd"]), 5_000_000,
+                         "value is reported in dollars since 2023; *1000 inflated it")
+
+    def test_amendments_are_not_diffed_as_a_quarter(self):
+        sub = {"filings": {"recent": {
+            "form": ["13F-HR/A", "13F-HR", "13F-HR"],
+            "filingDate": ["2026-11-10", "2026-11-05", "2026-08-12"],
+            "accessionNumber": ["a-amend", "b-orig", "c-orig"]}}}
+
+        class R:
+            def raise_for_status(self):
+                pass
+
+            def json(self):
+                return sub
+        with patch.object(self.engine.requests, "get", lambda *a, **k: R()):
+            got = self.engine.get_recent_13f_filings("1", "X", limit=2)
+        self.assertEqual([f["accession"] for f in got], ["b-orig", "c-orig"])
+
+    def test_a_fund_that_stopped_filing_is_stale(self):
+        from datetime import date
+        today = date(2026, 11, 19)
+        self.assertTrue(self.engine._filing_is_stale("2025-11-03", today))
+        self.assertFalse(self.engine._filing_is_stale("2026-11-05", today))
+        self.assertTrue(self.engine._filing_is_stale("", today))
+
+    def test_ticker_comes_from_the_cusip_never_from_a_substring_of_the_name(self):
+        n2t = self.engine.name_to_ticker
+        # Real 2026 13F issuer names the substring matcher mis-mapped:
+        for name, cusip in [("METALLUS INC", "591208103"),
+                            ("KENNAMETAL INC", "489170100"),
+                            ("APPLE HOSPITALITY REIT INC", "03784Y200"),
+                            ("JOHNSON CONTROLS INTERNATION", "G51502105"),
+                            ("HONEYWELL AEROSPACE INC", "43849R105"),
+                            ("CCC INTELLIGENT SOLUTIONS HL", "12510Q100")]:
+            self.assertIsNone(n2t(name, cusip=cusip), f"{name} mapped to a universe ticker")
+        # ...and the real ones it missed because filers abbreviate:
+        self.assertEqual(n2t("BANK OF AMER CORP", cusip="060505104"), "BAC")
+        self.assertEqual(n2t("COCA COLA CO", cusip="191216100"), "KO")
+        self.assertEqual(n2t("APPLE INC", cusip="037833100"), "AAPL")
+
+    def test_every_mapped_cusip_has_a_valid_check_digit_and_the_universe_is_covered(self):
+        from config import STOCK_UNIVERSE
+        m = self.engine.CUSIP_TO_TICKER
+        bad = [c for c in m if self.engine._cusip_check_digit(c[:8]) != c[8]]
+        self.assertEqual(bad, [], "a mistyped CUSIP silently drops a stock")
+        self.assertEqual(set(STOCK_UNIVERSE) - set(m.values()), set())
+
+    def test_confluence_groups_one_security_across_differently_spelled_names(self):
+        sigs = [{"institution": "Citadel", "name": "BANK OF AMER CORP", "cusip": "060505104",
+                 "value_usd": 5e6},
+                {"institution": "Point72", "name": "BANK OF AMERICA CORP", "cusip": "060505104",
+                 "value_usd": 5e6}]
+        with patch.object(self.engine, "MIN_INSTITUTIONS_SIGNAL", 2):
+            df = self.engine.build_confluence_signals(sigs)
+        self.assertEqual(len(df), 1)
+        self.assertEqual(int(df.iloc[0]["n_institutions"]), 2)
+
+
+
+class TestTwoSigmaIsTwoSigma(unittest.TestCase):
+    """config mapped "Two Sigma" to CIK 0001649339, which EDGAR names Scion Asset
+    Management (checked 2026-11-19). 33 filings of Burry's book trained the model
+    as Two Sigma's. The real Two Sigma Investments, LP is 0001179392."""
+
+    def test_the_two_sigma_cik_is_two_sigmas(self):
+        import config
+        self.assertEqual(config.TRACKED_INSTITUTIONS["Two Sigma"], "0001179392")
+
+    def test_no_two_institutions_share_a_cik(self):
+        import config
+        ciks = list(config.TRACKED_INSTITUTIONS.values())
+        self.assertEqual(len(ciks), len(set(ciks)))
+
+    def test_the_migration_relabels_scion_rows_and_deletes_nothing(self):
+        import sqlite3, migrate_two_sigma_cik as m
+        c = sqlite3.connect(":memory:")
+        c.executescript("""
+            CREATE TABLE filings (id INTEGER, institution TEXT, cik TEXT);
+            CREATE TABLE holdings (id INTEGER, filing_id INTEGER, institution TEXT);
+            CREATE TABLE pipeline_snapshots (id INTEGER, institution TEXT);
+            INSERT INTO filings VALUES (1,'Two Sigma','0001649339'),(2,'Citadel','0001423053');
+            INSERT INTO holdings VALUES (1,1,'Two Sigma'),(2,2,'Citadel');
+            INSERT INTO pipeline_snapshots VALUES (1,'Two Sigma'),(2,'Citadel');""")
+        dry = m.migrate(c, apply=False)
+        self.assertEqual((dry["filings"], dry["holdings"], dry["pipeline_snapshots"]), (1, 1, 1))
+        self.assertEqual(c.execute("select count(*) from filings where institution='Two Sigma'").fetchone()[0], 1)
+        m.migrate(c, apply=True)
+        for t in ("filings", "holdings", "pipeline_snapshots"):
+            self.assertEqual(c.execute(f"select count(*) from {t}").fetchone()[0], 2)
+            self.assertEqual(c.execute(f"select count(*) from {t} where institution='Two Sigma'").fetchone()[0], 0)
+            self.assertEqual(c.execute(f"select count(*) from {t} where institution=?", (m.SCION_LABEL,)).fetchone()[0], 1)
+        self.assertEqual(m.migrate(c, apply=True)["filings"], 0)   # idempotent
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.
