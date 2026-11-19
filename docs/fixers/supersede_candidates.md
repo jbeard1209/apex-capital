@@ -46,3 +46,22 @@ call). Check: `crontab -l | grep -v '^#' | grep -c <job>` on the VM, 2026-11-19:
 | `loop-sig-21837bc97ded` | `fe_cit_agent.py` | 0 | present | same |
 | `loop-sig-3616daec9161` | `portfolio_risk_dashboard.py` | 0 | present | same |
 | `loop-sig-e890ba6a27c3` | `fe_watchlist_monitor` | 0 | **missing** | premise moot: no such script; retire the freshness check, then supersede |
+| `loop-sig-4e1461c8cc17` | `ml_improvement_agent.py` | 0 | present | same (added 2026-11-19 afternoon run) |
+| `loop-sig-a289dc0e1944` | `ml_drift_monitor.py` | 0 | present (log is 0 bytes, mtime 11-16 20:15) | same |
+
+## specialist-fixer-run 2026-11-19 afternoon (risk area)
+
+Checks run read-only on the VM 2026-11-19 ~19:30Z, against `data/coherence_report.json`
+(checked 18:02Z) and the broker (GET only).
+
+| Row | Premise | Check | Verdict |
+|---|---|---|---|
+| `loop-sig-50cc501208bb` | `positions_conserve`: 1 ledger entry with no broker position | law today: HOLDS, "17 broker position(s), same 17 in the ledger", n=17 | false today, supersede |
+| `loop-sig-018f54cc39f5` | `recorded_exits_are_executed`: DXCM 2026-07-23 exit never executed | `GET /v2/orders?symbols=DXCM&after=2026-07-15` → sell created 2026-07-23T13:45:04Z, **filled 51/51**; the 500-order window opened 15:24:25Z the same day | false alarm from the law's window edge (compared dates, not timestamps). Fixed on `claude/fixer-risk-20261119-exitwindow`; close after merge + deploy |
+| loss-attribution group (16 rows, `LO-*-unexplained_loss` + `loop-sig-b92740cbf61d`) | attribution stale | handled by PR #63 (merged, not yet deployed) | not re-worked; mark after deploy |
+
+Ops premises rechecked in passing (not superseded, recorded only):
+- `loop-sig-52f253043d5e` disk 76%: `df -h /` = 69% today, under the 70% threshold. Borderline
+  and recurring (6.3G of 9.7G), so a supersede would just re-file; leave for the ops fixer.
+- `loop-sig-fa6b55655db2` `runs_match_schedule` "main.py started N times": HOLDS today
+  ("3 start(s) today, 4 scheduled"). Supersede candidate.
