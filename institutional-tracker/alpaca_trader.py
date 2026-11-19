@@ -543,8 +543,15 @@ class AlpacaTrader:
                 continue
 
             pnl_pct    = pos["unrealized_pct"]
-            entry_date = entry_dates.get(ticker, today - timedelta(days=1))
-            hold_days  = (today - entry_date).days
+            # An undated position is UNKNOWN, not "bought yesterday". The old
+            # `today - 1 day` default made max-hold unfireable on it, forever,
+            # with no message (memory `fallback-that-means-act`; review_agent
+            # was fixed the same way). Stop-loss / take-profit still apply.
+            entry_date = entry_dates.get(ticker)
+            hold_days  = (today - entry_date).days if entry_date else None
+            if hold_days is None:
+                logger.warning(f"  [enforce_risk_rules] {ticker}: no entry date — "
+                               f"max-hold check skipped (stop/take-profit still apply)")
 
             # Regime-adaptive stop-loss (board-approved 2026-05-06):
             # Tighten stops in high-stress regimes to limit drawdown per position.
@@ -572,7 +579,7 @@ class AlpacaTrader:
                 reason = f"stop_loss ({pnl_pct:.1f}%, regime={_cro_lvl}, threshold={_regime_stop*100:.0f}%)"
             elif pnl_pct >= (TAKE_PROFIT_PCT * 100):
                 reason = f"take_profit ({pnl_pct:.1f}%)"
-            elif hold_days >= HOLD_DAYS_MAX:
+            elif hold_days is not None and hold_days >= HOLD_DAYS_MAX:
                 reason = f"max_hold ({hold_days} days)"
 
             if reason:

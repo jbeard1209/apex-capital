@@ -1366,7 +1366,16 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                         except Exception as _ple:
                             logger.debug("  [Ledger] record_outcome failed: %s", _ple)
                     elif d["manager_action"] in ("ADD", "BUY_NEW"):
-                        state["entry_dates"][d["ticker"]] = datetime.now().strftime("%Y-%m-%d")
+                        # An ADD tops up a position we already hold; the hold
+                        # clock is the age of the position, not of the last lot
+                        # (INTENT 1.6: "measured from the real entry date").
+                        # Overwriting with today restarted the max-hold clock on
+                        # every top-up. BUY_NEW opens a position, so it dates it.
+                        if d["manager_action"] == "ADD":
+                            state["entry_dates"].setdefault(
+                                d["ticker"], datetime.now().strftime("%Y-%m-%d"))
+                        else:
+                            state["entry_dates"][d["ticker"]] = datetime.now().strftime("%Y-%m-%d")
                         # Compute Kelly multiplier for attribution (CIT-2026-204)
                         _conv = d.get("conviction", 3.0)
                         _kelly_mult = round(max(0.50, min(1.50, 0.5 + (_conv - 3.0) * 0.25)), 2)

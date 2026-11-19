@@ -37762,6 +37762,59 @@ class TestTheBoardDoesNotPresentAFrozenStatusAsCurrent(unittest.TestCase):
         self.assertTrue(ml["drift_status"].startswith("STALE"), ml["drift_status"])
 
 
+class TestM02PositionClockAudit(unittest.TestCase):
+    """Audit M02 (2026-11-19): the hold clock must be the position's real age."""
+
+    def _trader(self, rows):
+        import pandas as pd
+        import alpaca_trader
+        t = alpaca_trader.AlpacaTrader.__new__(alpaca_trader.AlpacaTrader)
+        t.get_positions = lambda: pd.DataFrame(rows)
+        sold = []
+        t.submit_sell = lambda ticker, reason=None, **k: (sold.append((ticker, reason)) or {"ticker": ticker, "reason": reason})
+        return t, sold
+
+    def _row(self, tk, pct=1.0):
+        return {"ticker": tk, "qty": 1.0, "qty_available": 1.0, "avg_entry": 10.0,
+                "current_price": 10.1, "market_value": 10.1, "unrealized_pl": 0.1,
+                "unrealized_pct": pct, "side": "long"}
+
+    def test_a_dated_position_past_max_hold_is_sold(self):
+        from datetime import datetime, timedelta
+        t, sold = self._trader([self._row("OLD")])
+        out = t.enforce_risk_rules({"OLD": datetime.now() - timedelta(days=61)})
+        self.assertEqual([s[0] for s in sold], ["OLD"])
+        self.assertEqual(len(out), 1)
+
+    def test_an_undated_position_is_not_read_as_one_day_old(self):
+        """fallback-that-means-act: a missing date must abstain from max-hold
+        (loudly), not be substituted by 'yesterday'. Stop-loss still applies."""
+        from datetime import datetime
+        t, sold = self._trader([self._row("UND", pct=1.0), self._row("LOSS", pct=-50.0)])
+        with self.assertLogs("alpaca_trader", level="WARNING") as cm:
+            t.enforce_risk_rules({})
+        self.assertEqual([s[0] for s in sold], ["LOSS"], "stop-loss must still fire")
+        self.assertTrue(any("UND" in m and "no entry date" in m for m in cm.output),
+                        "an undated position abstained silently: %s" % cm.output)
+
+    def test_an_add_does_not_reset_the_hold_clock(self):
+        """main.py wrote entry_dates[t]=today on ADD as well as BUY_NEW, so every
+        top-up restarted the max-hold clock of the whole position."""
+        import ast
+        src = (Path(__file__).resolve().parent / "main.py").read_text()
+        tree = ast.parse(src)
+        hits = []
+        for n in ast.walk(tree):
+            if isinstance(n, ast.If) and "ADD" in ast.unparse(n.test) and "BUY_NEW" in ast.unparse(n.test):
+                if any(isinstance(m, ast.Assign) and "entry_dates" in ast.unparse(m.targets[0])
+                       for m in ast.walk(n)):
+                    hits.append(n)
+        self.assertTrue(hits, "vacuous: the ADD/BUY_NEW ledger write was not found")
+        for h in hits:
+            self.assertIn("setdefault", ast.unparse(h),
+                          "ADD overwrites the existing entry date with today")
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

@@ -26,7 +26,7 @@ Status values: `TODO`, `IN PROGRESS`, `DONE` (all gates pass), `DONE-WITH-FINDIN
 |---|---|---|---|---|---|---|
 | M00 | Liveness watcher + registry (build; see LIVENESS_GAPS) | 0 | DONE-WITH-FINDINGS | 2026-11-13 | 3/4 | Built by PR audit/M00-liveness-2026-11-13; VM gate BLOCKED until deployed (Jack). 0 of 15 features instrumented yet |
 | M01 | Order path & choke point | 1 | DONE-WITH-FINDINGS | 2026-11-16 | 4/8 PASS, 1 FAIL, 1 PARTIAL, 1 BLOCKED, +suite | Pass 1. PR audit/M01-order-path-2026-11-16. TRIM-on-short fixed; Mac entry 11-12; no 7% cap at choke point (CIT) |
-| M02 | Positions, entry dates, max-hold | 1 | TODO | — | 0/4 | Open HIGH chairman item (re-buy dating) |
+| M02 | Positions, entry dates, max-hold | 1 | DONE-WITH-FINDINGS | 2026-11-19 | 4/4 PASS + 2 new gates fixed, +suite | Pass 1. PR audit/M02-positions-2026-11-19. Re-buy dating already fixed (close the HIGH chairman item); undated-fallback in enforce_risk_rules + ADD resetting the clock fixed; not live until deploy |
 | M03 | Manager, picks, CRO | 1 | TODO | — | 0/4 | |
 | M04 | Kalshi copy-trader / manager / scout | 1 | TODO | — | 0/6 | Shard balance issue 11-09 |
 | M05 | Kalshi scanner / calibration / mirror | 1 | TODO | — | 0/4 | |
@@ -81,6 +81,10 @@ Record the pass number in the run log.
 | 2026-11-16 | M01 | Only the latest reconciliation report is retained; "last 10 reports" is unauditable | C | CIT proposal: reconciliation history file |
 | 2026-11-16 | M01 | LLM calls failed in the test run: "credit balance is too low" (claude-fable-5 and fallback) | A | Pushed to Jack; check production key/credits |
 | 2026-11-16 | M01 | PROGRESS.md on main had unresolved merge-conflict markers in the run log | C | **Fixed** in this PR |
+| 2026-11-19 | M02 | `alpaca_trader.enforce_risk_rules` defaulted a missing entry date to `now - 1 day` (max-hold unfireable, silent) | B | **Fixed** in PR; test `TestM02PositionClockAudit` |
+| 2026-11-19 | M02 | `ADD` overwrote the entry date with today, restarting the 60-day max-hold on every top-up | B | **Fixed** in PR (setdefault); needs deploy |
+| 2026-11-19 | M02 | Re-buy-dated-from-window-start HIGH chairman item is stale: fixed by backward walk anchored on broker qty; B1 on VM: 20/20 positions match fills | A | Close the chairman item (Jack) |
+| 2026-11-19 | M02 | `buy_log` rows carry no ADD/BUY_NEW action; no heartbeat for the start-of-run ledger reconcile | C | CIT proposal |
 | 2026-11-11 | baseline | Coherence `deployed_set_matches_repo` VIOLATED (5 files differ) and `positions_conserve` VIOLATED | B | M19 / M02 |
 
 ## Run log
@@ -93,6 +97,7 @@ Record the pass number in the run log.
 | 2026-11-13 | recurring | M00 (pass 1) | Built liveness.py + registry + 8 tests; host MAC (MacBook-Air-173.local) | — |
 | 2026-11-12 | follow-up | M13 (partial) | Routine prompt made host-aware (records hostname; MAC vs CLOUD branches; cloud marks VM/Mac gates BLOCKED). Logged pregenerate retirement, hook-python fix, test-queue leak; fixed HR attendance/roster disagreement | — |
 | 2026-11-16 | recurring | M01 (pass 1) | Host MAC (MacBook-Air-173.local), worktree /Users/jackbeard/apex-audit-2026-11-16. Order path audited; 15 sites gated; TRIM-on-short fixed; `order_gate` heartbeat added (registry entry uninstrumented until deploy) | — |
+| 2026-11-19 | recurring | M02 (pass 1) | Host MAC (MacBook-Air-173.local), worktree /Users/jackbeard/apex-audit-2026-11-19. VM B1 20/20, positions_conserve HOLDS n=20; 2 bugs fixed | — |
 
 ## Budget
 Target is about 30% of the weekly token allowance. With a run every third day that comes
