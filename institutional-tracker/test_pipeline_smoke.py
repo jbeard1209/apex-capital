@@ -32998,6 +32998,64 @@ class TestTheSentinelMeasuresOnTheHostThatOwns(unittest.TestCase):
         finally:
             p.unlink(missing_ok=True)
 
+    # ── a decided row is not work the queue is still holding ─────────────
+    # VM 2026-11-19: freshness was DEGRADED on 5 queues, 3 of them false.
+    # ml_pod_pending held 1 row the ML board had APPROVED weeks ago, and the
+    # two ML experiment queues held 6 and 13 rows, every one `completed`.
+    # Their consumers read only status pending/None/"" and `queued`
+    # respectively, so none of those rows was work anyone would ever do.
+    def test_a_queue_of_only_decided_rows_is_not_stale(self):
+        rel = "data/_probe_queue.json"
+        with self._probe(rel, payload=[{"status": "approved"},
+                                       {"status": "completed"}], age_h=500,
+                         spec_extra={"queue": True,
+                                     "open_statuses": ("pending", None, "")}) as rep:
+            self.assertFalse([i for i in rep["issues"] if i["item"] == rel],
+                             "a queue holding only decided rows alarmed")
+
+    def test_an_open_row_among_decided_rows_still_alarms(self):
+        rel = "data/_probe_queue.json"
+        with self._probe(rel, payload=[{"status": "approved"}, {"x": 1},
+                                       {"status": "pending"}], age_h=500,
+                         spec_extra={"queue": True,
+                                     "open_statuses": ("pending", None, "")}) as rep:
+            hit = [i for i in rep["issues"] if i["item"] == rel]
+            self.assertTrue(hit, "an undrained open row was hidden by decided rows")
+            self.assertEqual(hit[0]["queue_depth"], 2)
+
+    def test_a_non_dict_row_counts_as_open(self):
+        """A row the predicate cannot read is not a decided row."""
+        import json as _j, tempfile
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
+            _j.dump(["raw", {"status": "done"}], fh)
+            p = Path(fh.name)
+        try:
+            self.assertEqual(self.fs._queue_depth(p, open_statuses=("queued",)), 1)
+        finally:
+            p.unlink(missing_ok=True)
+
+    def test_open_statuses_match_each_consumer(self):
+        """The predicate is the consumer's, copied, not invented. Pin both
+        sides so a consumer that changes its predicate breaks this test."""
+        m = self.fs.MANIFEST if hasattr(self.fs, "MANIFEST") else None
+        self.assertIsNotNone(m, "freshness manifest not found")
+        here = Path(self.fs.__file__).resolve().parent
+        for rel, consumer, needle, want in (
+            ("data/ml_pod_pending.json", "ml_pod_board.py",
+             'p.get("status") in ("pending", None, "")', ("pending", None, "")),
+            ("data/rd_pod_pending.json", "rd_pod_board.py",
+             'p.get("status") in ("pending", None, "")', ("pending", None, "")),
+            ("data/ml_shortterm_experiment_queue.json",
+             "ml_shortterm_experiment_runner.py",
+             'e.get("status") == "queued"', ("queued",)),
+            ("data/ml_longterm_experiment_queue.json",
+             "ml_longterm_experiment_runner.py",
+             'e.get("status") == "queued"', ("queued",)),
+        ):
+            self.assertEqual(tuple(m[rel].get("open_statuses") or ()), want, rel)
+            self.assertIn(needle, (here / consumer).read_text(),
+                          f"{consumer} no longer uses the predicate {rel} mirrors")
+
     # ── a fresh report that says "I failed" is not OK ─────────────────────
     def test_a_fresh_red_verdict_is_an_issue_not_ok(self):
         """slow_gate_report.json was fresh and ok=False on the VM 2026-09-30.

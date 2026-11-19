@@ -192,10 +192,16 @@ MANIFEST = {
     # to be re-derived once each drainer's schedule is pinned.
     "data/cit_implementation_queue.json": {"max_age_h": 12, "critical": False,
                                            "owner": "apexcapitalc", "queue": True},
+    # `open_statuses` is the CONSUMER's own "still to do" predicate, copied
+    # (pinned by TestTheSentinelMeasuresOnTheHostThatOwns). Without it a
+    # mark-in-place queue counts its decided rows as work: on 2026-11-19 three
+    # of five STALE queues on the VM held only approved/completed rows.
     "data/rd_pod_pending.json":           {"max_age_h": 48, "critical": False,
-                                           "owner": "apexcapitalc", "queue": True},
+                                           "owner": "apexcapitalc", "queue": True,
+                                           "open_statuses": ("pending", None, "")},
     "data/ml_pod_pending.json":           {"max_age_h": 48, "critical": False,
-                                           "owner": "apexcapitalc", "queue": True},
+                                           "owner": "apexcapitalc", "queue": True,
+                                           "open_statuses": ("pending", None, "")},
     "data/fi_picks_queue.json":           {"max_age_h": 48, "critical": False,
                                            "owner": "apexcapitalc", "queue": True},
     "data/fe_picks_queue.json":           {"max_age_h": 48, "critical": False,
@@ -205,9 +211,11 @@ MANIFEST = {
     "data/fe_research_queue.json":        {"max_age_h": 200, "critical": False,
                                            "owner": "apexcapitalc", "queue": True},
     "data/ml_shortterm_experiment_queue.json": {"max_age_h": 200, "critical": False,
-                                               "owner": "apexcapitalc", "queue": True},
+                                               "owner": "apexcapitalc", "queue": True,
+                                               "open_statuses": ("queued",)},
     "data/ml_longterm_experiment_queue.json":  {"max_age_h": 200, "critical": False,
-                                               "owner": "apexcapitalc", "queue": True},
+                                               "owner": "apexcapitalc", "queue": True,
+                                               "open_statuses": ("queued",)},
     # Written on both hosts, so no owner.
     "data/digest_queue.json":             {"max_age_h": 72, "critical": False, "queue": True},
     "data/chairman_decision_queue.json":  {"max_age_h": 26, "critical": True,  "queue": True},
@@ -240,7 +248,7 @@ def _this_host() -> str:
         return ""
 
 
-def _queue_depth(path: Path) -> Optional[int]:
+def _queue_depth(path: Path, open_statuses=None) -> Optional[int]:
     """Rows held by a queue file, or None if it cannot be counted.
 
     None is NOT zero. It means "I could not count this", and the caller keeps
@@ -256,16 +264,24 @@ def _queue_depth(path: Path) -> Optional[int]:
         d = json.loads(path.read_text())
     except Exception:
         return None
+    rows = None
     if isinstance(d, list):
-        return len(d)
-    if isinstance(d, dict):
+        rows = d
+    elif isinstance(d, dict):
         for k in ("items", "queue", "pending", "entries", "picks",
                   "proposals", "requests", "experiments"):
             v = d.get(k)
             if isinstance(v, list):
-                return len(v)
+                rows = v
+                break
+    if rows is None:
         return None
-    return None
+    if open_statuses is None:
+        return len(rows)
+    # A row the predicate cannot read (not a dict) is counted as open: it is
+    # not a decided row, and "unknown" must not resolve to "drained".
+    return sum(1 for r in rows
+               if not isinstance(r, dict) or r.get("status") in open_statuses)
 
 
 def _load(path: Path, default):
@@ -393,7 +409,7 @@ def run(auto_fix: bool = True, send_email: bool = True) -> dict:
         # not resolve to the reassuring answer.
         depth = None
         if spec.get("queue"):
-            depth = _queue_depth(path)
+            depth = _queue_depth(path, spec.get("open_statuses"))
             if stale and depth == 0:
                 stale = False
 
