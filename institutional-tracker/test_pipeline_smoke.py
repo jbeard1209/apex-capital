@@ -11000,9 +11000,91 @@ class TestDesignatedWriterSilence(unittest.TestCase):
         """Nobody traded after the writer — that may be a closed market."""
         import single_writer as sw
         sev, msg = sw.writer_silence_verdict(
-            self._seen(apexcapitalc=100, mac=120), expected="apexcapitalc")
+            self._seen(apexcapitalc=100, mac=120), expected="apexcapitalc",
+            shared_block=self.OPEN)
         self.assertEqual(sev, "HIGH", "no corroboration, so no CRITICAL claim")
         self.assertIn("closure", msg)
+
+    # ── 2026-11-19: the uncorroborated branch filed a loop row every weekend ──
+
+    def test_a_weekend_does_not_count_as_writer_silence(self):
+        """VM logs 2026-11-14/15: "silent 43h … 89h (last order 2026-11-12T20:16)"
+        every two hours, all weekend. main.py is weekday-only, so a Friday-evening
+        last order is 48h+ old by Monday morning with nothing wrong. Same policy
+        as deadmans_switch.effective_age_hours and the heartbeat fix in #62."""
+        from datetime import timezone
+        import single_writer as sw
+        last = datetime(2026, 11, 13, 20, 16, tzinfo=timezone.utc)   # Fri
+        now = datetime(2026, 11, 16, 1, 0, tzinfo=timezone.utc)      # Mon 01:00Z
+        sev, msg = sw.writer_silence_verdict(
+            {"apexcapitalc": last}, expected="apexcapitalc", now=now,
+            shared_block=self.OPEN)
+        self.assertEqual(sev, "PASS", f"a weekend read as an outage: {msg}")
+        self.assertIn("excl. weekends", msg, "report both ages")
+
+    def test_a_weekday_gap_still_alarms_after_the_weekend_is_removed(self):
+        """Over-subtraction is the dangerous direction: Thu 20:16 → Mon 14:55 is
+        42.6h of weekday silence and must still fire."""
+        from datetime import timezone
+        import single_writer as sw
+        last = datetime(2026, 11, 12, 20, 16, tzinfo=timezone.utc)   # Thu
+        now = datetime(2026, 11, 16, 14, 55, tzinfo=timezone.utc)    # Mon
+        sev, msg = sw.writer_silence_verdict(
+            {"apexcapitalc": last}, expected="apexcapitalc", now=now,
+            shared_block=self.OPEN)
+        self.assertEqual(sev, "HIGH")
+        self.assertIn("91h", msg, "the raw age a human recognises is reported")
+
+    def test_an_uncorroborated_silence_behind_a_firm_wide_wall_is_not_an_outage(self):
+        """The book was ~107% deployed under CRO HIGH, so every buy was refused
+        and the writer had nothing it COULD send. The corroborated branch has
+        consulted the shared constraint since 2026-08-24; the uncorroborated one
+        never did, so the same wall read as "verify the host directly" and filed
+        HIGH loop rows (loop-sig-f7af8b6e2e5b: 37 occurrences)."""
+        import single_writer as sw
+        sev, msg = sw.writer_silence_verdict(
+            self._seen(apexcapitalc=100, mac=120), expected="apexcapitalc",
+            shared_block=self.WALLED)
+        self.assertEqual(sev, "MEDIUM", "a firm-wide wall is not a dead host")
+        self.assertIn("BLOCK_CASH_FLOOR", msg, "name the constraint that fired")
+        self.assertNotIn("Verify the host directly", msg)
+        self.assertIn("does not PROVE", msg)
+
+    def test_an_unreadable_wall_probe_keeps_the_uncorroborated_alarm(self):
+        """Cannot tell must not downgrade (memory `fallback-that-means-act`)."""
+        import single_writer as sw
+        sev, msg = sw.writer_silence_verdict(
+            self._seen(apexcapitalc=100, mac=120), expected="apexcapitalc",
+            shared_block=(None, "UNVERIFIED", "broker snapshot unavailable"))
+        self.assertEqual(sev, "HIGH")
+        self.assertIn("closure", msg)
+
+    def test_every_writer_severity_is_ranked_by_both_consumers(self):
+        """A new severity is a new word; both readers must know it (the firm's
+        main bug class). vm_state_monitor defaults unknown words to loud, so an
+        unranked MEDIUM would ping the desktop for a walled-in, healthy VM; the
+        integrity agent's proposal floor must keep MEDIUM out of the board."""
+        import vm_state_monitor as vsm
+        with patch.object(vsm, "_gcloud_status", return_value=("RUNNING", "ok")), \
+             patch.object(vsm, "_writer_status", return_value=("MEDIUM", "walled")), \
+             patch.object(vsm, "_load_prev", return_value={}), \
+             patch.object(vsm, "_save"), \
+             patch.object(vsm, "_notify_desktop") as banner:
+            worst, _ = vsm.check(escalate=True)
+        self.assertEqual(worst, 0, "a walled-in writer read as a VM problem")
+        banner.assert_not_called()
+        src = (Path(__file__).parent / "cit_pipeline_integrity_agent.py").read_text()
+        self.assertIn('not in ("CRITICAL", "HIGH")', src,
+                      "the proposal floor moved; MEDIUM may now reach the board")
+
+    def test_a_writer_inside_its_grace_never_probes_the_broker(self):
+        """PASS must not cost a live broker read (and must not depend on one)."""
+        import single_writer as sw
+        with patch.object(sw, "shared_constraint_verdict",
+                          side_effect=AssertionError("probed")):
+            sev, _ = sw.writer_silence_verdict(
+                self._seen(apexcapitalc=6, mac=20), expected="apexcapitalc")
+        self.assertEqual(sev, "PASS")
 
     def test_a_quiet_weekend_does_not_cry_wolf(self):
         import single_writer as sw
@@ -11032,7 +11114,8 @@ class TestDesignatedWriterSilence(unittest.TestCase):
         """An order nobody can attribute must not stand in for a live peer."""
         import single_writer as sw
         sev, _ = sw.writer_silence_verdict(
-            self._seen(apexcapitalc=100, UNSTAMPED=1), expected="apexcapitalc")
+            self._seen(apexcapitalc=100, UNSTAMPED=1), expected="apexcapitalc",
+            shared_block=self.OPEN)
         self.assertEqual(sev, "HIGH",
                          "UNSTAMPED is not a known host, so it proves nothing "
                          "about whether the market was open")
