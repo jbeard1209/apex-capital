@@ -36866,6 +36866,224 @@ class TestANonWriterHostCanOnlyEnforceStops(unittest.TestCase):
         self.assertEqual(calls, ["cro", "review", "manager", "enforce", "board"])
 
 
+class TestFixerLifecycle(unittest.TestCase):
+    """Specialist-fixer lifecycle (2026-11-19, docs/fixer_build_plan.md).
+
+    Every status a fixer can set must be read the same way by both readers
+    (board_dispatch.standing_ids and problem_lifecycle_sentinel), a supersede
+    must carry its proof, and no fixer verb may touch escalated_to_board."""
+
+    def setUp(self):
+        import board_dispatch as bd
+        self.bd = bd
+        self._tmp = tempfile.TemporaryDirectory(prefix="fixer_lifecycle_")
+        self._orig = bd.DATA
+        bd.DATA = Path(self._tmp.name)
+
+    def tearDown(self):
+        self.bd.DATA = self._orig
+        self._tmp.cleanup()
+
+    def _q(self, rows):
+        (self.bd.DATA / "cit_implementation_queue.json").write_text(json.dumps(rows))
+
+    def _read(self):
+        return json.loads((self.bd.DATA / "cit_implementation_queue.json").read_text())
+
+    def test_done_words_agree_between_the_two_readers(self):
+        import problem_lifecycle_sentinel as pls
+        for st in self.bd.DONE_STATUSES:
+            self.assertIn(st, pls.RESOLVED_STATUSES,
+                          f"{st!r} is done for board_dispatch but OPEN for the sentinel")
+        for st in self.bd.FIXER_STATUSES:
+            self.assertNotIn(st, self.bd.DONE_STATUSES)
+
+    def test_a_claimed_or_pr_open_row_is_standing_so_not_revoted(self):
+        ledger = [{"id": "x1", "approved_at": "2026-11-19"},
+                  {"id": "x2", "approved_at": "2026-11-19"},
+                  {"id": "x3", "approved_at": "2026-11-19"}]
+        q = [{"proposal_id": "x1", "status": "claimed"},
+             {"proposal_id": "x2", "status": "pr_open"},
+             {"proposal_id": "x3", "status": "superseded"}]
+        self.assertEqual(self.bd.standing_ids(q, ledger), {"x1", "x2"})
+
+    def test_claim_pr_implemented_happy_path_and_md5_required(self):
+        self._q([{"proposal_id": "p", "status": "queued"}])
+        self.bd.claim("p", "fixer-ops", "claude/fix-p")
+        self.bd.mark_pr_open("p", "https://github.com/x/y/pull/1")
+        with self.assertRaises(ValueError):
+            self.bd.mark_implemented("p", "merged and deployed")
+        self.bd.mark_implemented("p", "merged; VM md5 matches origin/main")
+        row = self._read()[-1]
+        self.assertEqual(row["status"], "implemented")
+        self.assertEqual([h["to"] for h in row["dispatch_history"]],
+                         ["claimed", "pr_open", "implemented"])
+
+    def test_no_fixer_verb_moves_an_escalated_to_board_row(self):
+        self._q([{"proposal_id": "e", "status": "escalated_to_board"}])
+        for fn in (lambda: self.bd.claim("e", "o", "b"),
+                   lambda: self.bd.supersede("e", "ls", "gone"),
+                   lambda: self.bd.release("e", "n")):
+            with self.assertRaises(ValueError):
+                fn()
+        self.assertEqual(self._read()[-1]["status"], "escalated_to_board")
+
+    def test_supersede_needs_check_and_reason_and_writes_a_backup(self):
+        self._q([{"proposal_id": "s", "status": "queued"}])
+        with self.assertRaises(ValueError):
+            self.bd.supersede("s", "", "moot")
+        with self.assertRaises(ValueError):
+            self.bd.supersede("s", "grep showed 0", "  ")
+        self.assertEqual(self._read()[-1]["status"], "queued")
+        row = self.bd.supersede("s", "fi_pipeline_log.json has 40 runs", "FI runs now")
+        self.assertEqual(row["status"], "superseded")
+        self.assertTrue((self.bd.DATA / row["supersede_backup"]).exists())
+        backup = json.loads((self.bd.DATA / row["supersede_backup"]).read_text())
+        self.assertEqual(backup[-1]["status"], "queued")   # the state BEFORE
+
+    def test_stale_claim_returns_to_queued_fresh_one_stays(self):
+        from datetime import datetime, timedelta
+        now = datetime(2026, 11, 19, 12, 0)
+        self._q([{"proposal_id": "old", "status": "claimed",
+                  "claimed_at": (now - timedelta(days=4)).isoformat()},
+                 {"proposal_id": "new", "status": "claimed",
+                  "claimed_at": (now - timedelta(days=1)).isoformat()}])
+        self.assertEqual(self.bd.release_stale_claims(now), ["old"])
+        st = {r["proposal_id"]: r["status"] for r in self._read()}
+        self.assertEqual(st, {"old": "queued", "new": "claimed"})
+
+    def test_new_row_is_routed_and_evidence_falls_back_to_description(self):
+        row = self.bd._new_row({"id": "loop-sig-abc", "title": "[LOOP] x",
+                                "description": "Cron job stale on weekday -- FE x log "},
+                               "test", "queued")
+        self.assertEqual(row["evidence"], "Cron job stale on weekday -- FE x log ")
+        self.assertIn(row["owner_area"], __import__("fixer_routing").AREAS)
+        self.assertTrue(row["routed_rule"])
+
+    def test_backfill_gives_every_loop_row_its_problem_text(self):
+        self._q([{"proposal_id": "loop-sig-aaa", "status": "queued", "title": "[LOOP] x"},
+                 {"proposal_id": "loop-sig-bbb", "status": "needs_human", "title": "[LOOP] y"},
+                 {"proposal_id": "done-1", "status": "implemented", "title": "z"}])
+        (self.bd.DATA / "problem_lifecycle.json").write_text(json.dumps({
+            "sig-aaa": {"sig": "sig-aaa", "title": "Kalshi ladder quotes a non-monotone pair", "occurrences": 5},
+            "sig-bbb": {"sig": "sig-bbb", "title": "zero_picks anomaly", "occurrences": 9}}))
+        c = self.bd.backfill_open_rows()
+        rows = {r["proposal_id"]: r for r in self._read()}
+        self.assertEqual(c["evidence"], 2)
+        self.assertEqual(c["unrouted_after"], 0)
+        self.assertIn("Kalshi ladder quotes a non-monotone pair", rows["loop-sig-aaa"]["evidence"])
+        self.assertEqual(rows["loop-sig-aaa"]["owner_area"], "kalshi")
+        self.assertEqual(rows["loop-sig-bbb"]["owner_area"], "research")
+        self.assertNotIn("owner_area", rows["done-1"])               # closed rows untouched
+        self.assertTrue(list(self.bd.DATA.glob("*.before-fixer-backfill.*.json")))
+        # idempotent: a second pass changes nothing and writes no second backup
+        before = self._read()
+        self.assertEqual(self.bd.backfill_open_rows()["evidence"], 0)
+        self.assertEqual(self._read(), before)
+
+
+class TestRerunStaleJob(unittest.TestCase):
+    """rerun-job handler: a stale cron row reruns its job's crontab line once,
+    and only when that job is unambiguous, scheduled here, and not on the deny list."""
+
+    def setUp(self):
+        import board_dispatch as bd
+        self.bd = bd
+        self._tmp = tempfile.TemporaryDirectory(prefix="rerun_job_")
+        self.d = Path(self._tmp.name)
+        bd._reruns_this_run[0] = 0
+        bd._dry[0] = False
+
+    def tearDown(self):
+        self.bd._reruns_this_run[0] = 0
+        self.bd._dry[0] = False
+        self._tmp.cleanup()
+
+    def _row(self, label):
+        return {"proposal_id": "LO-1-cron_stale",
+                "title": f"Cron job stale on weekday -- {label} log 30h old"}
+
+    def _run(self, label, crontab):
+        with patch.object(self.bd, "_crontab_lines", return_value=crontab):
+            return self.bd._handle_rerun_job(self._row(label))
+
+    def test_routing_reaches_the_handler_by_title_not_prefix(self):
+        self.assertIs(self.bd._handler_for("LO-1-x", self._row("A b")),
+                      self.bd._handle_rerun_job)
+        self.assertIsNone(self.bd._handler_for("LO-1-x", {"title": "nothing"}))
+
+    def test_MUTATION_it_actually_runs_the_crontab_line(self):
+        out = self.d / "ran.txt"
+        line = f"*/5 * * * * echo ok > {out} # stale_probe_job.py"
+        r = self._run("Stale probe job", [line])
+        self.assertEqual(r["status"], "executed", r)
+        self.assertEqual(out.read_text().strip(), "ok")
+
+    def test_non_zero_exit_is_needs_human_not_executed(self):
+        r = self._run("Stale probe job", ["0 * * * * false # stale_probe_job.py"])
+        self.assertEqual(r["status"], "needs_human")
+        self.assertEqual(r["owner_area"], "ops")
+
+    def test_dry_run_reports_and_runs_nothing(self):
+        out = self.d / "ran.txt"
+        self.bd._dry[0] = True
+        r = self._run("Stale probe job", [f"* * * * * touch {out} # stale_probe_job.py"])
+        self.assertEqual(r["status"], "queued")
+        self.assertIn("would run", r["note"])
+        self.assertFalse(out.exists())
+
+    def test_deny_list_never_reruns_a_broker_job(self):
+        out = self.d / "ran.txt"
+        r = self._run("Alpaca trader", [f"* * * * * touch {out} # alpaca_trader.py"])
+        self.assertEqual(r["status"], "needs_human")
+        self.assertFalse(out.exists())
+
+    def test_no_crontab_on_this_host_leaves_it_queued(self):
+        r = self._run("Stale probe job", None)
+        self.assertEqual(r["status"], "queued")
+
+    def test_unscheduled_or_unknown_job_goes_to_ops(self):
+        self.assertEqual(self._run("Totally absent widget", [])["status"], "needs_human")
+
+    def test_cap_defers_after_max_reruns(self):
+        self.bd._reruns_this_run[0] = self.bd.MAX_RERUNS_PER_RUN
+        r = self._run("Stale probe job", ["* * * * * true # stale_probe_job.py"])
+        self.assertEqual(r["status"], "queued")
+        self.assertIn("cap", r["note"])
+
+
+class TestFixerRoutingContract(unittest.TestCase):
+    """Producer -> fixer contract: every area route() can return is a fixer with a
+    brief file, or the Chairman. A new rule naming an area with no brief is a row
+    routed to a consumer that does not exist (the firm's main bug class)."""
+
+    def test_every_rule_area_is_known_and_every_fixer_has_a_brief(self):
+        import fixer_routing as fr
+        for name, area, _ in fr._RULES:
+            self.assertIn(area, fr.AREAS, name)
+        repo = Path(__file__).resolve().parent.parent
+        if not (repo / "docs" / "fixers").is_dir():
+            self.skipTest("no docs/fixers on this host (VM gets institutional-tracker only)")
+        for area in fr.FIXER_AREAS:
+            self.assertTrue(fr.brief_path(area).exists(), f"no brief for fixer {area!r}")
+        self.assertIsNone(fr.brief_path("chairman"))
+
+    def test_route_never_leaves_AREAS_and_carveouts_win(self):
+        import fixer_routing as fr
+        for row in ({}, {"title": None}, {"proposal_id": "fund-sanity-ABBV"},
+                    {"title": "ML capital allocation change"},
+                    {"title": "random", "evidence": "nothing matches"}):
+            self.assertIn(fr.route(row)[0], fr.AREAS)
+        self.assertEqual(fr.route({"title": "ML idle pod capital"})[0], "chairman")
+        self.assertEqual(fr.route({"title": "x"}, "Kalshi arm gate opened")[0], "chairman")
+        self.assertEqual(fr.route({"title": "zero_picks anomaly",
+                                   "evidence": "CRO=HIGH"})[0], "research")
+        # LTIA loss rows fell to the wiring fallback on the Mac queue 2026-11-19
+        self.assertEqual(fr.route({"proposal_id": "LTIA-20261112015815",
+                                   "title": "[LTIA] Loss needs corrective action, not just "
+                                            "documentation"})[0], "risk")
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.
