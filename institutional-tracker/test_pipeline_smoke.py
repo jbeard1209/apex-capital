@@ -37894,6 +37894,41 @@ class TestThe13FSignalEngineReadsRealFilings(unittest.TestCase):
         self.assertEqual(int(df.iloc[0]["n_institutions"]), 2)
 
 
+
+class TestTwoSigmaIsTwoSigma(unittest.TestCase):
+    """config mapped "Two Sigma" to CIK 0001649339, which EDGAR names Scion Asset
+    Management (checked 2026-11-19). 33 filings of Burry's book trained the model
+    as Two Sigma's. The real Two Sigma Investments, LP is 0001179392."""
+
+    def test_the_two_sigma_cik_is_two_sigmas(self):
+        import config
+        self.assertEqual(config.TRACKED_INSTITUTIONS["Two Sigma"], "0001179392")
+
+    def test_no_two_institutions_share_a_cik(self):
+        import config
+        ciks = list(config.TRACKED_INSTITUTIONS.values())
+        self.assertEqual(len(ciks), len(set(ciks)))
+
+    def test_the_migration_relabels_scion_rows_and_deletes_nothing(self):
+        import sqlite3, migrate_two_sigma_cik as m
+        c = sqlite3.connect(":memory:")
+        c.executescript("""
+            CREATE TABLE filings (id INTEGER, institution TEXT, cik TEXT);
+            CREATE TABLE holdings (id INTEGER, filing_id INTEGER, institution TEXT);
+            CREATE TABLE pipeline_snapshots (id INTEGER, institution TEXT);
+            INSERT INTO filings VALUES (1,'Two Sigma','0001649339'),(2,'Citadel','0001423053');
+            INSERT INTO holdings VALUES (1,1,'Two Sigma'),(2,2,'Citadel');
+            INSERT INTO pipeline_snapshots VALUES (1,'Two Sigma'),(2,'Citadel');""")
+        dry = m.migrate(c, apply=False)
+        self.assertEqual((dry["filings"], dry["holdings"], dry["pipeline_snapshots"]), (1, 1, 1))
+        self.assertEqual(c.execute("select count(*) from filings where institution='Two Sigma'").fetchone()[0], 1)
+        m.migrate(c, apply=True)
+        for t in ("filings", "holdings", "pipeline_snapshots"):
+            self.assertEqual(c.execute(f"select count(*) from {t}").fetchone()[0], 2)
+            self.assertEqual(c.execute(f"select count(*) from {t} where institution='Two Sigma'").fetchone()[0], 0)
+            self.assertEqual(c.execute(f"select count(*) from {t} where institution=?", (m.SCION_LABEL,)).fetchone()[0], 1)
+        self.assertEqual(m.migrate(c, apply=True)["filings"], 0)   # idempotent
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.
