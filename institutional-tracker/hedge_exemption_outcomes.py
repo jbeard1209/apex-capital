@@ -224,6 +224,16 @@ def record_use(symbol, side, qty, price, snap, reason) -> Optional[str]:
 def _current_snapshot(client=None) -> Optional[dict]:
     """Fresh broker snap for grading. Never raises."""
     try:
+        # The 13:00 caller (apex_system_cit_agent) never loads .env, and
+        # risk_gate.snapshot reads os.environ["ALPACA_API_KEY"]: without this
+        # every grade was "no snapshot available yet" (KeyError daily from
+        # 2026-11-15). override=False keeps any env the caller already set.
+        try:
+            from dotenv import load_dotenv
+            load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env",
+                        override=False)
+        except Exception as e:
+            logger.warning(f"  [hedge_outcomes] .env load failed: {e}")
         import risk_gate
         return risk_gate.snapshot(client=client, force=True)
     except Exception as e:

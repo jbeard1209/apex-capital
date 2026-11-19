@@ -37374,6 +37374,46 @@ class TestADesignedRiskRefusalIsNotAnError(unittest.TestCase):
         line = "13:45:01  WARNING       [risk_gate] BLOCKED OrderSide.BUY 5 XLV: 21 positions open"
         self.assertNotIn("  ERROR ", line)
 
+
+class TestHedgeGradingLoadsBrokerCredentials(unittest.TestCase):
+    """hedge_exemption_outcomes is called from apex_system_cit_agent's 13:00
+    cron, a process that never loads .env. risk_gate.snapshot() reads
+    os.environ["ALPACA_API_KEY"], so every day from 11-15 on it raised
+    KeyError, the snapshot was None, and grading + auto-tighten ran blind
+    ("no snapshot available yet") forever. The grader must load .env itself
+    before asking the broker (2026-11-19)."""
+
+    def test_snapshot_sees_credentials_from_dotenv_when_env_is_empty(self):
+        import os as _os
+        import sys as _sys
+        import types
+        from unittest import mock
+        import hedge_exemption_outcomes as heo
+        seen = {}
+
+        fake_rg = types.ModuleType("risk_gate")
+        def _snap(client=None, force=False):
+            seen["key"] = _os.environ.get("ALPACA_API_KEY")
+            return {"positions": {}}
+        fake_rg.snapshot = _snap
+
+        def _fake_load(dotenv_path=None, override=False, **kw):
+            seen["path"] = str(dotenv_path)
+            _os.environ.setdefault("ALPACA_API_KEY", "from-dotenv")
+            return True
+
+        env = {k: v for k, v in _os.environ.items()
+               if k not in ("ALPACA_API_KEY", "ALPACA_SECRET_KEY")}
+        with mock.patch.dict(_os.environ, env, clear=True), \
+             mock.patch.dict(_sys.modules, {"risk_gate": fake_rg}), \
+             mock.patch("dotenv.load_dotenv", _fake_load):
+            snap = heo._current_snapshot()
+        self.assertIsNotNone(snap)
+        self.assertEqual(seen.get("key"), "from-dotenv",
+                         "risk_gate.snapshot ran with no ALPACA_API_KEY: the "
+                         "grader never loaded .env")
+        self.assertTrue(seen.get("path", "").endswith(".env"))
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.
