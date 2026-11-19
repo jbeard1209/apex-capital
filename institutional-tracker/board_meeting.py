@@ -130,8 +130,24 @@ def _load_ml_intelligence() -> dict:
     model_auc_label = _mm.get("auc_label", "N/A")
     model_cv_auc    = _mm.get("cv_auc_mean")
 
-    drift_status   = drift.get("status", "UNKNOWN") if drift else "UNKNOWN"
-    quality_status = quality.get("overall_status", "UNKNOWN") if quality else "UNKNOWN"
+    # A status is only today's if its report is. ml_data_watchdog and
+    # ml_drift_monitor are scheduled on neither host, and until 2026-11-19 this
+    # panel printed the May-23 data-quality "WARNING" as current. 54h matches
+    # freshness_sentinel's max_age_h for data_quality_report.json; an unreadable
+    # stamp is not evidence of freshness (time_utils.is_stale's default).
+    def _current(report: dict, key: str, max_age_h: float = 54) -> str:
+        if not report:
+            return "UNKNOWN"
+        last = report.get(key, "UNKNOWN")
+        ts = report.get("timestamp") or report.get("generated_at")
+        if not time_utils.is_stale(ts, max_age_h):
+            return last
+        dt = time_utils.parse_ts(ts)
+        since = dt.date().isoformat() if dt else "an unknown date"
+        return f"STALE since {since} (last: {last})"
+
+    drift_status   = _current(drift, "status")
+    quality_status = _current(quality, "overall_status")
 
     return {
         "available":        bool(bridge),
@@ -2105,10 +2121,14 @@ def _build_ml_intel_html(ml: dict) -> str:
         auc_color = "#8b949e"  # grey: no real metric to show
     else:
         auc_color = "#3fb950" if auc >= 0.60 else ("#58a6ff" if auc >= 0.58 else "#f0883e")
-    drift_color = "#f85149" if "ALERT" in ml.get("drift_status","") else (
-                  "#f0883e" if "WARN" in ml.get("drift_status","") else "#3fb950")
-    qual_color  = "#f85149" if "FAIL" in ml.get("quality_status","") else (
-                  "#f0883e" if "WARN" in ml.get("quality_status","") else "#3fb950")
+    def _status_color(st: str, bad: str) -> str:
+        # Grey first: a STALE or UNKNOWN status is no reading, and its "last"
+        # word (often OK) must not paint the tile green.
+        if st.startswith(("STALE", "UNKNOWN")) or not st:
+            return "#8b949e"
+        return "#f85149" if bad in st else ("#f0883e" if "WARN" in st else "#3fb950")
+    drift_color = _status_color(ml.get("drift_status", ""), "ALERT")
+    qual_color  = _status_color(ml.get("quality_status", ""), "FAIL")
 
     # Top signal rows
     signal_rows = ""

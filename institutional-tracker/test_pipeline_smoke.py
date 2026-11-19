@@ -37599,6 +37599,63 @@ class TestKalshiBoardReadsTheCalibrationVerdictOnce(unittest.TestCase):
             self.assertFalse(d["approved"])
             self.assertIn("Calibration Officer", d["blocked_by"])
 
+class TestTheBoardDoesNotPresentAFrozenStatusAsCurrent(unittest.TestCase):
+    """The board's ML panel read data/data_quality_report.json and printed its
+    overall_status with no age. ml_data_watchdog is scheduled on neither host,
+    so on 2026-11-19 the board showed "WARNING" from a report written
+    2026-05-23: a six-month-old verdict, presented as today's. A status whose
+    producer has stopped must say so, never repeat its last word."""
+
+    def _run_in(self, files):
+        import board_meeting as bm
+        import tempfile
+        d = tempfile.mkdtemp()
+        os.makedirs(os.path.join(d, "data"))
+        for name, obj in files.items():
+            with open(os.path.join(d, "data", name), "w") as f:
+                json.dump(obj, f)
+        cwd = os.getcwd()
+        try:
+            os.chdir(d)
+            return bm._load_ml_intelligence()
+        finally:
+            os.chdir(cwd)
+
+    def test_an_old_quality_report_reads_stale_with_its_date(self):
+        ml = self._run_in({"data_quality_report.json": {
+            "timestamp": "2026-05-23T14:13:54+00:00", "overall_status": "WARNING"}})
+        self.assertTrue(ml["quality_status"].startswith("STALE"), ml["quality_status"])
+        self.assertIn("2026-05-23", ml["quality_status"])
+        self.assertIn("WARNING", ml["quality_status"])
+
+    def test_a_fresh_quality_report_reads_its_status(self):
+        from datetime import datetime, timezone
+        ml = self._run_in({"data_quality_report.json": {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "overall_status": "OK"}})
+        self.assertEqual(ml["quality_status"], "OK")
+
+    def test_a_report_with_no_timestamp_is_not_current(self):
+        ml = self._run_in({"data_quality_report.json": {"overall_status": "OK"}})
+        self.assertTrue(ml["quality_status"].startswith("STALE"), ml["quality_status"])
+
+    def test_a_stale_tile_is_grey_not_green(self):
+        import board_meeting as bm
+        ml = self._run_in({"data_quality_report.json": {
+            "timestamp": "2026-05-23T14:13:54+00:00", "overall_status": "OK"},
+            "rd_ml_bridge_signals.json": {"updated_at": "x", "regime": {},
+                                          "tickers": {}}})
+        html = bm._build_ml_intel_html(ml)
+        tile = 'color:%s;">%s</div>'
+        self.assertIn(tile % ("#8b949e", ml["quality_status"]), html)
+        self.assertNotIn(tile % ("#3fb950", ml["quality_status"]), html)
+
+    def test_an_old_drift_report_reads_stale(self):
+        ml = self._run_in({"drift_report.json": {
+            "timestamp": "2026-05-01T00:00:00+00:00", "status": "OK"}})
+        self.assertTrue(ml["drift_status"].startswith("STALE"), ml["drift_status"])
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.
