@@ -37007,6 +37007,25 @@ class TestFixerLifecycle(unittest.TestCase):
         self.assertEqual(self._read(), before)
 
 
+    def test_a_fix_the_old_implementer_gave_up_on_still_gets_an_owner(self):
+        # 2026-11-19: 81 June rows sat at skipped/protected with no owner and were
+        # left out of the owner count, so "0 unrouted" was true of a subset only.
+        self._q([{"proposal_id": "CIT-1", "status": "skipped", "title": "fe_board swallows error",
+                  "skip_reason": "Could not identify target file from evidence/fix description"},
+                 {"proposal_id": "CIT-2", "status": "protected", "title": "manager_agent sizing",
+                  "skip_reason": "manager_agent.py is a protected file"}])
+        c = self.bd.backfill_open_rows()
+        rows = {r["proposal_id"]: r for r in self._read()}
+        self.assertEqual(c["unrouted_after"], 0)
+        for pid in ("CIT-1", "CIT-2"):
+            self.assertIn(rows[pid]["owner_area"], __import__("fixer_routing").AREAS)
+        self.assertNotIn("UNROUTED", self.bd._owner_area_counts())
+        self.assertEqual(sum(self.bd._owner_area_counts().values()), 2)
+        self.bd.claim("CIT-1", "fixer-fe", "claude/fix-cit-1")
+        self.bd.supersede("CIT-2", "grep showed the code is gone", "moot")
+        st = {r["proposal_id"]: r["status"] for r in self._read()}
+        self.assertEqual(st, {"CIT-1": "claimed", "CIT-2": "superseded"})
+
 class TestRerunStaleJob(unittest.TestCase):
     """rerun-job handler: a stale cron row reruns its job's crontab line once,
     and only when that job is unambiguous, scheduled here, and not on the deny list."""
