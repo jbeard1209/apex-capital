@@ -528,7 +528,14 @@ def _backfill_legacy(dry_run: bool) -> list:
 # Fixer lifecycle: queued -> claimed -> pr_open -> implemented, or superseded
 # =============================================================================
 
-OPEN_FOR_FIXERS = frozenset({"queued", "needs_human"}) | FIXER_STATUSES
+# Approved fixes the old cit_implementation_agent gave up on in June 2026
+# ("Could not identify target file", or a protected file needing a human). That
+# agent is scheduled on neither host, so these 81 rows (VM, 2026-11-19) were
+# approved and owned by nobody, and invisible to the owner count because they
+# were not "open". They are fixer work like any queued row: routed to an owner,
+# claimable, and closable as superseded when their premise is gone.
+STRANDED_STATUSES = frozenset({"skipped", "protected"})
+OPEN_FOR_FIXERS = frozenset({"queued", "needs_human"}) | FIXER_STATUSES | STRANDED_STATUSES
 
 
 def _problem_history() -> dict:
@@ -615,7 +622,7 @@ def _set_status(pid: str, status: str, allowed_from: frozenset, **fields) -> dic
 
 
 def claim(pid: str, owner: str, branch: str) -> dict:
-    return _set_status(pid, "claimed", frozenset({"queued", "needs_human"}),
+    return _set_status(pid, "claimed", frozenset({"queued", "needs_human"}) | STRANDED_STATUSES,
                        claimed_by=owner, claimed_at=_now(), branch=branch)
 
 
@@ -647,7 +654,8 @@ def supersede(pid: str, check: str, reason: str, by: str = "fixer") -> dict:
     backup = _backup_queue(aj.read(str(_queue_path()), default=[]) or [],
                            "before-supersede")
     return _set_status(pid, "superseded",
-                       frozenset({"queued", "needs_human", "awaiting_chairman"}) | FIXER_STATUSES,
+                       frozenset({"queued", "needs_human", "awaiting_chairman"}) | FIXER_STATUSES
+                       | STRANDED_STATUSES,
                        supersede_check=check, supersede_reason=reason,
                        superseded_by=by, superseded_at=_now(), supersede_backup=backup)
 
