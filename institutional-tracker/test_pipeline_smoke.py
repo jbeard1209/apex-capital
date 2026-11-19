@@ -37455,6 +37455,28 @@ class TestNegativeEquityIsNotImpossibleFundamentals(unittest.TestCase):
         self.assertIsNotNone(f)
         self.assertTrue(f["impossible"], "cannot verify, so fail closed")
 
+
+class TestAnIndexIsNotAPick(unittest.TestCase):
+    """historicalcontextanalyst_cos watches ^VIX as context and emitted it as
+    a BUY_NEW pick. The Manager APPROVED it, the broker rejected it, it showed
+    as a 0-day HOLD, and the agent was graded on VIX moves, every day. A
+    '^'-prefixed symbol is an index quote, never an order. research_team must
+    drop it at the pick boundary (2026-11-19)."""
+
+    def test_drop_untradeable_removes_index_symbols(self):
+        import research_team as rt
+        kept = rt._drop_untradeable([{"ticker": "^VIX"}, {"ticker": "SPY"},
+                                     {"ticker": " ^GSPC"}, {"ticker": "AAPL"}])
+        self.assertEqual([r["ticker"] for r in kept], ["SPY", "AAPL"])
+
+    def test_run_applies_the_filter_before_the_report(self):
+        import ast, inspect, textwrap
+        import research_team as rt
+        src = textwrap.dedent(inspect.getsource(rt.ResearchTeamCoordinator.run))
+        calls = {n.func.id for n in ast.walk(ast.parse(src))
+                 if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)}
+        self.assertIn("_drop_untradeable", calls)
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

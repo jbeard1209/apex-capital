@@ -101,6 +101,23 @@ ENERGY_BLOCK = {
 # SECTOR RESEARCH AGENT
 # =============================================================================
 
+def _drop_untradeable(picks: list) -> list:
+    """Drop index symbols ('^VIX', '^GSPC') from the pick list.
+
+    Context agents watch indices; a '^' symbol is a quote, never an order.
+    ^VIX went BUY_NEW -> Manager APPROVED -> broker REJECTED daily, and the
+    emitting agent was graded on VIX moves (2026-11-19)."""
+    kept = []
+    for r in picks or []:
+        t = str((r or {}).get("ticker", "")).strip()
+        if t.startswith("^"):
+            logger.warning(f"  [research_team] dropped untradeable index pick {t} "
+                           f"from {(r or {}).get('source_agent', '?')}")
+            continue
+        kept.append(r)
+    return kept
+
+
 class SectorResearchAgent:
     """
     A single research agent assigned to one sector by the R&D Team Leader.
@@ -598,6 +615,8 @@ class ResearchTeamCoordinator:
                     logger.warning(f"  Could not record the agent run manifest: {e}")
             except Exception as e:
                 logger.warning(f"  Could not load agent registry: {e}")
+
+        all_picks = _drop_untradeable(all_picks)
 
         # Sort all picks by conviction desc
         all_picks.sort(key=lambda r: r["conviction"], reverse=True)
