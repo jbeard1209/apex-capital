@@ -37762,6 +37762,67 @@ class TestTheBoardDoesNotPresentAFrozenStatusAsCurrent(unittest.TestCase):
         self.assertTrue(ml["drift_status"].startswith("STALE"), ml["drift_status"])
 
 
+class TestEmailBufferOverflowMeansAMissedFlush(unittest.TestCase):
+    """"Email buffer overflow -- N unsent emails (threshold 50); email sender may
+    be broken" was filed 4x as loop-sig-f144f924c8e4 while the sender worked.
+
+    The buffer is BATCHED BY DESIGN: everything non-urgent waits for the 22:00
+    UTC digest. On 2026-11-18 that digest sent 85 reports (logs/digest_20261118.log),
+    so any weekday afternoon holds more than 50 and the count alarm fired on a
+    healthy day. A count cannot tell a busy day from a dead sender; the age of the
+    oldest unsent email can, because a working digest empties the buffer daily.
+    """
+
+    @staticmethod
+    def _run(ages_h):
+        import apex_system_cit_agent as A
+        now = datetime.now()
+        buf = [{"subject": "report %d" % i, "dedup_key": "k%d" % i,
+                "buffered_at": (now - timedelta(hours=h)).isoformat()}
+               for i, h in enumerate(ages_h)]
+        orig = A._load_json
+        A._load_json = lambda path: buf if path == A._EMAIL_BUFFER else orig(path)
+        try:
+            out = []
+            A.check_email_buffer(out)
+        finally:
+            A._load_json = orig
+        # Both the old and the new wording name "unsent emails"; the loop
+        # detector's "Repeated email subjects" finding is a different check.
+        return [p for p in out if "unsent emails" in p["description"].lower()]
+
+    def test_a_busy_day_inside_one_flush_cycle_is_not_a_broken_sender(self):
+        found = self._run([0.5 + i * 0.2 for i in range(87)])  # 87 mails, oldest ~18h
+        self.assertEqual([], found, "a full-but-flushing buffer was called broken")
+
+    def test_a_missed_flush_is_still_caught(self):
+        """The guard must not have bought silence by deleting the check."""
+        found = self._run([1, 2, 30])
+        self.assertEqual(1, len(found), found)
+        self.assertEqual("HIGH", found[0]["severity"])
+        self.assertIn("30", found[0]["description"])
+
+    def test_the_new_wording_still_routes_to_the_ops_fixer(self):
+        """A reworded producer is a new identifier: the router keyed on
+        "email buffer", so without its own keyword this row fell to wiring."""
+        import fixer_routing as fr
+        row = {"proposal_id": "apex-sys-cit-x",
+               "title": self._run([30])[0]["description"]}
+        self.assertEqual("ops", fr.route(row)[0])
+
+    def test_entries_with_no_enqueue_time_do_not_fake_an_age(self):
+        import apex_system_cit_agent as A
+        orig = A._load_json
+        A._load_json = lambda path: ([{"subject": "x"}] * 90
+                                     if path == A._EMAIL_BUFFER else orig(path))
+        try:
+            out = []
+            A.check_email_buffer(out)
+        finally:
+            A._load_json = orig
+        self.assertEqual([], [p for p in out if "unsent emails" in p["description"].lower()])
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.
