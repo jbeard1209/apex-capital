@@ -211,6 +211,7 @@ def run_reconciliation() -> dict:
                 broker_pos[str(_p.get("ticker", "")).upper()] = {
                     "qty": float(_p.get("qty", 0) or 0),
                     "price": float(_p.get("current_price", 0) or 0),
+                    "avg_entry": float(_p.get("avg_entry", 0) or 0),
                 }
         recon = pod_ledger.reconcile_to_broker(broker_pos, portfolio_value, cash)
         # Budgets follow real deployable cash and pod performance (Chairman,

@@ -37,6 +37,27 @@ DATA = HERE / "data"
 REGISTRY = HERE / "config" / "liveness.json"
 
 
+def _under_test():
+    """True only when a test runner is the entry point.
+
+    This used to be `"unittest" in sys.modules`. scikit-learn, xgboost,
+    lightgbm and matplotlib all import unittest, so every main.py run that
+    touched the ML model was "under test": on 2026-11-20 the VM's 16:00
+    main.py wrote coherence_laws / internal_audit / hr_evaluation heartbeats to
+    /tmp/apex_heartbeats_under_test, and the liveness watcher filed both as
+    "no heartbeat file". A guard keyed on what is LOADED is fooled by any
+    library; key on what is RUNNING (__main__), plus pytest, which no library
+    imports."""
+    if "pytest" in sys.modules:
+        return True
+    main = sys.modules.get("__main__")
+    spec_name = getattr(getattr(main, "__spec__", None), "name", "") or ""
+    if spec_name.split(".")[0] in ("unittest", "pytest"):
+        return True
+    base = os.path.basename(getattr(main, "__file__", "") or "")
+    return base.startswith("test_") or base.endswith("_test.py")
+
+
 def _hb_dir():
     env = os.environ.get("APEX_HEARTBEAT_DIR")
     if env:
@@ -46,7 +67,7 @@ def _hb_dir():
     # the REAL heartbeat and prove the job alive by the act of testing it --
     # the coherence_report checked_at trap. No production module imports
     # unittest (pinned in test_liveness), so its presence means "under test".
-    if "unittest" in sys.modules or "pytest" in sys.modules:
+    if _under_test():
         import tempfile
         return Path(tempfile.gettempdir()) / "apex_heartbeats_under_test"
     return DATA / "heartbeats"

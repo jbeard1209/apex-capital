@@ -24108,6 +24108,66 @@ class TestGroundTruthCanExpire(unittest.TestCase):
         self.assertIsNone(s["return_vs_budget_pct"])
 
 
+class TestEveryBrokerPositionHasAnOwningPod(unittest.TestCase):
+    """Chairman 2026-11-20: 72% of the book ($45k, 10 symbols on the VM)
+    belonged to no pod, so no pod budget was charged for it. The sync now
+    adopts each unclaimed position (ETF universe -> pod3_macro, else pod1_rd,
+    never the idle ML pod), records who submitted it, and places no order."""
+
+    def _sync(self, pods, broker, attribution=None):
+        import pod_ledger
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        path = Path(tmp.name) / "pod_allocations.json"
+        path.write_text(json.dumps({"pods": pods, "reserve": {"balance": 0.0},
+                                    "attribution": attribution or {}}))
+        with patch.object(pod_ledger, "_ALLOCATIONS_PATH", path):
+            out = pod_ledger.sync_from_broker(broker)
+        return out, json.loads(path.read_text())
+
+    def test_nothing_is_left_unowned_and_the_idle_pod_adopts_nothing(self):
+        pods = {"pod1_rd": {"budget": 100, "positions": {}},
+                "pod2_ml": {"budget": 0, "positions": {}},
+                "pod3_macro": {"budget": 100, "positions": {}}}
+        broker = {"AAPL": {"qty": 12, "price": 300.0, "avg_entry": 250.0},
+                  "ORCL": {"qty": -72, "price": 100.0},
+                  "XLV": {"qty": 10, "price": 150.0}}
+        out, data = self._sync(pods, broker,
+                               {"AAPL": {"pod": "unattributed", "source": "manageragent"}})
+        self.assertEqual([], out["unattributed_symbols"])
+        self.assertEqual(0.0, out["unattributed_value"])
+        self.assertEqual({}, data["unattributed"])
+        self.assertEqual({"AAPL", "ORCL"}, set(data["pods"]["pod1_rd"]["positions"]))
+        self.assertEqual({"XLV"}, set(data["pods"]["pod3_macro"]["positions"]))
+        self.assertEqual({}, data["pods"]["pod2_ml"]["positions"])
+        self.assertEqual(-72, data["pods"]["pod1_rd"]["positions"]["ORCL"]["qty"])
+        self.assertEqual(250.0, data["pods"]["pod1_rd"]["positions"]["AAPL"]["avg_entry"])
+        self.assertEqual(10800.0, out["deployed_by_pod"]["pod1_rd"])  # 12x300 + 72x100, gross
+        by = {a["symbol"]: a["submitted_by"] for a in data["adoptions"]}
+        self.assertEqual("manageragent", by["AAPL"], "the undeclared submitter must stay named")
+
+    def test_a_second_sync_is_idempotent_and_keeps_broker_quantities(self):
+        pods = {"pod1_rd": {"budget": 100, "positions": {}}}
+        broker = {"MSFT": {"qty": 8, "price": 500.0}}
+        import pod_ledger
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        path = Path(tmp.name) / "pod_allocations.json"
+        path.write_text(json.dumps({"pods": pods}))
+        with patch.object(pod_ledger, "_ALLOCATIONS_PATH", path):
+            pod_ledger.sync_from_broker(broker)
+            out = pod_ledger.sync_from_broker({"MSFT": {"qty": 5, "price": 510.0}})
+            data = json.loads(path.read_text())
+        self.assertEqual([], out["adopted"], "an owned position is not re-adopted")
+        self.assertEqual(5, data["pods"]["pod1_rd"]["positions"]["MSFT"]["qty"])
+        self.assertEqual(1, len(data["adoptions"]))
+
+    def test_adoption_places_no_order(self):
+        src = (Path(__file__).parent / "pod_ledger.py").read_text()
+        for word in ("submit_order", "submit_buy", "submit_sell", "alpaca"):
+            self.assertNotIn(word, src.split("def adoption_pod")[1].split("def reconcile_to_broker")[0])
+
+
 class TestAttributionSitsAtTheChokePoint(unittest.TestCase):
     """`record_trade` was called by 2 modules while 15 reached the broker.
 
@@ -29250,7 +29310,7 @@ class TestTheAlertQueueSurvivesConcurrentProducers(unittest.TestCase):
         self.assertNotIn("open", names, "_save_buffer must not open the live path")
 
 
-from test_liveness import TestLiveness  # noqa: F401  (M00: registered so the suite runs it)
+from test_liveness import TestLiveness, TestATestCannotRefreshAProductionHeartbeat  # noqa: F401  (M00: registered so the suite runs it)
 
 
 class TestThePrePushGateIsTheOneWeShip(unittest.TestCase):

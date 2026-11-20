@@ -169,6 +169,18 @@ class TestATestCannotRefreshAProductionHeartbeat(unittest.TestCase):
             if saved is not None:
                 os.environ["APEX_HEARTBEAT_DIR"] = saved
 
+    def test_a_library_importing_unittest_is_not_a_test(self):
+        # sklearn/xgboost/lightgbm/matplotlib import unittest; a production
+        # process that loads one must still beat into data/heartbeats.
+        import subprocess
+        here = Path(__file__).resolve().parent
+        env = {k: v for k, v in os.environ.items() if k != "APEX_HEARTBEAT_DIR"}
+        out = subprocess.run(
+            [sys.executable, "-c", "import unittest, liveness; print(liveness._hb_dir())"],
+            cwd=str(here), env=env, capture_output=True, text=True, timeout=60)
+        self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertEqual(out.stdout.strip(), str(here / "data" / "heartbeats"))
+
     def test_no_production_module_imports_unittest(self):
         # The guard above keys on sys.modules; a production import of unittest
         # would silently divert that job's live heartbeats to /tmp.
