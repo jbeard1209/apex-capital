@@ -35590,6 +35590,41 @@ class TestKalshiCopytradeCannotOverspendOrMisfire(unittest.TestCase):
             finally:
                 ct.LEDGER_FILE, ct.HALT_FILE = orig
 
+    def test_a_re_added_leader_is_seeded_again_not_walked_as_stale(self):
+        """2026-11-20 01:02 UTC: richstrike, followed before, dropped, then
+        re-added, came back with 100 fills going back to 11-15. Only the very
+        first follow seeded, so every one was logged "stale" — 100 rows that
+        read as a minute of copy lag. A return is now a first poll."""
+        import kalshi_copytrade as ct
+        with tempfile.TemporaryDirectory() as td:
+            orig = (ct.LEDGER_FILE, ct.HALT_FILE)
+            ct.LEDGER_FILE, ct.HALT_FILE = Path(td) / "l.jsonl", Path(td) / "h"
+            try:
+                old = self._trade(trade_id="old", create_date="2026-11-15T06:49:11Z")
+                feed = {"trades": [old]}
+                with patch.object(ct, "armed", return_value=(False, "test")):
+                    state = {"initialised": ["Leader"], "seen": {"Leader": ["older"]},
+                             "polled_leaders": []}            # dropped since
+                    rows = ct.poll_once(self._cfg(leaders=["Leader"]), state,
+                                        now=self.NOW, fetch=lambda n: feed)
+                    self.assertEqual(rows, [], "a returning leader's backlog is history")
+                    self.assertEqual(state["polled_leaders"], ["Leader"])
+                    feed = {"trades": [self._trade(trade_id="new"), old]}
+                    rows = ct.poll_once(self._cfg(leaders=["Leader"]), state,
+                                        now=self.NOW, fetch=lambda n: feed)
+                    self.assertEqual([r["leader_trade_id"] for r in rows], ["new"])
+                    # dropped again: forgotten from polled, so the next return seeds
+                    ct.poll_once(self._cfg(leaders=[]), state, now=self.NOW,
+                                 fetch=lambda n: feed)
+                    self.assertEqual(state["polled_leaders"], [])
+                    # a state file from before this change copies as it always did
+                    legacy = {"initialised": ["Leader"], "seen": {"Leader": ["old"]}}
+                    rows = ct.poll_once(self._cfg(leaders=["Leader"]), legacy,
+                                        now=self.NOW, fetch=lambda n: feed)
+                    self.assertEqual([r["leader_trade_id"] for r in rows], ["new"])
+            finally:
+                ct.LEDGER_FILE, ct.HALT_FILE = orig
+
     def test_unarmed_never_transmits(self):
         import kalshi_copytrade as ct
         sent = []
@@ -36011,6 +36046,25 @@ class TestKalshiCopytradeChecksTheShardCanPay(unittest.TestCase):
                 ct.LEDGER_FILE = saved
         return placed, rows
 
+    def test_the_balance_is_read_only_when_an_order_needs_it(self):
+        """2026-11-20: the copier read the balance every 30 s whether or not
+        anyone traded (~110 signed calls an hour); Kalshi's 429s on that
+        endpoint were reported as a failed key. A callable is now asked only
+        when a live opening order needs the cash."""
+        import kalshi_copytrade as ct
+        calls = []
+        def cash():
+            calls.append(1)
+            return ct.shard_cash(self.LIVE_RESP)
+        placed, rows = self._poll(cash, n=0)
+        self.assertEqual(calls, [], "no trade, no balance read")
+        placed, rows = self._poll(cash, n=2, action="sell")
+        self.assertEqual(calls, [], "exits never need cash")
+        placed, rows = self._poll(cash, n=3)
+        self.assertEqual(len(calls), 1, "one read per pass, not one per order")
+        self.assertEqual(placed, [], "and it is still enforced")
+        self.assertIn("shard 0 holds $0.57", rows[0]["reason"])
+
     def test_the_breakdown_is_read_per_shard_not_as_the_total(self):
         import kalshi_copytrade as ct
         cash = ct.shard_cash(self.LIVE_RESP)
@@ -36272,22 +36326,32 @@ class TestKalshiCopytradeBacktestUsesTheCopiersRules(unittest.TestCase):
 
 
 class TestKalshiScoutGatesOnTheBacktest(unittest.TestCase):
-    """2026-11-09: the scout ranked traders by THEIR P&L. Four visible traders
-    up this month would have lost us 11-57% per dollar copied. A trader whose
-    replayed copies lose over >= 10 settled markets is now rejected, and
-    backtest-proven traders outrank unproven ones."""
+    """2026-11-09: the scout ranked traders by THEIR P&L; four visible traders
+    up this month would have lost us 11-57% per dollar copied. 2026-11-20,
+    after 0 wins in our first 7 settled copies (Chairman: "identify people who
+    consistently make good bets over time ... make the scouting process
+    longer"): a leader must now PROVE a record at our caps — 30+ days, 30+
+    settled copies, t >= 2, profit in 3 of 4 periods, not one big win, not one
+    big bet. Before, too few settled markets meant "unproven" and the trader
+    was followed on monthly P&L alone, which is how the losers were picked."""
 
-    NOW = datetime(2026, 11, 9, 12, 0, 0, tzinfo=timezone.utc)
+    NOW = datetime(2026, 11, 20, 12, 0, 0, tzinfo=timezone.utc)
 
-    def _fills(self, nick, n=12):
+    def _fills(self, nick, n=48, days=60):
+        """n fills, one market each, spread evenly over `days`."""
+        step = timedelta(days=days) / n
         return [{"trade_id": f"{nick}{i}", "ticker": f"{nick}-M{i}", "price_dollars": "0.40",
                  "count_fp": "5", "taker_side": "yes", "taker_action": "buy",
                  "taker_nickname": nick, "maker_nickname": "",
-                 "create_date": (self.NOW - timedelta(hours=1, minutes=i)).isoformat()}
+                 "create_date": (self.NOW - timedelta(hours=1) - i * step).isoformat()}
                 for i in range(n)]
 
+    @staticmethod
+    def steady(i):
+        return "no" if i % 4 == 0 else "yes"   # 3 in 4 win, evenly through time
+
     def _run(self, profiles, results, monthly, cfg=None, markets_fail=False):
-        """profiles: nick -> fills; results: nick -> 'yes'/'no' for all their markets."""
+        """profiles: nick -> fills; results: nick -> f(market index) -> 'yes'/'no'."""
         import kalshi_copytrade as ct
         import kalshi_copytrade_scout as sc
         def get(path, retries=3):
@@ -36302,9 +36366,15 @@ class TestKalshiScoutGatesOnTheBacktest(unittest.TestCase):
         def fetch_markets(tickers, cache=None, get=None):
             if markets_fail:
                 raise OSError("exchange down")
-            exp = (self.NOW + timedelta(days=1)).isoformat()
-            return {t: {"result": results[t.split("-")[0]], "expected_expiration_time": exp}
-                    for t in tickers if t}
+            out = {}
+            for t in tickers:
+                if not t:
+                    continue
+                nick, m = t.split("-M")
+                fill = next(f for f in profiles[nick] if f["ticker"] == t)
+                exp = (ct._parse_ts(fill["create_date"]) + timedelta(hours=3)).isoformat()
+                out[t] = {"result": results[nick](int(m)), "expected_expiration_time": exp}
+            return out
         with tempfile.TemporaryDirectory() as td:
             orig = (ct.CONFIG_FILE, ct.LEDGER_FILE, sc.REPORT_FILE)
             ct.CONFIG_FILE, ct.LEDGER_FILE = Path(td) / "c.json", Path(td) / "l.jsonl"
@@ -36314,37 +36384,168 @@ class TestKalshiScoutGatesOnTheBacktest(unittest.TestCase):
             sc._MARKETS.clear()
             try:
                 with patch.object(sc, "_get", get), \
-                     patch.object(sc.bt, "fetch_markets", fetch_markets):
+                     patch.object(sc.bt, "fetch_markets", fetch_markets), \
+                     patch.object(ct, "load_config", lambda: dict(
+                         ct.DEFAULTS, per_trade_usd=1.0, per_day_usd=3.0, max_payout_usd=16.0)):
                     rep = sc.scout(now=self.NOW)
                 return rep, json.loads(ct.CONFIG_FILE.read_text())
             finally:
                 ct.CONFIG_FILE, ct.LEDGER_FILE, sc.REPORT_FILE = orig
 
-    def test_a_profitable_trader_whose_copies_lose_is_rejected(self):
+    def _fails(self, rep, nick):
+        return [r for r in rep["rejected"] if r["nickname"] == nick][0]["fails"]
+
+    def test_a_steady_record_is_followed_and_a_hot_loser_is_not(self):
         rep, cfg = self._run({"hot": self._fills("hot"), "steady": self._fills("steady")},
-                             {"hot": "no", "steady": "yes"},
+                             {"hot": lambda i: "no", "steady": self.steady},
                              {"hot": 9e5, "steady": 1e3})
         self.assertEqual(cfg["leaders"], ["steady"])
-        why = [r for r in rep["rejected"] if r["nickname"] == "hot"][0]["fails"]
-        self.assertTrue(any("backtest" in f and "lost" in f for f in why), why)
+        self.assertTrue(any("lost" in f for f in self._fails(rep, "hot")))
 
-    def test_a_backtest_that_cannot_run_leaves_the_trader_unproven_not_failed(self):
-        rep, cfg = self._run({"a": self._fills("a")}, {"a": "no"}, {"a": 5e3},
-                             markets_fail=True)
-        self.assertEqual(cfg["leaders"], ["a"])
-        self.assertIn("error", rep["eligible"][0]["backtest"])
+    def test_too_short_a_record_is_not_followed_however_good(self):
+        """The old rule: < 10 settled markets = unproven, followed on monthly
+        P&L. Twelve winning markets in five days is a hot streak."""
+        rep, cfg = self._run({"streak": self._fills("streak", n=12, days=5)},
+                             {"streak": lambda i: "yes"}, {"streak": 9e5})
+        self.assertEqual(cfg["leaders"], [])
+        why = self._fails(rep, "streak")
+        self.assertTrue(any("go back 5 days" in f for f in why), why)
+        self.assertTrue(any("12 settled" in f for f in why), why)
 
-    def test_backtest_proven_traders_outrank_bigger_unproven_ones(self):
-        rep, cfg = self._run({"proven": self._fills("proven"), "big": self._fills("big", n=3)},
-                             {"proven": "yes", "big": "yes"},
-                             {"proven": 1e3, "big": 9e5})
-        self.assertEqual([g["nickname"] for g in rep["eligible"]], ["proven", "big"])
+    def test_a_record_made_in_one_stretch_is_not_consistent(self):
+        """Every older market won, every one of the last 30 lost (fill i is i
+        steps back from now). Positive in total, and t is high, but the record
+        stopped working a month ago."""
+        rep2, cfg2 = self._run({"faded": self._fills("faded", n=60)},
+                               {"faded": lambda i: "no" if i < 30 else "yes"},
+                               {"faded": 9e5})
+        self.assertEqual(cfg2["leaders"], [])
+        self.assertTrue(any("periods" in f for f in self._fails(rep2, "faded")),
+                        self._fails(rep2, "faded"))
+
+    def test_a_backtest_that_cannot_run_keeps_a_current_leader_but_adds_nobody(self):
+        rep, cfg = self._run({"a": self._fills("a"), "b": self._fills("b")},
+                             {"a": self.steady, "b": self.steady}, {"a": 5e3, "b": 5e3},
+                             cfg={"leaders": ["a"]}, markets_fail=True)
+        self.assertEqual(cfg["leaders"], ["a"], "an outage must not unfollow anyone")
+        self.assertTrue(any("could not run" in f for f in self._fails(rep, "b")))
+
+    def test_consistency_arithmetic(self):
+        import kalshi_copytrade_backtest as bt
+        rows = [{"ticker": f"T{i}", "pnl": v, "spent": 1.0,
+                 "settled_at": f"2026-11-{i + 1:02d}"} for i, v in
+                enumerate([1, -1, 1, -1, 1, -1, 1, 20])]
+        c = bt.consistency(rows)
+        self.assertEqual(c["period_pnl"], [0, 0, 0, 21])
+        self.assertEqual(c["periods_up"], 1)
+        self.assertEqual(c["pnl_ex_best"], 1.0)
+        self.assertAlmostEqual(c["best_share"], 20 / 24, places=3)
+        self.assertIsNone(bt.consistency(rows[:3])["periods_up"], "too few to cut in 4")
+
+    def test_each_consistency_rule_names_itself(self):
+        import kalshi_copytrade_scout as sc
+        ok = {"fills": 2000, "history_days": 60, "copy_rate": 0.3, "settled": 40, "wins": 25,
+              "pnl_usd": 5.0, "roi": 0.1, "t_stat": 2.5, "periods_up": 4, "pnl_ex_best": 4.0,
+              "best_share": 0.1, "top_stake_share": 0.05}
+        self.assertEqual(sc.backtest_fails(ok), [])
+        for bad, word in (({"t_stat": 1.2}, "edge"), ({"t_stat": None}, "edge"),
+                          ({"periods_up": 2}, "periods"), ({"pnl_ex_best": -0.5}, "one market"),
+                          ({"best_share": 0.6}, "best market"),
+                          ({"top_stake_share": 0.5}, "sizing"), ({"pnl_usd": 0.0}, "made $0.00")):
+            fails = sc.backtest_fails({**ok, **bad})
+            self.assertTrue(any(word in f for f in fails), (bad, fails))
+
+    def test_sizing_reads_the_leaders_own_stakes(self):
+        import kalshi_copytrade_backtest as bt
+        f = lambda t, n, side="yes", act="buy", who="L": {
+            "ticker": t, "price_dollars": "0.50", "count_fp": str(n), "taker_side": side,
+            "taker_action": act, "taker_nickname": who}
+        z = bt.sizing("L", [f("A", 80), f("B", 10), f("C", 10), f("A", 500, act="sell"),
+                            f("D", 999, who="other")])
+        self.assertEqual(z["markets"], 3)
+        self.assertAlmostEqual(z["top_market_share"], 0.8)
+
+    def test_ranked_by_consistency_not_by_roi(self):
+        import kalshi_copytrade_scout as sc
+        base = {"fills": 2000, "history_days": 60, "copy_rate": 0.3, "settled": 40,
+                "wins": 25, "pnl_usd": 5.0, "periods_up": 4, "pnl_ex_best": 4.0,
+                "best_share": 0.1, "top_stake_share": 0.05}
+        lucky = {"nickname": "lucky", "monthly_pnl_usd": 9e5,
+                 "backtest": {**base, "roi": 0.9, "t_stat": 2.1}}
+        steady = {"nickname": "steady", "monthly_pnl_usd": 1e3,
+                  "backtest": {**base, "roi": 0.1, "t_stat": 4.0}}
+        self.assertEqual([g["nickname"] for g in sorted([lucky, steady], key=sc.rank_key)],
+                         ["steady", "lucky"])
 
     def test_a_trader_with_almost_nothing_copyable_fails_on_a_real_sample(self):
         import kalshi_copytrade_scout as sc
-        b = {"fills": 1000, "copy_rate": 0.001, "settled": 0, "pnl_usd": 0.0, "roi": None}
+        b = {"fills": 1000, "copy_rate": 0.001, "settled": 0, "pnl_usd": 0.0, "roi": None,
+             "history_days": 60}
         self.assertTrue(any("only" in f for f in sc.backtest_fails(b)))
-        self.assertEqual(sc.backtest_fails({**b, "fills": 50}), [])
+        self.assertFalse(any("would copy" in f for f in sc.backtest_fails({**b, "fills": 50})))
+
+
+class TestKalshiScoutCoolsOffAndJudgesOurOwnCopies(unittest.TestCase):
+    """2026-11-20: the scout made 10 adds and 9 removals in two weeks
+    (richstrike dropped for a -4% backtest, back days later), and the rule
+    that drops a leader whose copies lose OUR money needed 10 settled
+    copies, which at $3/day never happened once. Now: 3 losing settled
+    copies drop a leader, and a dropped leader waits 14 days."""
+
+    NOW = datetime(2026, 11, 20, 12, 0, 0, tzinfo=timezone.utc)
+    PROVEN = {"fills": 2000, "history_days": 60, "copy_rate": 0.3, "settled": 40, "wins": 25,
+              "pnl_usd": 5.0, "roi": 0.1, "t_stat": 2.5, "periods_up": 4, "pnl_ex_best": 4.0,
+              "best_share": 0.1, "top_stake_share": 0.05}
+
+    def _run(self, cfg, ledger=(), results=None):
+        import kalshi_copytrade as ct
+        import kalshi_copytrade_scout as sc
+        fills = [{"trade_id": "x", "price_dollars": "0.40", "taker_nickname": "",
+                  "create_date": (self.NOW - timedelta(hours=1)).isoformat()}]
+        def get(path, retries=3):
+            if path.startswith("leaderboard"):
+                if "projected_pnl" in path and "monthly" in path:
+                    return {"rank_list": [{"nickname": "a", "value": 1e5},
+                                          {"nickname": "b", "value": 1e5}]}
+                return {"rank_list": []}
+            nick = path.split("nickname=")[1].split("&")[0]
+            if path.startswith("trades"):
+                return {"trades": [dict(f, taker_nickname=nick) for f in fills],
+                        "visibility_state": "visible"}
+            return {"metrics": {"pnl": 1e5 * 10000}}
+        with tempfile.TemporaryDirectory() as td:
+            orig = (ct.CONFIG_FILE, ct.LEDGER_FILE, sc.REPORT_FILE)
+            ct.CONFIG_FILE, ct.LEDGER_FILE = Path(td) / "c.json", Path(td) / "l.jsonl"
+            sc.REPORT_FILE = Path(td) / "r.json"
+            ct.CONFIG_FILE.write_text(json.dumps(cfg))
+            ct.LEDGER_FILE.write_text("".join(json.dumps(r) + "\n" for r in ledger))
+            sc._RESULTS.clear()
+            sc._RESULTS.update(results or {})     # market_result answers from this cache
+            try:
+                with patch.object(sc, "_get", get), \
+                     patch.object(sc, "run_backtest", lambda n, f: dict(self.PROVEN)):
+                    rep = sc.scout(now=self.NOW)
+                return rep, json.loads(ct.CONFIG_FILE.read_text())
+            finally:
+                sc._RESULTS.clear()
+                ct.CONFIG_FILE, ct.LEDGER_FILE, sc.REPORT_FILE = orig
+
+    def test_three_losing_copies_drop_a_leader_and_start_the_cool_off(self):
+        ledger = [{"leader": "a", "status": "placed", "ticker": f"T{i}", "side": "bid",
+                   "fill_count": "2", "price": 0.45} for i in range(3)]
+        rep, cfg = self._run({"leaders": ["a"]}, ledger, {f"T{i}": "no" for i in range(3)})
+        self.assertNotIn("a", cfg["leaders"])
+        why = [c for c in rep["changes"] if c.get("removed") == "a"][0]["why"]
+        self.assertIn("our own copies", why)
+        self.assertEqual(cfg["dropped"]["a"], self.NOW.isoformat())
+
+    def test_a_recently_dropped_trader_is_not_re_added(self):
+        recent = (self.NOW - timedelta(days=3)).isoformat()
+        old = (self.NOW - timedelta(days=20)).isoformat()
+        rep, cfg = self._run({"leaders": [], "dropped": {"a": recent, "b": old}})
+        self.assertEqual(cfg["leaders"], ["b"])
+        why = [r for r in rep["rejected"] if r["nickname"] == "a"][0]["fails"]
+        self.assertTrue(any("cooling off" in f for f in why), why)
 
 
 class TestKalshiReportNeverReachesAPublicRepo(unittest.TestCase):
@@ -36767,8 +36968,15 @@ class TestKalshiCopytradeScoutDropsBadLeaders(unittest.TestCase):
             sc.REPORT_FILE = Path(td) / "r.json"
             ct.CONFIG_FILE.write_text(json.dumps(cfg))
             ct.LEDGER_FILE.write_text("".join(json.dumps(r) + "\n" for r in ledger))
+            # these tests are about the other rules, so every trader's backtest
+            # is a proven record here (TestKalshiScoutGatesOnTheBacktest covers it)
+            proven = {"fills": 2000, "history_days": 60, "copy_rate": 0.3, "settled": 40,
+                      "wins": 25, "pnl_usd": 5.0, "roi": 0.1, "t_stat": 2.5,
+                      "periods_up": 4, "pnl_ex_best": 4.0, "best_share": 0.1,
+                      "top_stake_share": 0.05}
             try:
-                with patch.object(sc, "_get", self._api(boards, profiles, monthly)):
+                with patch.object(sc, "_get", self._api(boards, profiles, monthly)), \
+                     patch.object(sc, "run_backtest", lambda nick, first: dict(proven)):
                     rep = sc.scout(now=self.NOW)
                 return rep, json.loads(ct.CONFIG_FILE.read_text())
             finally:
@@ -36921,6 +37129,21 @@ class TestKalshiCopytradeManagerCatchesWhatWentWrong(unittest.TestCase):
             kinds = {x["kind"] for x in f}
             self.assertIn("ARMED_BUT_PAPER", kinds)
             self.assertNotIn("COPIER_NOT_RUNNING", kinds)
+
+    def test_following_nobody_is_reported_but_does_not_page(self):
+        """2026-11-20: the scout now follows only proven, consistent records,
+        and none may exist. Nobody to copy spends nothing; it is reported,
+        not emailed as CRITICAL every six hours."""
+        with tempfile.TemporaryDirectory() as td:
+            ct, km = self._sandbox(td)
+            ct.CONFIG_FILE.write_text(json.dumps({"leaders": [], "per_day_usd": 3}))
+            f, _, _ = km.check_health(now=datetime.now(timezone.utc), rows=[],
+                                      balance=10.0, market=lambda t: None,
+                                      fetch=lambda n: {"trades": []})
+            hit = [x for x in f if x["kind"] == "NO_LEADERS"]
+            self.assertEqual(len(hit), 1)
+            self.assertEqual(hit[0]["severity"], "MEDIUM")
+            self.assertIn("nothing is being spent", hit[0]["detail"])
 
     def test_a_rate_limit_is_not_reported_as_a_failed_key(self):
         """2026-11-19 06:45 UTC: a 429 on the balance read emailed the Chairman a

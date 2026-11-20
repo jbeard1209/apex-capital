@@ -26,7 +26,8 @@ WHAT IT CHECKS (every 15 minutes)
                       digest only, never the urgent pager.
   LOW_BALANCE         Kalshi cash below one day's cap: orders will bounce.
   ORDER_ERRORS        any order error in the last 24h.
-  NO_LEADERS          nobody to copy.
+  NO_LEADERS          nobody to copy (MEDIUM since 2026-11-20: expected when
+                      no trader clears the scout's consistency bar).
   LEADER_HIDDEN       a followed trader made their trades private. The manager
                       re-runs the scout immediately, which drops them and
                       promotes the next profitable visible trader (Chairman,
@@ -81,8 +82,12 @@ STALE_COPIER_S = 600
 SCOUT_STALE_H = 30
 LOSS_LIMIT_DAYS = 2.0          # 7-day loss (settled + open) > 2 days' cap trips the breaker
 ALERT_COOLDOWN_H = 6
+# NO_LEADERS left this set 2026-11-20: the scout now follows only traders
+# with a proven, consistent record at our caps, and "nobody qualifies" is an
+# expected, safe state (nothing is spent), not an emergency to email about
+# every 6 hours. It still shows in every report and digest.
 URGENT = {"COPIER_NOT_RUNNING", "HALTED", "ARMED_BUT_PAPER", "KEY_FAILED",
-          "LOSING", "NO_LEADERS"}
+          "LOSING"}
 
 
 def _is_rate_limit(exc) -> bool:
@@ -297,7 +302,9 @@ def check_health(now=None, rows=None, balance=None, market=None, fetch=None):
             f"{errs[-1].get('error', '')[:160]}")
 
     if not cfg["leaders"]:
-        add("NO_LEADERS", "following nobody; the scout found no eligible trader")
+        add("NO_LEADERS", "following nobody: no visible trader has a consistent, "
+            "proven record at our caps, so nothing is being spent "
+            "(kalshi_copytrade_scout.py --dry-run shows why each one fails)", "MEDIUM")
     fetch = fetch or ct.fetch_trades
     hidden = []
     for L in cfg["leaders"]:
