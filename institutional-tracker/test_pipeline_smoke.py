@@ -14908,6 +14908,21 @@ class TestCoherenceLaws(unittest.TestCase):
         self.assertEqual(r.verdict, cl.VIOLATED, r.detail)
         self.assertIn("MSFT", json.dumps(r.evidence))
 
+    def test_a_violation_names_its_symbols_in_the_detail(self):
+        """The detail is the only text that reaches the run log, the email and the
+        problem_lifecycle title. loop-sig-50cc501208bb fired 29 times (2026-08-17 to
+        11-18) as "1 ledger entr(ies) with no position" and resolved itself 21 times,
+        and no record anywhere said WHICH symbol, so the flap could not be traced
+        to a sell, a pending fill or a stale entry_dates row."""
+        cl = self._law_sources()
+        r = cl.law_positions_conserve(
+            broker_positions={"AAPL": 10, "MSFT": -5},
+            state={"entry_dates": {"AAPL": "2026-08-01", "RL": "2026-07-01"}},
+            host="apexcapitalc")
+        self.assertEqual(r.verdict, cl.VIOLATED, r.detail)
+        self.assertIn("MSFT", r.detail)
+        self.assertIn("RL", r.detail)
+
     def test_a_matching_ledger_holds(self):
         cl = self._law_sources()
         r = cl.law_positions_conserve(
@@ -38261,7 +38276,10 @@ def _instant(year, val):
     return _xbrl(f"{year}-12-31", val, filed=f"{year+1}-02-20")
 
 
-def _facts(usgaap: dict, dei: dict | None = None) -> dict:
+# No `dict | None` here: the Mac's push-gate interpreter is /usr/bin/python3 (3.9),
+# where a PEP 604 union in a def annotation raises TypeError at import and the whole
+# suite fails to load (memory `host-divergence-is-a-bug-class`).
+def _facts(usgaap: dict, dei: "dict" = None) -> dict:
     def wrap(d, unit):
         return {k: {"units": {(u or unit): v for u, v in [(None, vals)]}}
                 for k, vals in d.items()}

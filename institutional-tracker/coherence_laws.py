@@ -1625,9 +1625,18 @@ def law_positions_conserve(broker_positions: Optional[dict] = None,
     phantom = sorted(ledger - held)        # the firm thinks it holds it, it does not
 
     if unledgered or phantom:
+        # Name the symbols in the detail, not only in the evidence: the detail is the
+        # only text that reaches the run log, the email and problem_lifecycle. This
+        # law flapped 29 times (2026-08-17 to 11-18) as "1 ledger entr(ies) with no
+        # position" and no record said WHICH one, so nobody could tell a pending
+        # fill from a sell the ledger never forgot.
+        def _names(syms):
+            return (": " + ", ".join(syms[:10]) + (" …" if len(syms) > 10 else "")
+                    if syms else "")
         return LawResult(name, VIOLATED,
                          f"{len(unledgered)} position(s) held at the broker with no ledger "
-                         f"entry, {len(phantom)} ledger entr(ies) with no position. Every "
+                         f"entry{_names(unledgered)}; {len(phantom)} ledger entr(ies) with "
+                         f"no position{_names(phantom)}. Every "
                          f"stop-loss and holding-period rule reads the ledger.", src,
                          [{"held_not_ledgered": s} for s in unledgered[:10]]
                          + [{"ledgered_not_held": s} for s in phantom[:10]],
