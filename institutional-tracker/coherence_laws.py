@@ -2568,13 +2568,18 @@ def law_recorded_exits_are_executed(sell_log: Optional[list] = None,
                      and _dt(o.get("created_at")) is not None
                      and abs((_dt(o["created_at"]) - day).days) <= 4]
             if not cands:
-                # `.date()`, not the raw datetime: a row is dated midnight, so
-                # comparing it against the window's oldest timestamp would call
-                # same-day exits unverifiable. Predating the window is "cannot
-                # verify", NOT "never executed" — the distinction this law turns
-                # on, and the one that would otherwise make it VIOLATE forever
-                # on rows nobody can check.
-                if window_open is not None and day.date() < window_open.date():
+                # The raw datetime, NOT `.date()`. A row is dated midnight, so on
+                # the boundary day its exit order can sit before the window's
+                # first timestamp — and then absence proves nothing. This used to
+                # compare dates "so same-day exits stay judged", and on the VM
+                # 2026-11-19 it convicted DXCM 2026-07-23: the window opened at
+                # 15:24Z and the sale (filled 51/51) was created at 13:45Z. One
+                # day of rows counted as unverifiable, visibly, beats a permanent
+                # false VIOLATED in the escalation queue. Predating the window is
+                # "cannot verify", NOT "never executed" — the distinction this law
+                # turns on, and the one that would otherwise make it VIOLATE
+                # forever on rows nobody can check.
+                if window_open is not None and day < window_open:
                     unverifiable.append({"ticker": tkr, "date": row["date"],
                                          "why": "predates the fetched order window"})
                 else:
