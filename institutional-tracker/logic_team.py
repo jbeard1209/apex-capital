@@ -57,6 +57,7 @@ FINDINGS_PATH    = DATA_DIR / "logic_team_findings.json"
 BRIEFING_PATH    = DATA_DIR / "chairman_briefing.json"
 FIRM_CHANNEL     = DATA_DIR / "firm_channel.json"
 CIT_PENDING      = DATA_DIR / "cit_pending_proposals.json"
+IMPL_QUEUE       = DATA_DIR / "cit_implementation_queue.json"   # approved rows (board_dispatch)
 LT_RESOLUTIONS   = DATA_DIR / "logic_team_resolutions.json"
 
 
@@ -1327,13 +1328,44 @@ def _dedup_norm(text: str) -> str:
     return re.sub(r"\d+", "#", text or "")
 
 
+def _open_approved_findings() -> set:
+    """(rule, normalised title) of approved LT rows whose execution is not finished.
+
+    Approval moves a proposal out of the pending queue into the implementation
+    queue, so a pending-only dedup sees nothing on the next run and files the same
+    finding again under a fresh LT-HHMMSS id, which board_dispatch.standing_ids
+    (id-keyed) cannot recognise. On the VM by 2026-11-19: 6 loss_no_attribution
+    rows in one day, 27 wiring_contract_violation rows for one orphan file.
+    logic_officer._open_approved_rules is the same fix for its twin. Keyed on the
+    title as well as the rule: wiring_contract_violation covers many different
+    findings (one per orphan agent), and only the same one is a duplicate."""
+    try:
+        from board_dispatch import DONE_STATUSES
+    except Exception:
+        DONE_STATUSES = frozenset({"implemented", "executed", "superseded"})
+    rows = _load(IMPL_QUEUE, [])
+    out = set()
+    for r in rows if isinstance(rows, list) else []:
+        m = re.match(r"^LT-\d{6}-(.+)$", str((r or {}).get("proposal_id") or ""))
+        if m and r.get("status") not in DONE_STATUSES:
+            out.add((m.group(1), _dedup_norm(r.get("title", ""))))
+    return out
+
+
 def _submit_board_proposals(findings: list) -> int:
     serious = [f for f in findings if f.get("severity") in ("HIGH","CRITICAL")]
     if not serious:
         return 0
 
+    standing = _open_approved_findings()
     added = 0
     for f in serious:
+        # A finished row (DONE_STATUSES) does not block: a recurrence after a real
+        # fix is a new problem and gets a fresh vote.
+        if (f.get("rule"), _dedup_norm(f.get("title", ""))) in standing:
+            logger.info(f"  LT finding already approved and open, not re-filed: "
+                        f"{f.get('title','?')[:50]}")
+            continue
         proposal = {
             "id":           f"LT-{datetime.now().strftime('%H%M%S')}-{f['rule']}",
             "source":       f"Logic Team / {f.get('agent','?')}",
