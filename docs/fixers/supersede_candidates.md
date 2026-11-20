@@ -46,3 +46,29 @@ call). Check: `crontab -l | grep -v '^#' | grep -c <job>` on the VM, 2026-11-19:
 | `loop-sig-21837bc97ded` | `fe_cit_agent.py` | 0 | present | same |
 | `loop-sig-3616daec9161` | `portfolio_risk_dashboard.py` | 0 | present | same |
 | `loop-sig-e890ba6a27c3` | `fe_watchlist_monitor` | 0 | **missing** | premise moot: no such script; retire the freshness check, then supersede |
+
+## specialist-fixer-run 2026-11-19 evening (risk, then ops)
+
+**Loss attribution STALE** (`loop-sig-b92740cbf61d`, `LO-20261118201625-unexplained_loss`, and 6
+`LT-*-loss_no_attribution` rows routed to wiring): premise TRUE, so no supersede. The book is
+-5.1% and the newest attribution is 2026-06-09. #63 fixed the text. Closing these needs a written
+loss attribution, which is a board or Chairman judgment, not a code fix.
+
+**`positions_conserve`** (`loop-sig-50cc501208bb`): premise false right now. Check, run read-only on the
+VM 2026-11-20 ~00:45Z: `law_positions_conserve()` → HOLDS, 17 broker = 17 ledger. But the
+problem record shows 29 occurrences and 21 auto-resolutions since 2026-08-17 (`LOOPING`). It is
+a flap, not a one-off, and the VM log line (run_20261118.log:1317) never named the symbol.
+PR `claude/fixer-risk-20261119-conserve` puts the symbols in the detail. Do **not** supersede this
+row until that PR is deployed and the next violation names a symbol. Use that symbol to tell
+a pending fill from a sell the ledger never forgot. Note: the title now carries symbols, so future
+sightings file under new signatures.
+
+**`CIT-2026-268`, None canary indicators** (ops, needs_human): the check reads top-level keys
+`spy_price/vix/spy_change_pct/vix_change_pct`. On the VM today, `canary_state.json` has none
+of these keys. Its readings sit under `last_readings` (`vix_level` 28.44 present, `spy_pct` None,
+`market_open` False, file written 2026-11-20 00:30). So the row's premise is the wrong key
+names. The null `spy_pct` after hours may still be real. Its producer was not found by grepping
+`cit_director.py`, and no fix was attempted this run.
+
+**GCP disk** (`loop-sig-52f253043d5e`, threshold 70%): `df -h /` on the VM is 71% today, so the
+premise is still true. Not a code fix.
