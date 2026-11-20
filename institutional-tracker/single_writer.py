@@ -514,15 +514,48 @@ def writer_silence_verdict(last_seen, expected=None, now=None,
                     f"doing so. The firm can only REDUCE exposure until this host "
                     f"returns or another is designated in APEX_TRADING_HOST.")
 
-    if silence_h > grace_hours:
+    # Uncorroborated: nobody traded after the writer. Until 2026-11-19 this
+    # compared the RAW age to the grace and never asked about the shared wall,
+    # so (a) every weekend after a Friday last order read as a 48-89h outage and
+    # (b) a week with the book ~107% deployed under CRO HIGH — every buy refused,
+    # nothing to send — read as "verify the host directly". Together they filed
+    # loop-sig-f7af8b6e2e5b 37 times. Weekend hours come out the same way as
+    # deadmans_switch.effective_age_hours (hours, not dates: under-subtracting
+    # is the safe direction), and both ages are reported.
+    try:
+        import deadmans_switch as _dms
+        weekend_h = _dms.weekend_hours_between(writer_last, now)
+    except Exception:
+        weekend_h = 0.0          # cannot tell -> no discount, alarm as before
+    eff_h = max(0.0, silence_h - weekend_h)
+    ages = (f"{silence_h:.0f}h ({eff_h:.0f}h excl. weekends)" if weekend_h
+            else f"{silence_h:.0f}h")
+
+    if eff_h > grace_hours:
+        if shared_block is None:
+            shared_block = shared_constraint_verdict()
+        blocked, bverdict, breason = shared_block
+        if blocked is True:
+            # MEDIUM: below cit_pipeline_integrity's proposal floor, so it is
+            # logged but not filed as a board row. Host liveness is still
+            # watched directly (heartbeat + peer-host checks), which is the
+            # evidence that settles "up but walled" vs "down".
+            return ("MEDIUM",
+                    f"the designated writer '{expected}' has been silent {ages} "
+                    f"(last order {writer_last.isoformat()[:16]}) and no other host "
+                    f"traded after it. NOT an absent-writer finding: a new buy from "
+                    f"ANY host would be refused right now — {bverdict}: {breason} — "
+                    f"so there was nothing it could send. It does not PROVE the "
+                    f"writer is up; the pipeline heartbeat is the check for that.")
         return ("HIGH",
-                f"the designated writer '{expected}' has been silent {silence_h:.0f}h "
+                f"the designated writer '{expected}' has been silent {ages} "
                 f"(last order {writer_last.isoformat()[:16]}) and no other host traded "
                 f"after it — so a market closure cannot be told apart from an outage "
                 f"from here. Verify the host directly.")
 
     return ("PASS",
-            f"designated writer '{expected}' last traded {silence_h:.1f}h ago")
+            f"designated writer '{expected}' last traded {silence_h:.1f}h ago"
+            + (f" ({eff_h:.1f}h excl. weekends)" if weekend_h else ""))
 
 
 def fetch_broker_orders(limit=500, timeout=30):

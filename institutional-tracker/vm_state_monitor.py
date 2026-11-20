@@ -157,7 +157,11 @@ def check(escalate=True):
 
     lines.append(f"[{wsev}] {wmsg}")
 
-    rank = {"PASS": 0, "SKIP": 0, "UNKNOWN": 1, "HIGH": 1, "CRITICAL": 2}
+    # MEDIUM = "silent, but every buy is refused firm-wide" (single_writer,
+    # 2026-11-19): not a VM problem, and the power state above is still checked
+    # on its own. Any severity not named here stays loud (default 1).
+    rank = {"PASS": 0, "SKIP": 0, "MEDIUM": 0, "UNKNOWN": 1, "HIGH": 1,
+            "CRITICAL": 2}
     worst = max(rank.get(power_sev, 1), rank.get(wsev, 1))
 
     prev = _load_prev()
