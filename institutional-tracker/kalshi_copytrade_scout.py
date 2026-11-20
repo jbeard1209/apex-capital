@@ -28,23 +28,33 @@ them. So a trader must clear ALL of:
   copyable       >= MIN_COPYABLE of their recent fills are ones the copier will
                  actually copy: TAKER fills priced inside the copier's band.
                  A market maker's profit lives in maker fills we skip.
-  backtest       their last BT_PAGES x 100 fills, replayed through the
-                 copier's own rules (kalshi_copytrade_backtest), must not have
-                 lost money over >= BT_MIN_SETTLED settled markets, and must
-                 copy >= BT_MIN_COPY_RATE of their fills. Added 2026-11-09:
-                 their P&L is not ours, and four traders up this month would
-                 have lost us 11-57% per dollar copied.
+  a record       their fills back to BT_HISTORY_DAYS (up to BT_PAGES x 100),
+                 replayed through the copier's own rules AT OUR CAPS
+                 (kalshi_copytrade_backtest), must show: >= BT_MIN_HISTORY_DAYS
+                 of history, >= BT_MIN_SETTLED settled copies, a profit with
+                 t >= BT_MIN_T, money made in >= BT_MIN_PERIODS_UP of 4
+                 periods, still made without the single best market, no
+                 market > BT_MAX_BEST_SHARE of winnings, and no more than
+                 BT_MAX_TOP_STAKE of the leader's own money in one market.
+                 Added 2026-11-09 (their P&L is not ours); made a hard
+                 requirement 2026-11-20, when 0 of our first 7 settled copies
+                 won: until then too few settled markets meant "unproven" and
+                 the trader was followed on monthly P&L alone.
   our own record once >= MIN_OWN_COPIES markets we copied them into have
                  settled, our realised copy P&L there must not be negative —
                  their profit is irrelevant if copying them loses ours.
+  cooling off    a leader the scout dropped cannot return for COOL_OFF_DAYS.
+
+If nobody clears the bar, the copier follows nobody and spends nothing. That
+is the intended outcome, not a failure: the 2026-11-09 study found no visible
+trader whose copies beat luck.
 
 The search pool is the leaderboards plus a remembered watchlist: everyone seen
 showing their trades, and everyone we have ever copied. Visible traders are so
 rare (7 of 227 on 2026-11-09) that one must not be forgotten for slipping off a
 top-100 list.
 
-Survivors are ranked by backtest ROI (those with >= BT_MIN_SETTLED settled
-replayed copies), then the rest by monthly P&L. The top MAX_LEADERS are followed. A
+Survivors are ranked by the t-stat of their replayed copies, then ROI. The top MAX_LEADERS are followed. A
 current leader is kept while still eligible and ranked inside 2 x MAX_LEADERS,
 so a trader is not dropped and re-added over a one-place shuffle.
 Traders the Chairman pins (`--pin NICK`) are never auto-removed, but are still
@@ -74,13 +84,30 @@ SOCIAL = ct.SOCIAL_BASE
 MAX_LEADERS = 3
 ACTIVE_DAYS = 3
 MIN_COPYABLE = 0.30
-MIN_OWN_COPIES = 10
 REQUEST_GAP_S = 1.2
 _RESULTS = {}                # ticker -> settled result, for one scout run
 _MARKETS = {}                # ticker -> market, for one scout run's backtests
-# Backtest gate (2026-11-09). See kalshi_copytrade_backtest.py for the replay.
-BT_PAGES = 5                 # 500 fills: weeks of history for most traders
-BT_MIN_SETTLED = 10          # same bar as MIN_OWN_COPIES, on replayed copies
+# Our own record (2026-11-20, was 10). 0 of our first 7 settled copies won;
+# at $3/day a leader needed weeks of real losses before 10 of their copies
+# settled, so this rule never fired once. Three settled markets in the red is
+# enough to stop paying for a leader: they can earn their way back only
+# through a long, consistent backtest, and our losses on them keep counting.
+MIN_OWN_COPIES = 3
+# Backtest gate (2026-11-09, made stricter 2026-11-20). See
+# kalshi_copytrade_backtest.py for the replay.
+BT_PAGES = 30                # hard ceiling: 3,000 fills (was 5 pages, days for a busy trader)
+BT_HISTORY_DAYS = 60         # page back until the fills reach this far
+BT_MIN_HISTORY_DAYS = 30     # fewer days than this is a hot streak, not a record
+BT_MIN_SETTLED = 30          # was 10; with t-stats near 0, 10 markets is noise
+BT_MIN_T = 2.0               # mean per-market P&L / its standard error. Below 2
+                             # the record cannot be told from coin flips (11-09
+                             # study: no visible trader reached it; 11-20 leaders
+                             # were t = 0.17-0.26). Nobody passing means the
+                             # copier follows nobody and spends nothing.
+COOL_OFF_DAYS = 14           # a dropped leader cannot be re-added sooner
+BT_MIN_PERIODS_UP = 3        # settled copies cut into 4 periods; >= 3 must make money
+BT_MAX_BEST_SHARE = 0.35     # best single market's share of all winnings
+BT_MAX_TOP_STAKE = 0.25      # leader's biggest market's share of all they staked
 BT_MIN_FILLS_FOR_RATE = 200  # judge the copy rate only on a real sample
 BT_MIN_COPY_RATE = 0.02      # below this, following them buys almost nothing
 BOARDS = [("projected_pnl", "monthly"), ("projected_pnl", "weekly"),
@@ -194,16 +221,27 @@ def run_backtest(nick, first_page):
     a backtest that cannot run leaves the trader UNPROVEN, never failed, for
     the same reason an unreadable board must not unfollow everyone."""
     try:
-        fills, _vis = bt.fetch_history(nick, pages=BT_PAGES, get=_get, first=first_page)
+        fills, _vis = bt.fetch_history(nick, pages=BT_PAGES, get=_get, first=first_page,
+                                       min_days=BT_HISTORY_DAYS)
         markets = bt.fetch_markets([t.get("ticker") for t in fills], cache=_MARKETS)
         r = bt.backtest(nick, fills, markets, cfg=ct.load_config())
     except Exception as e:
         return {"error": f"{type(e).__name__}: {str(e)[:120]}"}
-    u = r["unit"]
+    # Graded at OUR caps since 2026-11-20 (was one contract per fill):
+    # Mayzemosher was +5.5% per contract but -$7.30 over 83 markets at $1 per
+    # market and $3 a day, which is the only version of them we can buy.
+    u, cp = r["unit"], r["capped"]
+    c = cp.get("consistency") or {}
+    z = r.get("sizing") or {}
     return {"fills": r["fills"], "history_days": r["history_days"],
-            "copy_rate": r["copy_rate"], "settled": u["settled"], "wins": u["wins"],
-            "pnl_usd": u["settled_pnl"], "roi": u["settled_roi"], "t_stat": u["t_stat"],
-            "capped_pnl_usd": r["capped"]["settled_pnl"]}
+            "copy_rate": r["copy_rate"], "settled": cp["settled"], "wins": cp["wins"],
+            "pnl_usd": cp["settled_pnl"], "roi": cp["settled_roi"], "t_stat": cp["t_stat"],
+            "capped_pnl_usd": cp["settled_pnl"], "unit_pnl_usd": u["settled_pnl"],
+            "unit_settled": u["settled"],
+            "periods_up": c.get("periods_up"), "period_pnl": c.get("period_pnl"),
+            "halves_up": c.get("halves_up"), "pnl_ex_best": c.get("pnl_ex_best"),
+            "best_share": c.get("best_share"),
+            "top_stake_share": z.get("top_market_share")}
 
 
 def backtest_fails(b):
@@ -214,27 +252,70 @@ def backtest_fails(b):
     traders, four of them up this month (sink.wheat, Ginobuck, degen247365,
     beatingthebooks) would have lost us 11-57% per dollar copied; Scottaholic,
     +$97k this month, trades almost nothing we can copy. Judged on one
-    contract per fill (the signal, before our caps truncate it); the bar is
-    the same as the own-record rule: lost money over >= 10 settled markets."""
+    contract per fill (the signal, before our caps truncate it).
+
+    2026-11-20, after 0 wins in our first 7 settled copies (Chairman: "identify
+    people who consistently make good bets over time ... make the scouting
+    process longer"): until then a trader with FEWER than 10 settled replayed
+    markets was not failed but "unproven", and followed on monthly P&L alone —
+    which is exactly the short-term leaderboard luck that picked our losers.
+    Now a leader must PROVE a record: >= BT_MIN_HISTORY_DAYS of history,
+    >= BT_MIN_SETTLED settled copies, money made, made in >= BT_MIN_PERIODS_UP
+    of 4 periods, still made without their single best market, and not with
+    most of their own money in one market.
+
+    A backtest that could not RUN (fetch error) returns [] here: that says
+    nothing about the trader. scout() keeps a current leader through it but
+    never adds a new one on it (see proven())."""
     if not b or b.get("error"):
         return []
     fails = []
     if b["fills"] >= BT_MIN_FILLS_FOR_RATE and b["copy_rate"] < BT_MIN_COPY_RATE:
         fails.append(f"backtest: only {b['copy_rate']:.0%} of their last "
                      f"{b['fills']} fills are ones we would copy")
-    if b["settled"] >= BT_MIN_SETTLED and b["pnl_usd"] < 0:
-        fails.append(f"backtest: copying their last {b['fills']} fills would have lost "
-                     f"${-b['pnl_usd']:.2f} over {b['settled']} settled markets "
-                     f"(ROI {b['roi']:+.0%})")
+    if (b.get("history_days") or 0) < BT_MIN_HISTORY_DAYS:
+        fails.append(f"history: their fills go back {b.get('history_days') or 0:.0f} days "
+                     f"(need {BT_MIN_HISTORY_DAYS})")
+    if b["settled"] < BT_MIN_SETTLED:
+        fails.append(f"history: {b['settled']} settled markets we would have copied "
+                     f"(need {BT_MIN_SETTLED})")
+        return fails             # the rest is noise on a sample this small
+    if b["pnl_usd"] <= 0:
+        fails.append(f"backtest: copying their last {b['fills']} fills would have "
+                     f"{'lost' if b['pnl_usd'] < 0 else 'made'} ${abs(b['pnl_usd']):.2f} over "
+                     f"{b['settled']} settled markets (ROI {(b['roi'] or 0):+.0%})")
+    if b.get("t_stat") is None or b["t_stat"] < BT_MIN_T:
+        fails.append(f"edge: t = {b.get('t_stat')} over {b['settled']} settled copies "
+                     f"(need >= {BT_MIN_T:g}; below that it is indistinguishable from luck)")
+    if b.get("periods_up") is not None and b["periods_up"] < BT_MIN_PERIODS_UP:
+        fails.append(f"consistency: copies made money in only {b['periods_up']} of 4 "
+                     f"periods (need {BT_MIN_PERIODS_UP}): {b.get('period_pnl')}")
+    if b.get("pnl_ex_best") is not None and b["pnl_ex_best"] <= 0 < b["pnl_usd"]:
+        fails.append(f"consistency: one market made the record (without it ${b['pnl_ex_best']:+.2f})")
+    if b.get("best_share") is not None and b["best_share"] > BT_MAX_BEST_SHARE:
+        fails.append(f"consistency: best market is {b['best_share']:.0%} of all winnings "
+                     f"(max {BT_MAX_BEST_SHARE:.0%})")
+    if b.get("top_stake_share") is not None and b["top_stake_share"] > BT_MAX_TOP_STAKE:
+        fails.append(f"sizing: {b['top_stake_share']:.0%} of their own money went into one "
+                     f"market (max {BT_MAX_TOP_STAKE:.0%})")
     return fails
 
 
-def rank_key(g):
-    """Backtest-proven traders first, best ROI first; then the unproven
-    (too few settled replayed copies) by this month's P&L, as before."""
+def proven(g):
+    """Did this trader's backtest actually run and pass? A new leader must be
+    proven; a current one survives a backtest that merely failed to run."""
     b = g.get("backtest") or {}
-    if (b.get("settled") or 0) >= BT_MIN_SETTLED and b.get("roi") is not None:
-        return (0, -b["roi"])
+    return bool(b) and not b.get("error") and not backtest_fails(b)
+
+
+def rank_key(g):
+    """Proven traders by how CONSISTENT their copies were (t-stat: average
+    per-market P&L over its spread), then ROI. Until 2026-11-20 this was ROI
+    alone, which ranks one lucky longshot above a steady record. Traders whose
+    backtest could not run (kept only if already followed) rank last."""
+    b = g.get("backtest") or {}
+    if proven(g):
+        return (0, -(b.get("t_stat") or 0), -(b.get("roi") or 0))
     return (1, -(g["monthly_pnl_usd"] or 0))
 
 
@@ -279,7 +360,8 @@ def evaluate(nick, monthly_pnl, now):
         out["fails"].append(f"only {share:.0%} of fills copyable (taker, "
                             f"{ct.MIN_PRICE:.0%}-{ct.MAX_PRICE:.0%})")
     if n_own >= MIN_OWN_COPIES and pnl_own < 0:
-        out["fails"].append(f"our {n_own} copies lost ${-pnl_own:.2f}")
+        out["fails"].append(f"our own copies: {n_own} settled markets lost us "
+                            f"${-pnl_own:.2f}")
     out["fails"] += backtest_fails(out["backtest"])
     out["eligible"] = not out["fails"]
     return out
@@ -315,7 +397,26 @@ def scout(dry_run=False, now=None):
         return {"at": now.isoformat(), "error": "monthly leaderboard unreadable; "
                 "leaders left unchanged", "leaders": current}
 
+    dropped = cfg_raw.get("dropped") if isinstance(cfg_raw.get("dropped"), dict) else {}
     graded = [evaluate(n, monthly.get(n), now) for n in pool]
+    # Cooling off (2026-11-20): richstrike was dropped for a -4% backtest and
+    # re-added days later on a fresh 500-fill window; the scout made 10 adds
+    # and 9 removals in two weeks. A dropped trader waits COOL_OFF_DAYS.
+    for g in graded:
+        n = g["nickname"]
+        at = ct._parse_ts(dropped.get(n)) if n in dropped else None
+        if (at and n not in current and n not in pinned
+                and (now - at).total_seconds() < COOL_OFF_DAYS * 86400):
+            g["eligible"] = False
+            g["fails"].append(f"cooling off: dropped {at:%Y-%m-%d}, may return after "
+                              f"{(at + timedelta(days=COOL_OFF_DAYS)):%Y-%m-%d}")
+    # A NEW leader must be proven by a backtest that ran; a current leader is
+    # only kept through a backtest that failed to run (an outage must not
+    # unfollow everyone), never added on one.
+    for g in graded:
+        if g["eligible"] and not proven(g) and g["nickname"] not in current:
+            g["eligible"] = False
+            g["fails"].append("backtest could not run, so no record is proven yet")
     eligible = sorted((g for g in graded if g["eligible"]), key=rank_key)
     rank = {g["nickname"]: i for i, g in enumerate(eligible)}
 
@@ -333,7 +434,7 @@ def scout(dry_run=False, now=None):
 
     by = {g["nickname"]: g for g in graded}
     changes = ([{"added": n, "why": "eligible, rank "
-                 f"{rank[n] + 1} (backtest ROI, then monthly P&L)"} for n in new if n not in current]
+                 f"{rank[n] + 1} (backtest consistency, then ROI)"} for n in new if n not in current]
                + [{"removed": n, "why": "; ".join(by.get(n, {}).get("fails") or [])
                    or "out-ranked"} for n in current if n not in new])
     report = {"at": now.isoformat(), "dry_run": dry_run, "pool_size": len(pool),
@@ -349,6 +450,10 @@ def scout(dry_run=False, now=None):
               "own_record_rule_active": any(g.get("own_closed_copies", 0) >= MIN_OWN_COPIES
                                             for g in graded)}
     if not dry_run:
+        for c in changes:
+            if "removed" in c:
+                dropped[c["removed"]] = now.isoformat()
+        cfg_raw["dropped"] = dropped
         cfg_raw["leaders"] = new
         cfg_raw["watchlist"] = sorted(set(watchlist) | {
             g["nickname"] for g in graded if "trades hidden" not in g["fails"]
@@ -367,9 +472,11 @@ def _bt_text(b):
     t = "" if b["t_stat"] is None else f", t={b['t_stat']:+.1f}"
     proof = ("  (|t| < 2: not distinguishable from luck)"
              if b["t_stat"] is not None and abs(b["t_stat"]) < 2 else "")
-    return (f"backtest: {b['fills']} fills over {b['history_days']}d, copy {b['copy_rate']:.0%}, "
-            f"{b['settled']} settled, {b['wins']}W, ${b['pnl_usd']:+.2f} per contract-copy, "
-            f"ROI {roi}{t}{proof}")
+    per = ("" if b.get("periods_up") is None
+           else f", up in {b['periods_up']}/4 periods {b.get('period_pnl')}")
+    return (f"backtest at our caps: {b['fills']} fills over {b['history_days']}d, "
+            f"copy {b['copy_rate']:.0%}, {b['settled']} settled, {b['wins']}W, "
+            f"${b['pnl_usd']:+.2f}, ROI {roi}{t}{per}{proof}")
 
 
 def _print(r):
@@ -386,6 +493,8 @@ def _print(r):
         print(f"      {_bt_text(g.get('backtest'))}")
     for g in r.get("rejected", []):
         print(f"    rejected {g['nickname']:<26} {'; '.join(g['fails'])}")
+        if g.get("backtest") and not g["backtest"].get("error"):
+            print(f"      {_bt_text(g['backtest'])}")
     print(f"  following: {', '.join(r['leaders_after']) or '(nobody qualifies)'}")
     for c in r["changes"]:
         k = "added" if "added" in c else "removed"
