@@ -35411,6 +35411,10 @@ class TestKalshiCopytradeCannotOverspendOrMisfire(unittest.TestCase):
                          return_value=self.NOW + timedelta(days=1))
         p.start()
         self.addCleanup(p.stop)
+        # Not under test here: a game in play is TestKalshiCopytradeSkipsLiveGames.
+        g = patch.object(ct, "game_state", return_value=("clear", "test"))
+        g.start()
+        self.addCleanup(g.stop)
 
     def _trade(self, **kw):
         t = {"trade_id": "t1", "ticker": "KXTEST-1", "price_dollars": "0.4000",
@@ -35715,6 +35719,13 @@ class TestKalshiCopytradeRepeatFillsCostOneMarketCap(unittest.TestCase):
     reads between them, because decide() alone cannot show the loop passes it
     what the previous copy spent."""
 
+    def setUp(self):
+        import kalshi_copytrade as ct
+        # Not under test here: a game in play is TestKalshiCopytradeSkipsLiveGames.
+        g = patch.object(ct, "game_state", return_value=("clear", "test"))
+        g.start()
+        self.addCleanup(g.stop)
+
     def test_the_real_three_piece_fill_places_one_order(self):
         import kalshi_copytrade as ct
         now = datetime(2026, 11, 7, 16, 11, 28, tzinfo=timezone.utc)
@@ -35753,6 +35764,13 @@ class TestKalshiCopytradeSkipsMoneyLockedUpForMonths(unittest.TestCase):
     Three of the first four copies went into 2027-28 election markets, tying up
     most of a ~$3 account for a year. An unknown date must skip too, and an
     exit must never be blocked by this."""
+
+    def setUp(self):
+        import kalshi_copytrade as ct
+        # Not under test here: a game in play is TestKalshiCopytradeSkipsLiveGames.
+        g = patch.object(ct, "game_state", return_value=("clear", "test"))
+        g.start()
+        self.addCleanup(g.stop)
 
     NOW = datetime(2026, 11, 9, 12, 0, 0, tzinfo=timezone.utc)
 
@@ -35894,6 +35912,13 @@ class TestKalshiCopytradeSkipsShardsWeCannotTrade(unittest.TestCase):
     rejected "insufficient_shard_balance" three times and halted the whole
     desk. An opening order into a shard we hold no cash on is now skipped."""
 
+    def setUp(self):
+        import kalshi_copytrade as ct
+        # Not under test here: a game in play is TestKalshiCopytradeSkipsLiveGames.
+        g = patch.object(ct, "game_state", return_value=("clear", "test"))
+        g.start()
+        self.addCleanup(g.stop)
+
     NOW = datetime(2026, 11, 9, 15, 15, 0, tzinfo=timezone.utc)
     T = "KXBTC15M-26NOV091030-30"
 
@@ -35968,11 +35993,157 @@ class TestKalshiCopytradeSkipsShardsWeCannotTrade(unittest.TestCase):
         self.assertTrue(any("shard" in k for k in skips), skips)
 
 
+class TestKalshiCopytradeSkipsLiveGames(unittest.TestCase):
+    """Chairman, 2026-11-20: don't copy a bet on a sports game that is being
+    played right now (halftime or another break excepted): the swing between
+    the leader's fill and our copy can be a goal. The copier reads Kalshi's
+    own game feed (/milestones + /live_data), and anything it cannot confirm
+    is skipped, never copied. Fixture shapes are copied from the live feed,
+    2026-11-20 16:30 UTC."""
+
+    NOW = datetime(2026, 11, 20, 16, 30, 0, tzinfo=timezone.utc)
+    T, EV = "KXUAELEAGUEGAME-26NOV20SHAAJM-SHA", "KXUAELEAGUEGAME-26NOV20SHAAJM"
+    MS = {"id": "m1", "type": "soccer_tournament_multi_leg", "category": "Sports",
+          "title": "Shabab Al-Ahli vs Ajman", "start_date": "2026-11-20T15:25:00Z"}
+
+    def _poll(self, live=None, milestones=None, category="Sports", action="buy",
+              ledger=(), fail=()):
+        import kalshi_copytrade as ct
+        import kalshi_client as kc
+        fill = {"trade_id": "x", "ticker": self.T, "price_dollars": "0.5000",
+                "count_fp": "4.00", "taker_side": "yes", "taker_action": action,
+                "taker_nickname": "L", "maker_nickname": "",
+                "create_date": (self.NOW - timedelta(seconds=2)).isoformat()}
+        rec = {"ticker": self.T, "event_ticker": self.EV, "exchange_index": 0,
+               "expected_expiration_time": (self.NOW + timedelta(hours=2)).isoformat()}
+        ms = [self.MS] if milestones is None else milestones
+        calls = []
+
+        def get(path, params=None, **kw):
+            calls.append(path)
+            if any(path.startswith(f) for f in fail):
+                raise OSError("simulated outage")
+            if path.startswith("/markets/"):
+                return {"market": rec}
+            if path == "/milestones":
+                assert params["related_event_ticker"] == self.EV
+                return {"milestones": ms, "cursor": ""}
+            if path.startswith("/events/"):
+                return {"event": {"category": category}}
+            if path.startswith("/live_data/"):
+                return {"live_data": {"details": live, "milestone_id": "m1"}}
+            raise AssertionError(path)
+        placed = []
+
+        def place(**kw):
+            placed.append(kw)
+            return {"order_id": "1", "fill_count": str(kw["count"])}
+        with tempfile.TemporaryDirectory() as td:
+            saved, ct.LEDGER_FILE = ct.LEDGER_FILE, Path(td) / "l.jsonl"
+            ct.LEDGER_FILE.write_text("".join(json.dumps(r) + "\n" for r in ledger))
+            cfg = ct.load_config()
+            cfg.update(leaders=["L"], per_trade_usd=1.0, per_day_usd=3.0)
+            try:
+                with patch.object(ct, "armed", return_value=(True, "")), \
+                     patch.object(kc, "_get", side_effect=get):
+                    rows = ct.poll_once(cfg, {"initialised": ["L"], "seen": {"L": []}},
+                                        now=self.NOW, place=place,
+                                        fetch=lambda n: {"trades": [fill]})
+            finally:
+                ct.LEDGER_FILE = saved
+        return placed, rows[0], calls
+
+    IN_PLAY = {"half": "", "match_status": "2nd_half", "status": "live", "widget_status": "live"}
+
+    def test_a_bet_on_a_game_in_play_is_skipped_not_sent(self):
+        placed, row, calls = self._poll(self.IN_PLAY)
+        self.assertEqual(placed, [])
+        self.assertEqual(row["status"], "skipped")
+        self.assertTrue(row["reason"].startswith("live game ("), row["reason"])
+        self.assertTrue(any(c.startswith("/live_data/soccer_tournament_multi_leg/milestone/m1")
+                            for c in calls), calls)
+
+    def test_halftime_is_a_break_and_is_copied(self):
+        placed, row, _ = self._poll({"half": "Halftime", "match_status": "halftime",
+                                     "status": "live", "widget_status": "live"})
+        self.assertEqual(len(placed), 1, row)
+        self.assertEqual(row["status"], "placed")
+
+    def test_before_kickoff_and_after_the_final_whistle_are_copied(self):
+        for live in ({"status": "not_started", "widget_status": "none"},
+                     {"status": "unplayed", "widget_status": "created"},
+                     {"status": "closed", "widget_status": "finished"},
+                     {"status": "complete", "widget_status": "complete"}):
+            placed, row, _ = self._poll(live)
+            self.assertEqual(len(placed), 1, (live, row))
+
+    def test_a_market_that_is_not_a_game_is_copied(self):
+        placed, row, calls = self._poll(milestones=[], category="Politics")
+        self.assertEqual(len(placed), 1, row)
+        self.assertFalse(any(c.startswith("/live_data/") for c in calls))
+
+    def test_a_non_sports_milestone_is_not_mistaken_for_a_game(self):
+        race = dict(self.MS, category="Elections", type="political_race")
+        placed, row, calls = self._poll(milestones=[race], category="Elections")
+        self.assertEqual(len(placed), 1, row)
+        self.assertFalse(any(c.startswith("/live_data/") for c in calls))
+
+    def test_anything_it_cannot_confirm_is_skipped(self):
+        cases = {
+            "sports, no feed": dict(milestones=[], category="Sports"),
+            "milestones down": dict(live=self.IN_PLAY, fail=("/milestones",)),
+            "live feed down": dict(live=self.IN_PLAY, fail=("/live_data/",)),
+            "category unreadable": dict(milestones=[], fail=("/events/",)),
+            "unknown status": dict(live={"status": "x", "widget_status": "delayed"}),
+            "no status at all": dict(live={}),
+        }
+        for name, kw in cases.items():
+            placed, row, _ = self._poll(**kw)
+            self.assertEqual(placed, [], name)
+            self.assertTrue(row["reason"].startswith("game status unknown ("),
+                            (name, row["reason"]))
+
+    def test_a_suspended_match_is_not_treated_as_a_safe_pause(self):
+        """A tennis injury suspension can end in a retirement that settles the
+        market, the biggest swing there is."""
+        placed, row, _ = self._poll({"status": "interrupted", "widget_status": "suspended"})
+        self.assertEqual(placed, [])
+        self.assertIn("suspended", row["reason"])
+
+    def test_an_exit_during_a_live_game_is_never_blocked(self):
+        held = [{"ticker": self.T, "side": "bid", "status": "placed", "count": 2,
+                 "fill_count": 2.0, "price": 0.5, "at": "2026-11-20T15:00:00+00:00"}]
+        placed, _, calls = self._poll(self.IN_PLAY, action="sell", ledger=held)
+        self.assertEqual(len(placed), 1)
+        self.assertTrue(placed[0]["reduce_only"])
+        self.assertFalse(any(c.startswith("/live_data/") for c in calls))
+
+    def test_the_manager_report_counts_live_game_skips_by_name(self):
+        import kalshi_copytrade_manager as mgr
+        rows = [{"status": "skipped", "at": "2026-11-20T16:00:00+00:00",
+                 "reason": "live game (Shabab Al-Ahli vs Ajman, 2nd_half)"},
+                {"status": "skipped", "at": "2026-11-20T16:01:00+00:00",
+                 "reason": "live game (CAR at TB, period 3)"},
+                {"status": "skipped", "at": "2026-11-20T16:02:00+00:00",
+                 "reason": "game status unknown (game lookup failed)"},
+                {"status": "skipped", "at": "2026-11-20T16:03:00+00:00",
+                 "reason": "stale (31s old)"}]
+        self.assertEqual(mgr.skip_reasons(rows, "2026-11-20"),
+                         {"live game": 2, "game status unknown": 1, "stale": 1})
+
+
 class TestKalshiCopytradeChecksTheShardCanPay(unittest.TestCase):
     """Live, 2026-11-11 07:47 UTC: $16.13 in the account, $15.57 of it on shard
     1 (Combos), $0.57 on shard 0 where every copied market trades. Three $0.70
     copies bounced "insufficient_balance" and tripped the halt. A copy its
     shard cannot pay is now skipped before it is sent."""
+
+    def setUp(self):
+        import kalshi_copytrade as ct
+        # Not under test here: a game in play is TestKalshiCopytradeSkipsLiveGames.
+        g = patch.object(ct, "game_state", return_value=("clear", "test"))
+        g.start()
+        self.addCleanup(g.stop)
 
     NOW = datetime(2026, 11, 11, 7, 47, 0, tzinfo=timezone.utc)
     T = "KXEBASKETBALLGAME-26NOV110248SHAQICEK-SHAQ"
@@ -36120,6 +36291,13 @@ class TestKalshiPaperCopiesDoNotSpendTheLiveCap(unittest.TestCase):
     to the real-money $3 daily cap; when it resumed only $0.43 was left and no
     live order could be placed. Paper rows must not count toward live caps,
     and a paper position must not give a live exit anything to sell."""
+
+    def setUp(self):
+        import kalshi_copytrade as ct
+        # Not under test here: a game in play is TestKalshiCopytradeSkipsLiveGames.
+        g = patch.object(ct, "game_state", return_value=("clear", "test"))
+        g.start()
+        self.addCleanup(g.stop)
 
     NOW = datetime(2026, 11, 9, 21, 32, 0, tzinfo=timezone.utc)
     T = "KXTEST-26NOV10-X"
