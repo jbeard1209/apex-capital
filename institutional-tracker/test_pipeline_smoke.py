@@ -2020,6 +2020,47 @@ class TestChairmanQueueDedup(unittest.TestCase):
             finally:
                 lo.CIT_PENDING_PATH, lo.IMPL_QUEUE_PATH = orig
 
+    def test_logic_team_does_not_refile_a_finding_the_board_already_approved(self):
+        """2026-11-19: the Logic Officer fix above, missing from its twin. On the VM
+        the Logic Team had filed 6 LT-*-loss_no_attribution rows in one day and 27
+        LT-*-wiring_contract_violation rows for one orphan file, each a fresh
+        LT-HHMMSS id for a decision the board had already taken: dedup read only the
+        pending queue, which approval empties. A still-open approved row with the
+        same rule and normalised title must block the re-file; a finished one must
+        not; a different finding under the same rule (another orphan agent) must
+        still be filed."""
+        import logic_team as lt
+
+        with tempfile.TemporaryDirectory() as d:
+            pend = Path(d) / "cit_pending_proposals.json"
+            impl = Path(d) / "cit_implementation_queue.json"
+            f = lambda pct, title=None: {
+                "rule": "loss_no_attribution", "severity": "HIGH", "agent": "PerformanceLogicAgent",
+                "title": title or f"Portfolio -{pct}% below start with no current loss attribution (STALE)",
+                "observation": "x", "suggestion": "x", "why_wrong": "x"}
+            with patch.object(lt, "CIT_PENDING", pend), patch.object(lt, "IMPL_QUEUE", impl, create=True), \
+                 patch("cit_director.CIT_PENDING", pend), \
+                 patch("cit_director._effective_pod", return_value="main"):
+                impl.write_text(json.dumps([{"proposal_id": "LT-120033-loss_no_attribution",
+                                             "title": "Portfolio -5.5% below start with no current "
+                                                      "loss attribution (STALE)",
+                                             "status": "claimed"}]))
+                self.assertEqual(lt._submit_board_proposals([f("5.7")]), 0,
+                                 "an approved, still-open row for this finding must block a re-file")
+                self.assertFalse(pend.exists() and json.loads(pend.read_text()))
+
+                other = f(0, title="Wiring contract violation — [orphan-agent] x.py writes y")
+                self.assertEqual(lt._submit_board_proposals([dict(other, rule="loss_no_attribution")]), 1,
+                                 "a different finding under the same rule is not a duplicate")
+
+                pend.write_text("[]")
+                impl.write_text(json.dumps([{"proposal_id": "LT-120033-loss_no_attribution",
+                                             "title": "Portfolio -5.5% below start with no current "
+                                                      "loss attribution (STALE)",
+                                             "status": "superseded"}]))
+                self.assertEqual(lt._submit_board_proposals([f("5.7")]), 1,
+                                 "after the row is finished, a recurrence goes to a fresh vote")
+
     def test_board_meeting_route_approved_dedups_by_key(self):
         import board_meeting as bm
 
@@ -38261,7 +38302,10 @@ def _instant(year, val):
     return _xbrl(f"{year}-12-31", val, filed=f"{year+1}-02-20")
 
 
-def _facts(usgaap: dict, dei: dict | None = None) -> dict:
+# No `dict | None` here: the Mac's push-gate interpreter is /usr/bin/python3 (3.9),
+# where a PEP 604 union in a def annotation raises TypeError at import and the whole
+# suite fails to load (memory `host-divergence-is-a-bug-class`).
+def _facts(usgaap: dict, dei: "dict" = None) -> dict:
     def wrap(d, unit):
         return {k: {"units": {(u or unit): v for u, v in [(None, vals)]}}
                 for k, vals in d.items()}

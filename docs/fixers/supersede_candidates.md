@@ -46,3 +46,25 @@ call). Check: `crontab -l | grep -v '^#' | grep -c <job>` on the VM, 2026-11-19:
 | `loop-sig-21837bc97ded` | `fe_cit_agent.py` | 0 | present | same |
 | `loop-sig-3616daec9161` | `portfolio_risk_dashboard.py` | 0 | present | same |
 | `loop-sig-e890ba6a27c3` | `fe_watchlist_monitor` | 0 | **missing** | premise moot: no such script; retire the freshness check, then supersede |
+
+## specialist-fixer-run 2026-11-20 03:50Z (wiring area)
+
+All checks read-only on the VM. Not closed here: `superseded` is written with
+`board_dispatch.py --supersede <id> --check "..." --reason "..."` on the VM, one row at a time.
+
+| Row(s) | Premise | Check | Verdict |
+|---|---|---|---|
+| 27 `LT-*-wiring_contract_violation` (`[orphan-agent] pregenerate_lessons.py`) | the VM runs an orphaned `pregenerate_lessons.py` | `ls pregenerate_lessons.py` on the VM: absent (deploy 0d7764b, 2026-11-19 20:28Z); `data/logic_team_findings.json` history: last run naming it 2026-11-19T00:00:34, none in the 4 runs since (latest 2026-11-20T00:00:28) | false now, close all 27 |
+| `loop-sig-fa6b55655db2` | `main.py` started 5x vs 4 scheduled | `problem_lifecycle.json` sig RESOLVED, last seen 2026-10-30; VM crontab has 4 `main.py` lines | false, close |
+| `loop-sig-966c67cd4118` | live market event INDEX_GAP on QQQ | sig RESOLVED, last seen 2026-11-09; a one-day market event, not a defect | moot, close |
+| `CIT-2026-1448` | `'str' object has no attribute 'get'` ERROR lines | `grep -c` in `logs/canary_20261117..20.log`: 0 each day, and in no `logs/*` file 11-18..11-20 | gone, close (rechecked; also listed above from 11-13) |
+
+Still true, not candidates: GCP disk 71% vs the 70% threshold (`df -h /`); `deployed_set_matches_repo`
+(10 files differ: undeployed merges, a deploy is Jack's call).
+
+Why the 27 piled up, and the 6 `LT-*-loss_no_attribution` rows: `logic_team._submit_board_proposals`
+deduped only against the pending queue, which approval empties, so each run re-filed an approved
+finding under a new `LT-HHMMSS` id. Fixed on `claude/fixer-wiring-20261119-ltrefile`; once that is
+deployed the 6 claimed `loss_no_attribution` rows should be collapsed to one (supersede 5 as
+duplicates of the oldest), which stays open on its true premise (the written attribution is the
+board's/Chairman's call, PR #63).
