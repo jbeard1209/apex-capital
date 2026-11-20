@@ -466,6 +466,27 @@ def holder(ticker: str) -> Optional[tuple]:
     return None
 
 
+ADOPTION_RULE = ("Chairman 2026-11-20: an unclaimed broker position is owned by "
+                 "pod3_macro if it is in the ETF pod's universe, else by pod1_rd "
+                 "(research picks and the short book). Idle pods adopt nothing.")
+
+
+def adoption_pod(symbol: str, pods: dict) -> Optional[str]:
+    """Which pod owns an unclaimed broker position (see ADOPTION_RULE)."""
+    try:
+        from etf_pod_board import ETF_UNIVERSE
+        etfs = {str(e).upper() for e in ETF_UNIVERSE}
+    except Exception:
+        etfs = {"XLK", "XLE", "XLF", "XLU", "XLP", "XLV", "XLI", "GLD",
+                "TLT", "QQQ", "XLY", "XLB"}
+    want = "pod3_macro" if str(symbol).upper() in etfs else "pod1_rd"
+    # No fallback to "any pod": if the named owner is missing or idle, the
+    # position stays visibly `unattributed` rather than going to a guess.
+    if want in pods and not is_idle(want, pods[want]):
+        return want
+    return None
+
+
 def sync_from_broker(broker_positions: Dict[str, dict],
                      apply: bool = True) -> dict:
     """Make the BROKER the source of truth for every position the pods claim.
@@ -561,6 +582,32 @@ def sync_from_broker(broker_positions: Dict[str, dict],
     unattributed = {s: {"qty": _f(v.get("qty")), "price": _f(v.get("price"))}
                     for s, v in bp.items()
                     if _f(v.get("qty")) != 0.0 and s not in attributed}
+
+    # Chairman decision 2026-11-20: every broker position has an owning pod.
+    # Ownership only, no order is placed. The adoption is recorded with the
+    # module that submitted the undeclared order, so the gap stays named
+    # (`adopted` in the return value, `adoptions` in the ledger).
+    adopted: List[dict] = []
+    for sym in sorted(unattributed):
+        pod_id = adoption_pod(sym, pods)
+        if not pod_id:
+            continue
+        u = unattributed.pop(sym)
+        src = ((data.get("attribution") or {}).get(sym) or {}).get("source") or "unknown"
+        adopted.append({"symbol": sym, "pod": pod_id, "qty": u["qty"],
+                        "price": u["price"], "submitted_by": src,
+                        "at": _now_iso(), "rule": ADOPTION_RULE})
+        if apply:
+            pods[pod_id].setdefault("positions", {})[sym] = {
+                "qty": u["qty"],
+                "avg_entry": _f(bp[sym].get("avg_entry"), u["price"]) or u["price"],
+                "current_price": u["price"], "opened_at": _now_iso(),
+                "signal_source": "adopted:" + src}
+            data.setdefault("attribution", {})[sym] = {
+                "pod": pod_id, "source": "adopted (was %s)" % src, "at": _now_iso()}
+        attributed.add(sym)
+        deployed[pod_id] = round(deployed.get(pod_id, 0.0)
+                                 + abs(u["qty"]) * u["price"], 2)
     unattributed_value = round(
         sum(abs(v["qty"]) * v["price"] for v in unattributed.values()), 2)
 
@@ -599,6 +646,9 @@ def sync_from_broker(broker_positions: Dict[str, dict],
                 sym, {"pod": UNATTRIBUTED, "source": "found at broker, unclaimed",
                       "at": _now_iso()})
         data["unattributed"] = unattributed
+        if adopted:
+            data.setdefault("adoptions", []).extend(adopted)
+            data["adoptions"] = data["adoptions"][-500:]
         if retired:
             data.setdefault("retired_claims", []).extend(retired)
             data["retired_claims"] = data["retired_claims"][-500:]
@@ -628,6 +678,7 @@ def sync_from_broker(broker_positions: Dict[str, dict],
         "retired_claims": retired,
         "requantified": requantified,
         "deployed_by_pod": deployed,
+        "adopted": adopted,
         "unattributed_symbols": sorted(unattributed),
         "unattributed_value": unattributed_value,
         "unattributed_pct_of_book": round(
