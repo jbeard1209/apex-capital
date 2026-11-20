@@ -6968,6 +6968,85 @@ class TestEmailLoopDetectorReadsFlushSemantics(unittest.TestCase):
         self.assertEqual(self._run_check(buf), [])
 
 
+class TestPipelineIntegrityEmailLoopIsABurstToo(unittest.TestCase):
+    """The TWIN of TestEmailLoopDetectorReadsFlushSemantics, which fixed only one of two.
+
+    cit_pipeline_integrity_agent.check_email_loop asks the same question as
+    apex_system_cit_agent.check_email_buffer and kept the old answer: subject-only
+    key, counted over the whole buffer, so N scheduled regenerations of one report
+    read as "email loop". On the VM on 2026-11-20 the Canary sat at ORANGE (VIX 28,
+    futures -2%) and re-ran its cascade each time its 45-min cooldown lapsed, so
+    the CRO report was buffered 24 times about an hour apart. The 22:00 digest
+    collapses those to one line (email_buffer.flush keys on dedup_key or subject);
+    Jack gets one. The check still filed HIGH "Repeated email subjects", queue row
+    loop-sig-6d3a5f90ef04: seen 101x, recurred after resolution 84x.
+    """
+
+    def _run(self, buffer):
+        import cit_pipeline_integrity_agent as pia
+        d = Path(tempfile.mkdtemp())
+        buf_path, hb_path = str(d / "email_buffer.json"), str(d / "hb.json")
+        Path(buf_path).write_text(json.dumps(buffer))
+        saved = (pia._EMAIL_BUFFER_PATH, pia._HEARTBEAT_PATH)
+        issues, skipped = [], {}
+        try:
+            pia._EMAIL_BUFFER_PATH, pia._HEARTBEAT_PATH = buf_path, hb_path
+            pia.check_email_loop(issues, skipped)
+        finally:
+            pia._EMAIL_BUFFER_PATH, pia._HEARTBEAT_PATH = saved
+            shutil.rmtree(d, ignore_errors=True)
+        return [i for i in issues if i.get("check") == "email_loop_detection"]
+
+    @staticmethod
+    def _e(subj, at, dedup_key=None, body="x"):
+        return {"subject": subj, "html_body": body, "sender_name": "s",
+                "key_metrics": {}, "dedup_key": dedup_key or "", "buffered_at": at}
+
+    # The real stamps of "[CRO REPORT] ..." in the VM buffer, 2026-11-19/20 (UTC).
+    VM_CRO_STAMPS = [
+        "2026-11-19T22:30", "2026-11-19T23:30", "2026-11-20T00:30", "2026-11-20T01:30",
+        "2026-11-20T02:30", "2026-11-20T03:30", "2026-11-20T04:30", "2026-11-20T05:30",
+        "2026-11-20T06:30", "2026-11-20T07:30", "2026-11-20T08:30", "2026-11-20T09:30",
+        "2026-11-20T10:30", "2026-11-20T11:30", "2026-11-20T12:30", "2026-11-20T13:20",
+        "2026-11-20T13:45", "2026-11-20T14:00", "2026-11-20T14:10", "2026-11-20T14:55",
+        "2026-11-20T15:45", "2026-11-20T15:50", "2026-11-20T16:00", "2026-11-20T16:40",
+    ]
+
+    def test_scheduled_regenerations_of_one_report_are_not_a_loop(self):
+        subj = "[CRO REPORT] Apex Capital — Risk:ELEVATED | Manager Grade:A | Nov 20, 2026"
+        buf = [self._e(subj, t + ":05") for t in self.VM_CRO_STAMPS]
+        self.assertEqual(self._run(buf), [],
+                         "24 cascade regenerations about an hour apart collapse to one "
+                         "digest line; that is the flush working, not a loop")
+
+    def test_a_real_burst_still_alerts(self):
+        buf = [self._e("stuck producer", "2026-11-20T10:00:%02d" % s)
+               for s in (0, 5, 10, 20, 40)]
+        found = self._run(buf)
+        self.assertEqual(len(found), 1, "5 enqueues inside a minute is a loop")
+        self.assertEqual(found[0]["severity"], "HIGH")
+        # The message is routed by keyword; a rewording that no consumer matches
+        # is the identifier-mismatch bug class (it fell to fallback:unrouted).
+        import fixer_routing, chairman_decision_categorizer as cdc
+        msg = found[0]["message"]
+        self.assertEqual(fixer_routing.route({"title": msg, "evidence": msg})[0], "ops")
+        self.assertTrue(any(kw in msg.lower() for kw in ("repeated email", "email subjects")),
+                        "chairman_decision_categorizer files this under governance by phrase")
+
+    def test_distinct_dedup_keys_under_one_subject_are_distinct_reports(self):
+        buf = [self._e("Coherence: 1 law(s) violated on apexcapitalc",
+                       "2026-11-20T10:00:%02d" % s, dedup_key="coherence:%d" % s)
+               for s in range(6)]
+        self.assertEqual(self._run(buf), [],
+                         "the digest delivers each dedup_key separately; same subject "
+                         "is not the same message")
+
+    def test_irm_shadow_copies_and_unstamped_entries_are_not_evidence(self):
+        buf = ([self._e("[IRM REVIEW] x", "2026-11-20T10:00:%02d" % s) for s in range(6)]
+               + [self._e("no stamp", "") for _ in range(6)])
+        self.assertEqual(self._run(buf), [])
+
+
 class TestWrongfulRetirement(unittest.TestCase):
     """Retirement is the only irreversible thing HR does. It ran unchecked.
 
