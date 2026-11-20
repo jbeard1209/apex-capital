@@ -22321,6 +22321,74 @@ class TestRiskLimitsAreDerivedNotInherited(unittest.TestCase):
         self.assertNotIn("hard_floor", out)
 
 
+class TestKalshiLedgerBackupCatchesAShrink(unittest.TestCase):
+    """tools/kalshi_ledger_backup.py keeps a dated Mac copy of the VM's
+    append-only Kalshi order ledger and alarms when it shrinks or its history
+    is edited. Pins: growth is OK, shrink and rewrite alarm, a failed read is
+    never OK, a shorter read never replaces an existing copy, and the alert
+    reaches the Chairman queue."""
+
+    @classmethod
+    def setUpClass(cls):
+        import importlib.util
+        root = Path(__file__).resolve().parent.parent
+        if not (root / ".git").exists():
+            raise unittest.SkipTest("no repo root on this host (VM): tools/ not deployed")
+        spec = importlib.util.spec_from_file_location(
+            "kalshi_ledger_backup_t", str(root / "tools" / "kalshi_ledger_backup.py"))
+        cls.K = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cls.K)
+
+    def _dir(self):
+        d = Path(tempfile.mkdtemp(prefix="kbak-"))
+        self.addCleanup(shutil.rmtree, str(d), True)
+        return d
+
+    def _day(self, n):
+        import datetime as _dt
+        return _dt.datetime(2026, 11, 20 + n, 6, 0, tzinfo=_dt.timezone.utc)
+
+    def test_growth_ok_shrink_and_rewrite_alarm(self):
+        d = self._dir()
+        a, b = b'{"o":1}\n{"o":2}\n', b'{"o":1}\n{"o":2}\n{"o":3}\n'
+        self.assertEqual(self.K.run(lambda: a, d, self._day(0))["verdict"], "OK")
+        r = self.K.run(lambda: b, d, self._day(1))
+        self.assertEqual((r["verdict"], r["added_rows"]), ("OK", 1))
+        r = self.K.run(lambda: a, d, self._day(2))
+        self.assertEqual((r["verdict"], r["prev_rows"], r["new_rows"]), ("SHRANK", 3, 2))
+        r = self.K.run(lambda: b'{"o":9}\n{"o":2}\n{"o":3}\n{"o":4}\n', d, self._day(3))
+        self.assertEqual(r["verdict"], "REWRITTEN")
+        # every day's copy survives; nothing was replaced
+        self.assertEqual(len(self.K.backups(d)), 4)
+
+    def test_same_day_shorter_read_keeps_the_longer_copy(self):
+        d = self._dir()
+        self.K.run(lambda: b"1\n2\n3\n", d, self._day(0))
+        self.K.run(lambda: b"1\n", d, self._day(0))
+        sizes = sorted(p.read_bytes().count(b"\n") for p in self.K.backups(d))
+        self.assertEqual(sizes, [1, 3])
+
+    def test_failed_or_empty_read_is_never_ok(self):
+        d = self._dir()
+        self.K.run(lambda: b"1\n", d, self._day(0))
+        def boom():
+            raise RuntimeError("ssh down")
+        self.assertEqual(self.K.run(boom, d, self._day(1))["verdict"], "CANNOT_TELL")
+        self.assertEqual(self.K.run(boom, d, self._day(3))["verdict"], "STALE")
+        # empty read: fetch_vm_ledger raises on 0 bytes; an empty dir + failure is STALE
+        self.assertEqual(self.K.run(boom, self._dir(), self._day(0))["verdict"], "STALE")
+
+    def test_shrink_reaches_the_chairman_queue(self):
+        got, mails = [], []
+        r = {"verdict": "SHRANK", "prev_rows": 3, "new_rows": 2,
+             "compared_to": "x", "checked_at": "2026-11-22T06:00:00+00:00"}
+        e = self.K.alert(r, submit=lambda es, src, path: (got.extend(es) or (1, 0)),
+                         email=lambda s, b: mails.append(s))
+        self.assertEqual(got[0]["severity"], "HIGH")
+        self.assertEqual(mails, ["Kalshi ledger SHRANK"])
+        self.assertIsNone(self.K.alert(dict(r, verdict="OK")))
+
+
 class TestMacGithubVmDriftIsMeasuredNotRemembered(unittest.TestCase):
     """tools/sync_drift_check.py compares three copies of the code (Mac tree,
     origin/main, the VM's deployed files). Nothing kept them equal but a session
@@ -38261,7 +38329,7 @@ def _instant(year, val):
     return _xbrl(f"{year}-12-31", val, filed=f"{year+1}-02-20")
 
 
-def _facts(usgaap: dict, dei: dict | None = None) -> dict:
+def _facts(usgaap: dict, dei: "dict | None" = None) -> dict:  # quoted: py3.9 (Mac push gate) cannot evaluate X | None
     def wrap(d, unit):
         return {k: {"units": {(u or unit): v for u, v in [(None, vals)]}}
                 for k, vals in d.items()}
