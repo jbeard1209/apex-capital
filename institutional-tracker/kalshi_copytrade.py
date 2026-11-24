@@ -64,7 +64,9 @@ order that filled in three pieces was copied three times at ~$0.85 each:
 $2.55 into one 6c market under a "$1 per trade" cap. Both are and are clipped to HARD_MAX_* in code so a
 typo in that file cannot authorise $5,000. max_days_to_settle (default 30, clipped to HARD_MAX_DAYS_TO_SETTLE) skips
 opening any market expected to settle further out, or whose date cannot be
-read. Exits are always allowed: blocking
+read. An opening into a sports game being played right now (halftime
+excepted) is skipped, and so is one whose game state cannot be confirmed
+(see game_state). Exits are always allowed: blocking
 an exit costs money with no ceiling (same asymmetry as single_writer.py).
 Three consecutive order errors write data/.kalshi_copytrade_halted and stop
 all copying until the Chairman deletes it.
@@ -435,6 +437,132 @@ def settle_check(dec, cfg, now, settles_at):
     return dec
 
 
+GAME_CATEGORIES = ("Sports", "Esports")      # Kalshi event/milestone categories
+GAME_NOT_STARTED = ("none", "created")       # live_data widget_status, measured 2026-11-20
+GAME_OVER = ("finished", "complete")
+GAME_STOPPAGES = ("halftime", "half time", "half_time", "ht")   # match_status / half
+
+
+def _game_milestones(event_ticker, cache):
+    """Kalshi's game records ("milestones") tied to an event: a list (maybe
+    empty), or None if the lookup failed. Only answers are cached."""
+    key = ("milestones", event_ticker)
+    if key in cache:
+        return cache[key]
+    try:
+        d = kc._get("/milestones", {"related_event_ticker": event_ticker, "limit": 20})
+    except Exception:
+        return None
+    ms = d.get("milestones") if isinstance(d, dict) else None
+    if not isinstance(ms, list):
+        return None
+    ms = [m for m in ms if isinstance(m, dict) and m.get("category") in GAME_CATEGORIES]
+    cache[key] = ms
+    return ms
+
+
+def _event_category(event_ticker, cache):
+    """The event's category ("Sports", "Politics", ...), or None if unreadable."""
+    key = ("category", event_ticker)
+    if key in cache:
+        return cache[key]
+    try:
+        cat = (kc._get(f"/events/{urllib.parse.quote(str(event_ticker))}")
+               .get("event") or {}).get("category")
+    except Exception:
+        return None
+    if isinstance(cat, str) and cat:
+        cache[key] = cat
+        return cat
+    return None
+
+
+def _game_live_details(milestone):
+    """GET /live_data/{type}/milestone/{id} -> its `details` dict, or None.
+    Never cached: a game's state is the one thing here that changes by the second."""
+    try:
+        d = kc._get(f"/live_data/{urllib.parse.quote(str(milestone['type']))}"
+                    f"/milestone/{urllib.parse.quote(str(milestone['id']))}")
+        det = (d.get("live_data") or {}).get("details")
+    except Exception:
+        return None
+    return det if isinstance(det, dict) else None
+
+
+def game_state(market, cache):
+    """Is the market tied to a game that is being played RIGHT NOW?
+
+    -> ("clear", why) | ("live", why) | ("unknown", why)
+
+    Chairman, 2026-11-20: don't copy a bet on a game in progress (halftime or
+    another stoppage excepted). A leader who fills mid-play and the copy
+    ~2 s later (median lag, max 16 s) can straddle a goal or a break of serve,
+    so we would pay the pre-swing price for a post-swing position.
+
+    Source: Kalshi's own game feed, public and unauthenticated.
+    `GET /milestones?related_event_ticker=E` maps an event to its game
+    (moneylines, spreads, totals AND player props all map, checked on an NFL
+    game), and `GET /live_data/{type}/milestone/{id}` gives `widget_status`,
+    one normalised field across every sport. Polled 2026-11-20 16:30 UTC over
+    284 games in 11 sports it took only: none/created (not started), live,
+    suspended, finished/complete. Halftime shows inside a live game as
+    match_status "halftime" / half "Halftime" (seen on soccer only; other
+    sports may spell a break differently, and then it simply reads as live).
+
+    Fails closed: a sports event with no game feed, a failed lookup, an
+    unrecognised status, or play "suspended" (a tennis injury suspension can
+    end in a retirement that settles the market) are all "not confirmed
+    safe", which settle_check's rule for an unknown date already set as the
+    house pattern. A non-sports market (category read from the event) is clear."""
+    ev = (market or {}).get("event_ticker")
+    if not ev:
+        return "unknown", "market record has no event_ticker"
+    ms = _game_milestones(ev, cache)
+    if ms is None:
+        return "unknown", "game lookup failed"
+    if not ms:
+        cat = _event_category(ev, cache)
+        if cat is None:
+            return "unknown", "event category unreadable"
+        if cat in GAME_CATEGORIES:
+            return "unknown", f"{cat.lower()} event with no live game feed"
+        return "clear", f"not a game ({cat})"
+    for m in ms:
+        det = _game_live_details(m)
+        title = str(m.get("title") or m.get("id"))[:40]
+        if det is None:
+            return "unknown", f"{title}: live feed unreadable"
+        ws = str(det.get("widget_status") or "").lower()
+        if ws in GAME_NOT_STARTED or ws in GAME_OVER:
+            continue
+        if ws == "live":
+            pause = " ".join(str(det.get(k) or "") for k in ("match_status", "half")).lower()
+            if pause.strip() in GAME_STOPPAGES or "halftime" in pause:
+                continue
+            where = det.get("match_status") or (f"period {det['period']}"
+                                                if det.get("period") else "in play")
+            return "live", f"{title}, {where}"
+        if ws == "suspended":
+            return "live", f"{title}, play suspended"
+        return "unknown", f"{title}: unrecognised status {ws or '(blank)'}"
+    return "clear", "game not started, over, or at halftime"
+
+
+def game_check(dec, state_why):
+    """An opening order -> the same order, or a skip if its game is in play or
+    its game state cannot be confirmed. Exits are never blocked (same
+    asymmetry as every other check here: a blocked exit has no loss ceiling)."""
+    if dec["action"] != "order" or dec.get("reduce_only"):
+        return dec
+    state, why = state_why
+    if state == "clear":
+        return dec
+    keep = {k: v for k, v in dec.items() if k in ("ticker", "leader_price", "lag_s")}
+    if state == "live":
+        return {"action": "skip", "reason": f"live game ({why})", **keep}
+    return {"action": "skip", "reason": f"game status unknown ({why})", **keep}
+
+
 def exit_check(dec, held):
     """A leader's exit -> our exit, sized to what WE hold, or a skip.
 
@@ -614,6 +742,9 @@ def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order,
                 if dec["action"] == "order":
                     # the record settle_time just read; no second request
                     dec = venue_check(dec, cfg, settle_cache.get(("market", dec["ticker"])))
+                if dec["action"] == "order":
+                    dec = game_check(dec, game_state(
+                        settle_cache.get(("market", dec["ticker"])), settle_cache))
                 if dec["action"] == "order" and is_live:
                     dec = cash_check(dec, cash, settle_cache.get(("market", dec["ticker"])))
             elif dec["action"] == "order":
