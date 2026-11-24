@@ -703,10 +703,27 @@ def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order,
     """One pass over every leader. Mutates `state` (seen ids). Returns rows written.
 
     `cash` is the per-shard balance map (shard_cash); when given, an opening
-    order its shard cannot pay is skipped, and each placed order is deducted."""
+    order its shard cannot pay is skipped, and each placed order is deducted.
+    It may also be a zero-argument callable returning that map, called only
+    when a live opening order actually needs it (see run_for: 2026-11-20 the
+    copier read the balance every 30 s whether or not anyone traded, ~110
+    signed calls an hour, and Kalshi's 429s on that endpoint were being
+    reported as a failed key).
+
+    A leader seen for the first time is seeded, never copied. "First time"
+    also means first poll since being RE-added: until 2026-11-20 only the very
+    first follow seeded, so when the scout re-added richstrike on 11-20 the
+    copier walked their last 100 fills (back to 11-15) and logged every one as
+    "stale" — the 100 stale skips that read as a one-minute copy lag. The
+    copied trades' own lag that day was a median 9 s, max 20 s."""
     written = []
     settle_cache = {}
     is_live, why_not = armed()
+    cash_fn = cash if callable(cash) else None
+    if cash_fn is not None:
+        cash = None
+    polled = state.get("polled_leaders")
+    polled = list(cfg["leaders"]) if polled is None else list(polled)
     for leader in cfg["leaders"]:
         try:
             d = fetch(leader)
@@ -721,9 +738,12 @@ def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order,
         trades = [t for t in d.get("trades") or [] if t.get("trade_id")]
         prior = list(state.setdefault("seen", {}).get(leader, []))
         seen = dict.fromkeys(prior)             # insertion-ordered set
-        first = leader not in state.setdefault("initialised", [])
-        if first:
+        first = (leader not in state.setdefault("initialised", [])
+                 or leader not in polled)
+        if leader not in state["initialised"]:
             state["initialised"].append(leader)
+        if leader not in polled:
+            polled.append(leader)
         new = [t for t in trades if t["trade_id"] not in seen]
         for t in reversed(new):                  # API is newest-first
             seen[t["trade_id"]] = None
@@ -746,6 +766,8 @@ def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order,
                     dec = game_check(dec, game_state(
                         settle_cache.get(("market", dec["ticker"])), settle_cache))
                 if dec["action"] == "order" and is_live:
+                    if cash is None and cash_fn is not None:
+                        cash = cash_fn()
                     dec = cash_check(dec, cash, settle_cache.get(("market", dec["ticker"])))
             elif dec["action"] == "order":
                 dec = exit_check(dec, net_position(dec["ticker"], rows_, live=is_live))
@@ -786,6 +808,8 @@ def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order,
         # keep the newest 500 ids per leader (oldest first); the feed returns 100,
         # so anything trimmed is long past max_age_s and could not be copied anyway
         state["seen"][leader] = list(seen)[-500:]
+    # a leader who is dropped and later re-added is seeded again on return
+    state["polled_leaders"] = [n for n in polled if n in cfg["leaders"]]
     return written
 
 
@@ -798,20 +822,28 @@ def run_for(seconds):
             print("another copier is running; exiting")
             return 0
         end = time.time() + seconds
-        cash, cash_at = None, 0.0
+        held = {"cash": None, "at": -1e18}
         n_done = n_tried = 0
+
+        def cash_now():
+            """Per-shard cash, read at most once per CASH_REFRESH_S and only
+            when an order needs it. Placed orders are deducted from the same
+            map in poll_once, so a cached read stays conservative."""
+            if time.time() - held["at"] >= CASH_REFRESH_S:
+                try:
+                    held["cash"] = shard_cash(kc.get_balance())
+                except Exception:
+                    held["cash"] = None
+                held["at"] = time.time()
+            return held["cash"]
+
         while time.time() < end:
+            started = time.time()
             cfg = load_config()
             state = _read_json(STATE_FILE, {})
             if not isinstance(state, dict):
                 state = {}
-            if armed()[0] and time.time() - cash_at >= CASH_REFRESH_S:
-                try:
-                    cash = shard_cash(kc.get_balance())
-                except Exception:
-                    cash = None
-                cash_at = time.time()
-            for r in poll_once(cfg, state, cash=cash):
+            for r in poll_once(cfg, state, cash=cash_now):
                 if r.get("status") != "skipped":
                     n_tried += 1
                     if r.get("status") in ("placed", "paper"):
@@ -820,7 +852,12 @@ def run_for(seconds):
                       f"{r.get('ticker')} {r.get('side', '')} x{r.get('count', '')} "
                       f"@{r.get('price', '')} {r.get('reason', '')}", flush=True)
             _write_json(STATE_FILE, state)
-            time.sleep(cfg["poll_s"])
+            # poll_s is the period start-to-start, not a pause after the work:
+            # fetching three leaders and looking up markets used to add its
+            # own second or two on top of every 3 s sleep.
+            left = min(cfg["poll_s"] - (time.time() - started), end - time.time())
+            if left > 0:
+                time.sleep(left)
         # Liveness (G06): one beat per copier run. Copies attempted that all
         # errored is NO_OUTCOME; leaders who did not trade is (0, 0) = OK; a
         # copier that stopped running goes STALE. Reads nothing new from Kalshi.

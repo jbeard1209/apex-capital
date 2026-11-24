@@ -84,11 +84,15 @@ def _social(path, retries=3):
             raise
 
 
-def fetch_history(nick, pages=DEFAULT_PAGES, get=_social, first=None):
+def fetch_history(nick, pages=DEFAULT_PAGES, get=_social, first=None, min_days=None):
     """(fills newest-first, visibility_state). Stops early when the cursor ends.
     A page that fails after the first returns what was read so far: a shorter
     history is still a true history; a guessed one is not. `first` is an
-    already-fetched first page (the scout has one), saving a request."""
+    already-fetched first page (the scout has one), saving a request.
+
+    `min_days` stops paging once the fills read reach that far back (2026-11-20:
+    the scout wants ~2 months of history, which is 3 pages for a slow trader and
+    30 for a busy one; `pages` stays the hard ceiling either way)."""
     q = urllib.parse.quote(nick)
     d = first if first is not None else get(f"trades?nickname={q}")
     vis = d.get("visibility_state")
@@ -106,7 +110,15 @@ def fetch_history(nick, pages=DEFAULT_PAGES, get=_social, first=None):
             break
         fills += page
         cur = d.get("cursor")
+        if min_days and _span_days(fills) >= min_days:
+            break
     return fills, vis
+
+
+def _span_days(fills):
+    ts = [ct._parse_ts(t.get("create_date")) for t in fills]
+    ts = [x for x in ts if x]
+    return (max(ts) - min(ts)).total_seconds() / 86400 if len(ts) > 1 else 0.0
 
 
 def fetch_markets(tickers, cache=None, get=None):
@@ -237,7 +249,7 @@ def pnl(rows, markets):
         b["cash"] -= (kc.fee_cents(p, int(n)) or 0) / 100.0
     out = {"markets": len(book), "settled": 0, "wins": 0, "settled_pnl": 0.0,
            "settled_spent": 0.0, "open_pnl": 0.0, "open_spent": 0.0}
-    per_market = []
+    per_market, detail = [], []
     for ticker, b in book.items():
         m = markets.get(ticker)
         res = result(m)
@@ -248,6 +260,9 @@ def pnl(rows, markets):
             out["settled_pnl"] += v
             per_market.append(v)
             out["settled_spent"] += b["spent"]
+            at = settle_date(m)
+            detail.append({"ticker": ticker, "pnl": round(v, 4), "spent": round(b["spent"], 4),
+                           "settled_at": at.isoformat() if at else ""})
         else:
             mark = kc.parse_price((m or {}).get("last_price_dollars"))
             if mark is None:
@@ -259,7 +274,75 @@ def pnl(rows, markets):
     out["t_stat"] = t_stat(per_market)
     out["settled_roi"] = (round(out["settled_pnl"] / out["settled_spent"], 3)
                           if out["settled_spent"] else None)
+    out["consistency"] = consistency(detail)
     return out
+
+
+def consistency(per_market, blocks=4):
+    """Is the profit steady, or one lucky stretch / one big win?
+
+    Chairman, 2026-11-20, after 0 wins in our first 7 settled copies: "identify
+    people who consistently make good bets over time". A positive total says
+    nothing about that: one +$40 longshot over thirty -$1 markets is positive.
+    So the settled markets are put in settlement order and cut into `blocks`
+    equal-count periods, and three numbers are reported:
+
+      periods_up      how many of those periods made money on their own
+      halves_up       (first half up, second half up)
+      pnl_ex_best     total P&L with the single best market taken out: if that
+                      is <= 0, the whole record is one win
+      best_share      the best market's share of gross winnings
+
+    `per_market` rows are {"pnl", "spent", "settled_at"} from pnl()."""
+    rows = sorted(per_market, key=lambda r: (r.get("settled_at") or "", r.get("ticker") or ""))
+    n = len(rows)
+    out = {"markets": n, "blocks": blocks, "periods_up": None, "period_pnl": [],
+           "halves_up": None, "pnl_ex_best": None, "best_share": None}
+    if n < blocks:
+        return out
+    cuts = [round(i * n / blocks) for i in range(blocks + 1)]
+    per = [sum(r["pnl"] for r in rows[cuts[i]:cuts[i + 1]]) for i in range(blocks)]
+    half = n // 2
+    total = sum(r["pnl"] for r in rows)
+    best = max(r["pnl"] for r in rows)
+    gross_win = sum(r["pnl"] for r in rows if r["pnl"] > 0)
+    out.update(periods_up=sum(1 for v in per if v > 0),
+               period_pnl=[round(v, 2) for v in per],
+               halves_up=[sum(r["pnl"] for r in rows[:half]) > 0,
+                          sum(r["pnl"] for r in rows[half:]) > 0],
+               pnl_ex_best=round(total - max(best, 0.0), 2),
+               best_share=round(best / gross_win, 3) if gross_win > 0 else None)
+    return out
+
+
+def sizing(nick, fills):
+    """How the leader spreads their own money across markets: the share of
+    everything they staked (opening taker fills) that went into their single
+    biggest market. A trader who is "profitable" because one market got most
+    of their money is a one-bet record, not a method.
+
+    Leader's own stake, not ours: our caps flatten their sizing, so a record
+    built on one huge bet would show up in our replay as many small ones."""
+    me = nick.lower()
+    stake = {}
+    for t in fills:
+        if str(t.get("taker_nickname") or "").lower() != me:
+            continue
+        key = (str(t.get("taker_side")).lower(), str(t.get("taker_action")).lower())
+        if key[1] != "buy":
+            continue
+        p = kc.parse_price(t.get("price_dollars"))
+        n = kc.parse_size(t.get("count_fp") if t.get("count_fp") is not None else t.get("count"))
+        if p is None or not n:
+            continue
+        cost = n * (p if key[0] == "yes" else 1.0 - p)
+        stake[t.get("ticker")] = stake.get(t.get("ticker"), 0.0) + cost
+    total = sum(stake.values())
+    if not stake or total <= 0:
+        return {"markets": 0, "top_market_share": None, "median_stake": None}
+    vals = sorted(stake.values())
+    return {"markets": len(vals), "top_market_share": round(vals[-1] / total, 3),
+            "median_stake": round(vals[len(vals) // 2], 2)}
 
 
 def t_stat(xs):
@@ -281,7 +364,7 @@ def backtest(nick, fills, markets, cfg=None, lag_s=3.0):
     span = [s for s in span if s]
     out = {"nickname": nick, "fills": len(fills),
            "history_days": round((max(span) - min(span)).total_seconds() / 86400, 1)
-           if len(span) > 1 else 0.0}
+           if len(span) > 1 else 0.0, "sizing": sizing(nick, fills)}
     for mode in ("capped", "unit"):
         rows, skips = replay(nick, fills, markets, cfg, lag_s=lag_s, unit=(mode == "unit"))
         out[mode] = {**pnl(rows, markets), "copies": len(rows), "skips": skips}
