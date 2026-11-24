@@ -253,6 +253,36 @@ def push(remote, text, extra=None, ssh_key=None):
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def run_sync_watchdog(cfg, runner=None):
+    """On the VM (source "local") also run sync_check_watchdog.py, which reads
+    the Mac sync check's published status from this same repo with this same
+    key. It rides on this hourly job instead of its own cron line, so it ships
+    with a normal deploy. Isolated: its failure never changes this job's exit
+    code, and this job's failure never skips it."""
+    if not (isinstance(cfg, dict) and cfg.get("source") == "local"):
+        return "skipped (not the VM)"
+    try:
+        if runner is None:
+            import sync_check_watchdog
+            runner = sync_check_watchdog.main
+        return "rc=%s" % runner([])
+    except Exception as e:
+        return "FAILED: %s: %s" % (type(e).__name__, e)
+
+
+def cli(argv=None):
+    """The cron entry point: publish, then the sync watchdog. Kept out of
+    main() so tests that drive main() with a fake "local" config can never
+    clone a real repo or write the watchdog's real state file."""
+    rc = main(argv)
+    try:
+        cfg = json.loads(CONFIG_FILE.read_text())
+    except (OSError, ValueError):
+        cfg = None
+    print(f"sync watchdog: {run_sync_watchdog(cfg)}")
+    return rc
+
+
 def main(argv=None):
     argv = sys.argv[1:] if argv is None else argv
     stamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -298,4 +328,4 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(cli())
