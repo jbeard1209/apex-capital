@@ -46,3 +46,28 @@ call). Check: `crontab -l | grep -v '^#' | grep -c <job>` on the VM, 2026-11-19:
 | `loop-sig-21837bc97ded` | `fe_cit_agent.py` | 0 | present | same |
 | `loop-sig-3616daec9161` | `portfolio_risk_dashboard.py` | 0 | present | same |
 | `loop-sig-e890ba6a27c3` | `fe_watchlist_monitor` | 0 | **missing** | premise moot: no such script; retire the freshness check, then supersede |
+
+## specialist-fixer-run 2026-11-19 ~12:45Z (second pass: risk → ops → wiring)
+
+VM deploy stamp `56391cf` (2026-11-19T11:17Z). All checks read-only on the VM. None of these
+rows were superseded in this run; each needs `board_dispatch.py --supersede <id> --check "<check>"
+--reason "<reason>"` on the VM (it writes its own backup).
+
+| Row(s) | Premise | Check run 2026-11-19 | Verdict |
+|---|---|---|---|
+| `loop-sig-50cc501208bb` (risk) | positions_conserve: 1 ledger entry with no position | `data/coherence_report.json` (11-18 20:17Z): HOLDS, 20 broker positions = 20 in ledger | false, close |
+| `loop-sig-018f54cc39f5` (risk) | recorded_exits_are_executed: XLK exit never executed | same report: HOLDS, 135 of 135 recorded exits match a broker fill | false, close |
+| `loop-sig-4506b99ca0ee` (ops) | CIT pipeline integrity log 668h old (threshold 36h) | `logs/pipeline_integrity_20261119.log` written 12:50Z today; `apex_system_cit_agent.py` md5 `73859dd3…` matches on Mac and VM, and its threshold is now 6h, not 36h. So the 36h text comes from the retired list; only the queue row is keeping it alive | false, close |
+| `loop-sig-39e135893752` (ops) | FE pipeline log 673h old | `logs/fe_20261118.log` written 11-18 15:04Z (22h old, threshold 73h) | false, close |
+| `loop-sig-52f253043d5e` (ops) | GCP disk 76% (threshold 70%) | `df -h /` reads 68% | false today; close, and it re-files if usage climbs past 70% again |
+| `loop-sig-f144f924c8e4` (ops) | email buffer 87 unsent (threshold 50) | `data/email_buffer.json` holds 15 | false, close |
+| `loop-sig-fa6b55655db2` (ops) | main.py started 5x vs 4 scheduled | coherence report: runs_match_schedule HOLDS, 4 of 4 | false, close |
+| `LT-*-wiring_contract_violation` ×27 (wiring) | `[orphan-agent] pregenerate_lessons.py` | no `pregenerate_lessons.py` in the VM root (only `agents/archive/`); 0 findings mentioning it in `data/logic_team_findings.json`; newest queue row 11-18 20:16Z, before today's deploy | false after deploy, close (re-check that no new row has appeared since the next logic_team run) |
+
+Claimed this run (now `pr_open`, PR jbeard1209/apex-capital#64): `loop-sig-f7af8b6e2e5b`,
+`loop-sig-eb3d681f6a23` (designated writer "silent", caused by weekends plus a firm-wide buy wall).
+VM queue backup: `data/cit_implementation_queue.before-fixer-claim.20261119125854.json`.
+
+Skipped: risk `attribution stale` (16 rows). Its text was fixed in #63, and the premise is
+still true: it needs a written `loss_attribution`, which is a board or Chairman judgment, not
+code.
