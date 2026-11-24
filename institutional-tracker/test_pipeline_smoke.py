@@ -28263,14 +28263,43 @@ class TestABookedExitIsNotAnExecutedOne(unittest.TestCase):
                       orders=[self._order(created_at="2026-08-01T14:00:00.123456Z")])
         self.assertEqual(r.verdict, "VIOLATED")
 
-    def test_the_same_day_as_the_window_edge_is_still_judged(self):
-        """Rows are dated midnight; comparing against the window's oldest
-        timestamp rather than its date would excuse every exit decided on the
-        boundary day."""
-        r = self._law(sell_log=[self._row(ticker="ZZQ", order_id="")],
+    def test_the_day_after_the_window_edge_is_still_judged(self):
+        """Excusing the boundary day must not excuse the days after it: a row
+        dated the day after the oldest fetched order, with no order, is a
+        recorded exit the broker never saw."""
+        r = self._law(sell_log=[self._row(ticker="ZZQ", order_id="",
+                                          date="2026-08-21")],
                       orders=[self._order(created_at="2026-08-20T14:00:00.123456Z")])
         self.assertEqual(r.verdict, "VIOLATED")
         self.assertNotIn("predate", r.detail)
+
+    def test_an_exit_on_the_boundary_day_before_the_first_fetched_order_is_not_convicted(self):
+        """The DXCM false alarm, VM 2026-11-19 (loop-sig-018f54cc39f5).
+
+        sell_log: DXCM 2026-07-23 stop_loss, no order_id (legacy row). The
+        500-order fetch opened at 2026-07-23T15:24:25Z. The broker, asked
+        directly (symbols=DXCM, after=07-15), shows the sale: created
+        2026-07-23T13:45:04Z, filled 51/51, 1h39m before the window opens. The
+        law compared the row's DATE to the window's DATE, judged it inside, found
+        no order and convicted a real fill. A row is dated midnight, so on the
+        boundary day its order can sit before the window's first timestamp:
+        absence there is not evidence. Before this, the same-day case was pinned
+        the other way ("comparing against the timestamp would excuse every exit
+        decided on the boundary day") — which is true and correct: one day of
+        unverifiable rows, counted in the detail, against a permanent false
+        VIOLATED in the Chairman's escalation queue."""
+        r = self._law(
+            sell_log=[self._row(ticker="DXCM", order_id="", date="2026-07-23",
+                                reason="stop_loss (-5.8%, regime=HIGH, threshold=5%)",
+                                pnl_pct=-5.834)],
+            orders=[self._order(id="first-in-window", symbol="ZZT",
+                                created_at="2026-07-23T15:24:25.20416Z"),
+                    self._order(id="dxcm-rebuy", symbol="DXCM", side="buy",
+                                created_at="2026-07-28T14:11:12.665146Z")])
+        self.assertEqual(r.verdict, "HOLDS",
+                         "an exit whose order may predate the fetched window "
+                         "cannot be convicted by its absence")
+        self.assertIn("predate", r.detail)
 
     def test_an_empty_sell_log_is_not_a_pass(self):
         r = self._law(sell_log=[], orders=[self._order()])
@@ -28351,8 +28380,12 @@ class TestABookedExitIsNotAnExecutedOne(unittest.TestCase):
         """Same ticker, same window, opposite direction. A re-entry is not the
         sale, and matching one would report a booked exit as executed by the
         order that re-opened the position."""
+        # The window opener keeps the row inside the fetched window, so the
+        # only thing that can save it is the buy being mistaken for the sale.
         r = self._law(sell_log=[self._row(ticker="ZZQ", order_id="")],
-                      orders=[self._order(symbol="ZZQ", side="buy", id="rebuy")])
+                      orders=[self._order(symbol="ZZQ", side="buy", id="rebuy"),
+                              self._order(id="window-opener",
+                                          created_at="2026-08-01T14:00:00.123456Z")])
         self.assertEqual(r.verdict, "VIOLATED")
 
     def test_the_denominator_counts_the_rows_with_no_order_at_all(self):
@@ -28361,7 +28394,9 @@ class TestABookedExitIsNotAnExecutedOne(unittest.TestCase):
         cannot be checked against anything (memory `an-aggregate-is-not-a-finding`)."""
         r = self._law(
             sell_log=[self._row(), self._row(ticker="ZZQ", order_id="")],
-            orders=[self._order()])
+            orders=[self._order(),
+                    self._order(id="window-opener",
+                                created_at="2026-08-01T14:00:00.123456Z")])
         self.assertEqual(r.verdict, "VIOLATED")
         self.assertEqual(r.n_examined, 2,
                          "both the verifiable row and the unmatched one were "
