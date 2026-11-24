@@ -46,3 +46,48 @@ call). Check: `crontab -l | grep -v '^#' | grep -c <job>` on the VM, 2026-11-19:
 | `loop-sig-21837bc97ded` | `fe_cit_agent.py` | 0 | present | same |
 | `loop-sig-3616daec9161` | `portfolio_risk_dashboard.py` | 0 | present | same |
 | `loop-sig-e890ba6a27c3` | `fe_watchlist_monitor` | 0 | **missing** | premise moot: no such script; retire the freshness check, then supersede |
+
+## specialist-fixer-run 2026-11-20 (read-only checks on the VM, ~18:45Z, after the 16:42Z deploy of f818ede)
+
+| Row(s) | Premise | Check | Verdict |
+|---|---|---|---|
+| 28x `LT-*-wiring_contract_violation` (pregenerate_lessons) | orphan file runs on VM | `ls pregenerate_lessons.py` on VM: absent; 0 crontab entries; newest row filed 2026-11-19 13:30 | false, supersede |
+| `loop-sig-3e4b3877067e`, `loop-sig-6e402d7a3919` (heartbeat) | pipeline dark | PR #62 merged and deployed; heartbeat last_started 2026-11-20T18:00 | false, supersede now |
+| `loop-sig-fa6b55655db2` (main.py 5 starts vs 4) | overrun | heartbeat starts per day 11-02..11-19 all exactly 4 | false, supersede |
+| `loop-sig-8501052b501e` (main.py scheduled 0x) | not scheduled | VM crontab has 4 main.py lines | false, supersede |
+| `loop-sig-26e9569bab21`, `loop-sig-57c882a5de45` (deployed/shipped set) | VM not running repo | md5 of the 10 named files + vm_crontab_snapshot.txt match Mac post-deploy; sync_drift_check IN_SYNC | false (merge-to-deploy lag), supersede |
+| `loop-sig-966c67cd4118` (QQQ index gap) | market event | not a code defect | close |
+| `loop-sig-e70fa24cd3d0` (deputy-board crash detector gap) | no alarm on crash | deputy_board beats liveness (max_silence 26h, since 11-19); VM heartbeat fresh 11-20 10:15Z | false, supersede |
+| `loop-sig-0adf10ac94ad` (6 tests read gitignored agent_registry) | suite breaks without it | tests skipTest when absent; Mac has no file and the gate passes | false, supersede |
+| `loop-sig-618c2c21fb90`, `-f0ff0d888af8`, `-39c582aff1bd`, `-2be31998caed` (BBIO/FICO/MSCI/TDG) | impossible fundamentals | fund-sanity rows `executed`; check_ticker shows negative equity, impossible=False | false, supersede |
+| `loop-sig-cdf68e3a3a4b`, `loop-sig-8a4cf5e69830` | company_research / fe_watchlist missing | both exist on VM (14 files; watchlist 2026-11-02) | false, supersede |
+| `loop-sig-45bd6464e89d` (out of sync) | drift | sync_drift_check IN_SYNC 18:48Z | false, supersede |
+| risk `loop-sig-b92740cbf61d`, `LO-20261118201625-unexplained_loss` | attribution stale | TRUE: 78 snapshots, newest today, only attribution 2026-06-09. Not code: a written loss_attribution is a board/Chairman judgment | not a fixer row |
+
+**Real defect, claimed, NOT fixed (run aborted, Mac disk full):** `loop-sig-154bd6829ee9` / `fund-sanity-SBAC`.
+SBAC files no us-gaap `Liabilities` tag, so `fe_edgar_fundamentals` stores `total_liabilities: {}` and
+`fundamentals_sanity` fails closed to "physically impossible". EDGAR (fetched on VM): FY2025
+LiabilitiesAndStockholdersEquity $11.575B, StockholdersEquity -$4.854B => liabilities $16.43B >= debt $12.90B:
+negative equity, consistent. Fix: in `_fetch_edgar_fundamentals`, fill missing `total_liabilities` years with
+LiabilitiesAndStockholdersEquity minus StockholdersEquity(IncludingNCI). Row is `claimed` on the VM
+(backup `data/cit_implementation_queue.before-fixer-claim.*.json`); release it or let the 3-day expiry return it.
+
+## specialist-fixer-run 2026-11-24 (read-only checks on the VM, ~18:50-19:20Z; VM at f818ede, deployed 2026-11-20)
+
+| Row(s) | Premise | Check | Verdict |
+|---|---|---|---|
+| `CIT-2026-268` | None canary indicators (`spy_price`, `vix`, ...) | `canary_state.json` has no such top-level keys; `last_readings` 18:50Z today: spy_pct -0.58, vix_level 26.22, market_open true. The detector was rewritten (cit_director.py check 4 now reads `last_readings`, title "None canary readings") | false (old detector read keys that never existed), supersede |
+| `CIT-2026-267`, `CIT-2026-1005`, `CIT-2026-1149` | None score in sector_assignments | VM file 16:00Z: 8 assignments, 0 with None/NaN `momentum_score` or price; detector now reads `momentum_score` (old one read `score`, a field never written) | false, supersede |
+| `CIT-2026-1448` | Manager step `'str' object has no attribute 'get'` | `grep -c "has no attribute" logs/canary_2026112*.log`: 0 on each of 11-20..11-24 | gone, supersede |
+| `CIT-2026-210` | hardcoded ticker at cit_director.py:326 | the flagged line was the scanner's own comment (`"id": "CLOSE_BA"` example); that text no longer exists in cit_director.py on the VM | false (self-match), supersede |
+| `investigator-20261114-vix-index-as-pick` | ^VIX emitted as a BUY_NEW pick | `research_team._drop_untradeable` on main and on the VM (2 refs); `TestAnIndexIsNotAPick` | fixed, supersede |
+| `loop-sig-52f253043d5e` (disk 76%) | disk elevated | `df -h /` on VM: 71% of 9.7G (2.7G free); data/ 1.2G, venv 1.6G. Largest removable item: `data/historical_13f.before-two-sigma-cik.20261119201815.db` (155M backup) | still true but not a code fix: Jack decides whether to delete that backup or grow the disk |
+| risk `loop-sig-b92740cbf61d`, `LO-20261118201625-unexplained_loss`, wiring 16x "no current loss attribution" | attribution stale | unchanged from 2026-11-20: a written loss attribution is a board/Chairman judgment | not a fixer row |
+
+Claimed and PR'd this run (both rows now `pr_open` on the VM): `investigator-cit-20261024-pt-id-collision`
+(wiring, PR #82, branch `claude/fixer-wiring-20261124`) and `loop-sig-154bd6829ee9` (FE SBAC, PR #83,
+branch `claude/fixer-fe-20261124`).
+Backup before claim: VM `data/cit_implementation_queue.before-fixer-claim.<UTC stamp>.json`.
+The PT-collision row's second half ("PROCESS_IMPROVEMENT unrouted") is not fixed: PT proposals go to
+`rd_pod_pending.json` → `rd_pod_board` → `rd_pod_approved.json`, and no executor reads
+`rd_pod_approved.json`. Whether R&D pod approvals should reach `board_dispatch` is a design call.
