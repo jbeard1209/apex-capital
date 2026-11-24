@@ -36118,6 +36118,15 @@ class TestKalshiCopytradeSkipsShardsWeCannotTrade(unittest.TestCase):
         self.assertEqual(row["status"], "skipped")
         self.assertIn("shard 2", row["reason"])
 
+    def test_the_combos_shard_holding_two_thirds_of_the_cash_is_traded(self):
+        # 2026-11-24: $20.44 of $31.39 cash sat on shard 1, which was off.
+        placed, row = self._poll({"exchange_index": 1})
+        self.assertEqual(len(placed), 1)
+        self.assertEqual(row["status"], "placed")
+        import kalshi_copytrade as ct
+        self.assertEqual(ct.DEFAULTS["exchange_indexes"], [0, 1],
+                         "shards 2/3 have no account; adding them halts the desk")
+
     def test_the_default_shard_and_a_record_without_the_field_are_traded(self):
         for market in ({"exchange_index": 0}, {}):
             placed, row = self._poll(market)
@@ -36139,7 +36148,7 @@ class TestKalshiCopytradeSkipsShardsWeCannotTrade(unittest.TestCase):
                 ct.CONFIG_FILE.write_text(json.dumps({"exchange_indexes": [0, 2]}))
                 self.assertEqual(ct.load_config()["exchange_indexes"], [0, 2])
                 ct.CONFIG_FILE.write_text(json.dumps({"exchange_indexes": "lots"}))
-                self.assertEqual(ct.load_config()["exchange_indexes"], [0])
+                self.assertEqual(ct.load_config()["exchange_indexes"], [0, 1])
             finally:
                 ct.CONFIG_FILE = saved
 

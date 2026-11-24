@@ -123,7 +123,7 @@ DEFAULTS = {
     "poll_s": 3.0,
     "max_payout_usd": 16.0,   # most one market can ever pay us; see payout_cap()
     "max_days_to_settle": 30.0,   # skip opening a market that settles later; see settle_time()
-    "exchange_indexes": [0],      # exchange shards we hold cash on; see venue_check()
+    "exchange_indexes": [0, 1],   # exchange shards we hold cash on; see venue_check()
 }
 HARD_MAX_PER_TRADE = 25.0
 HARD_MAX_PER_DAY = 100.0
@@ -339,7 +339,15 @@ def venue_check(dec, cfg, market):
     found", three rejections in a row tripped the copier's halt, and the whole
     desk stopped for a market it could never have traded. A market whose
     record lacks the field is treated as shard 0, the only shard that existed
-    before the split, so a dropped field cannot silently stop all copying."""
+    before the split, so a dropped field cannot silently stop all copying.
+
+    2026-11-24: shard 1 (Combos) added. The account's cash was $10.95 on
+    shard 0 and $20.44 on shard 1, so two thirds of it sat where the copier
+    refused to go, while the leaders' combo (KXMVE...) copies were skipped
+    "we hold cash only on [0]" all day. Shard 1 has a funded account (the
+    11-11 incident below read $15.57 there), and cash_check() still skips any
+    copy its shard cannot pay. Shards 2 and 3 stay off: no account exists
+    there, and the exchange answers "Exchange user not found"."""
     if dec["action"] != "order" or dec.get("reduce_only"):
         return dec
     idx = (market or {}).get("exchange_index")
