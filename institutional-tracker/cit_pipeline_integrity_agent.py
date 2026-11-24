@@ -461,27 +461,49 @@ def check_email_loop(issues: list, skipped: dict):
             stripped = stripped[1:]
         return stripped.strip().lower()
 
-    subject_counts: dict[str, list[str]] = {}
+    # A loop is a BURST under ONE DIGEST IDENTITY, not a count over the day.
+    # This keyed on subject alone and counted the whole buffer, so scheduled
+    # regenerations of one report read as a loop: on 2026-11-20 the Canary held
+    # ORANGE and re-ran its cascade every time its cooldown lapsed, buffering the
+    # CRO report 24 times about an hour apart, and this filed HIGH (101 times,
+    # 84 after "resolution"). The 22:00 flush keys on `dedup_key or subject`
+    # and keeps the newest, so Jack got one. apex_system_cit_agent's twin check
+    # was fixed the same way in 2026-09; this one was missed. Entries with no
+    # timestamp are not burst evidence. IRM REVIEW shadow copies are skipped:
+    # every buffered email gets one, so counting them doubles every count.
+    burst_window = timedelta(hours=1)
+    grouped: dict = {}
     for entry in buffer:
-        raw_subject = entry.get("subject", "") if isinstance(entry, dict) else ""
-        if not raw_subject:
+        if not isinstance(entry, dict):
             continue
-        # Skip IRM REVIEW shadow copies — every buffered email gets one automatically.
-        # Counting them would double every subject count and fire false loop alerts.
-        if raw_subject.strip().startswith("[IRM REVIEW]"):
+        raw_subject = entry.get("subject", "") or ""
+        if not raw_subject or raw_subject.strip().startswith("[IRM REVIEW]"):
             continue
-        key = _norm(raw_subject)
-        subject_counts.setdefault(key, []).append(raw_subject)
+        key = entry.get("dedup_key") or _norm(raw_subject)
+        try:
+            ts = datetime.fromisoformat(entry.get("buffered_at") or "")
+        except (TypeError, ValueError):
+            ts = None
+        grouped.setdefault(key, {"subject": raw_subject, "stamps": []})
+        if ts is not None:
+            grouped[key]["stamps"].append(ts.replace(tzinfo=None))
 
-    loop_subjects = {k: v for k, v in subject_counts.items() if len(v) >= _EMAIL_LOOP_THRESHOLD}
+    def _burst(stamps) -> bool:
+        s = sorted(stamps)
+        n = _EMAIL_LOOP_THRESHOLD
+        return any(s[i + n - 1] - s[i] <= burst_window for i in range(len(s) - n + 1))
+
+    loop_subjects = {k: g for k, g in grouped.items() if _burst(g["stamps"])}
 
     if loop_subjects:
         examples = "; ".join(
-            f'"{list(v)[0]}" ×{len(v)}' for k, v in list(loop_subjects.items())[:3]
+            f'"{g["subject"]}" ×{len(g["stamps"])}' for g in list(loop_subjects.values())[:3]
         )
+        # Keep "Repeated email subjects": fixer_routing (ops) and
+        # chairman_decision_categorizer (governance) both key on that phrase.
         msg = (
-            f"Repeated email subjects in buffer ({len(loop_subjects)} unique subject(s) "
-            f"appear {_EMAIL_LOOP_THRESHOLD}+ times): {examples}"
+            f"Repeated email subjects in buffer, as a burst ({len(loop_subjects)} "
+            f"report(s) enqueued {_EMAIL_LOOP_THRESHOLD}+ times within 1h): {examples}"
         )
         logger.warning(f"    HIGH: {msg}")
         issues.append({
