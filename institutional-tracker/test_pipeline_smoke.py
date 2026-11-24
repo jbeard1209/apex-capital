@@ -39024,6 +39024,137 @@ class TestFEDeepResearchReachesTheBoard(unittest.TestCase):
         self.assertNotIn('.get("synthesis_date"', src)
 
 
+
+class TestTheSyncCheckIsItselfWatched(unittest.TestCase):
+    """2026-11-24: tools/sync_drift_check.py ran hourly on the Mac, but it only
+    re-pushed sync_status.json when the CONTENT changed, so the published
+    "Checked:" stamp froze at 11-22 and the job looked dead for two days. And
+    nothing at all would have noticed if it HAD died. These pin the two fixes:
+    the publish re-pushes on a 3h heartbeat, and sync_check_watchdog.py on the
+    VM alarms when that stamp is 18h old, never resolves on silence, and runs
+    hourly inside the VM's kalshi_report_publish.py job."""
+
+    @classmethod
+    def setUpClass(cls):
+        import sync_check_watchdog as W
+        cls.W = W
+        cls.now = datetime(2026, 11, 24, 19, 0, tzinfo=timezone.utc)
+
+    def _status(self, hours_ago, issues=None, verdict="IN_SYNC"):
+        g = (self.now - timedelta(hours=hours_ago)).isoformat()
+        return json.dumps({"generated_at": g, "verdict": verdict, "issues": issues or []})
+
+    def test_POISON_PILL_the_frozen_1122_stamp_is_stale(self):
+        # The exact state found on 11-24: last published 11-22 ~10:00 UTC.
+        r = self.W.evaluate(json.dumps({"generated_at": "2026-11-22T10:28:00+00:00",
+                                        "verdict": "DRIFT", "issues": []}), self.now)
+        self.assertEqual(r["verdict"], "STALE")
+        raise_, resolve, _ = self.W.decide(r, {}, self.now)
+        self.assertIn("stale", raise_)
+        self.assertNotIn("sync_watchdog:stale", resolve)
+
+    def test_fresh_resolves_and_raises_nothing(self):
+        r = self.W.evaluate(self._status(2), self.now)
+        self.assertEqual(r["verdict"], "FRESH")
+        raise_, resolve, st = self.W.decide(r, {"cannot_tell_runs": 2}, self.now)
+        self.assertEqual(raise_, {})
+        self.assertIn("sync_watchdog:stale", resolve)
+        self.assertEqual(st["cannot_tell_runs"], 0)
+
+    def test_just_under_and_at_the_limit(self):
+        self.assertEqual(self.W.evaluate(self._status(17.9), self.now)["verdict"], "FRESH")
+        self.assertEqual(self.W.evaluate(self._status(18.0), self.now)["verdict"], "STALE")
+
+    def test_cannot_tell_needs_three_runs_and_never_resolves(self):
+        for bad in (None, "not json", json.dumps({"generated_at": "2026-11-24T10:00:00"}),
+                    json.dumps({"verdict": "IN_SYNC"})):
+            self.assertEqual(self.W.evaluate(bad, self.now)["verdict"], "CANNOT_TELL", bad)
+        r = self.W.evaluate(None, self.now)
+        st = {}
+        for n in (1, 2):
+            raise_, resolve, st = self.W.decide(r, st, self.now)
+            self.assertEqual(raise_, {}, "one GitHub blip is not an outage")
+            self.assertEqual(resolve, [], "silence must never resolve an alarm")
+        raise_, resolve, st = self.W.decide(r, st, self.now)
+        self.assertIn("cannot_tell", raise_)
+        self.assertEqual(resolve, [])
+
+    def test_due_vm_drift_is_repeated_on_the_vm_queue(self):
+        issues = [{"kind": "vm_differs", "due": True, "n": 1},
+                  {"kind": "mac_uncommitted", "due": True, "n": 1}]
+        r = self.W.evaluate(self._status(1, issues, "DRIFT"), self.now)
+        raise_, resolve, _ = self.W.decide(r, {}, self.now)
+        self.assertEqual(sorted(raise_), ["vm_drift"])
+        self.assertNotIn("sync_watchdog:vm_drift", resolve)
+        # within grace (due False) is not repeated, and does resolve
+        issues[0]["due"] = False
+        r = self.W.evaluate(self._status(1, issues, "DRIFT"), self.now)
+        raise_, resolve, _ = self.W.decide(r, {}, self.now)
+        self.assertEqual(raise_, {})
+        self.assertIn("sync_watchdog:vm_drift", resolve)
+
+    def test_entries_are_well_formed_for_the_chairman_queue(self):
+        r = self.W.evaluate(self._status(30), self.now)
+        e = self.W.decide(r, {}, self.now)[0]["stale"]
+        for k in ("id", "dedup_key", "severity", "status", "description"):
+            self.assertTrue(e.get(k), k)
+        self.assertEqual(e["status"], "awaiting_chairman")
+        self.assertIn("WHAT TO DO", e["description"])
+
+    def test_watchdog_rides_the_hourly_vm_publisher(self):
+        # It has no cron line of its own: kalshi_report_publish.py (hourly on
+        # the VM, same repo, same key) runs it. Pin both halves of that.
+        import io
+        import kalshi_report_publish as krp
+        snap = (Path(__file__).resolve().parent / "data" / "vm_crontab_snapshot.txt").read_text()
+        live = [l for l in snap.splitlines()
+                if "kalshi_report_publish.py" in l and not l.lstrip().startswith("#")]
+        self.assertEqual(len(live), 1, "the host job must be on the VM crontab")
+        self.assertTrue(live[0].split()[1] == "*", "the host job must run every hour")
+        calls = []
+        self.assertEqual(krp.run_sync_watchdog({"source": "local"},
+                                               runner=lambda a: calls.append(a) or 0), "rc=0")
+        self.assertEqual(len(calls), 1)
+        self.assertTrue(krp.run_sync_watchdog({"source": "ssh"}).startswith("skipped"))
+        self.assertTrue(krp.run_sync_watchdog(None).startswith("skipped"))
+        boom = lambda a: (_ for _ in ()).throw(RuntimeError("x"))
+        self.assertTrue(krp.run_sync_watchdog({"source": "local"}, runner=boom)
+                        .startswith("FAILED"), "a watchdog crash must not escape")
+        # the cron entry (cli) runs it after the publish, whatever that returned;
+        # main() itself never does (tests drive main() with fake local configs)
+        with patch.object(krp, "main", return_value=1), \
+                patch.object(krp, "run_sync_watchdog", return_value="rc=0") as w, \
+                patch("sys.stdout", new_callable=io.StringIO):
+            self.assertEqual(krp.cli([]), 1)
+        w.assert_called_once()
+        src = (Path(__file__).resolve().parent / "kalshi_report_publish.py").read_text()
+        self.assertIn('sys.exit(cli())', src, "cron must enter through cli()")
+        import inspect
+        self.assertNotIn("run_sync_watchdog", inspect.getsource(krp.main))
+
+    def test_publish_heartbeat_rewrites_an_unchanged_status(self):
+        root = Path(__file__).resolve().parent.parent
+        if not (root / ".git").exists():
+            raise unittest.SkipTest("no repo root on this host (VM): tools/ not deployed")
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "sync_drift_check_hb", str(root / "tools" / "sync_drift_check.py"))
+        S = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(S)
+        d = Path(tempfile.mkdtemp(prefix="hb-"))
+        self.addCleanup(shutil.rmtree, str(d), True)
+        p = d / "sync_status.json"
+        self.assertTrue(S.heartbeat_due(p, self.now), "missing file is due")
+        p.write_text("garbage")
+        self.assertTrue(S.heartbeat_due(p, self.now), "unreadable file is due")
+        p.write_text(self._status(1))
+        self.assertFalse(S.heartbeat_due(p, self.now))
+        p.write_text(self._status(3))
+        self.assertTrue(S.heartbeat_due(p, self.now))
+        # the heartbeat must stay well inside the watchdog's stale limit
+        self.assertLess(S.HEARTBEAT_S / 3600.0 * 2, self.W.STALE_H)
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

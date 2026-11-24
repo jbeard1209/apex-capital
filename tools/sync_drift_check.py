@@ -535,6 +535,25 @@ def _stable(name, text):
         return text
 
 
+# The published sync_status.json is re-pushed at least this often even when
+# nothing changed, so its generated_at is a liveness signal the VM can read
+# (sync_check_watchdog.py alarms when it is older than its STALE_H).
+HEARTBEAT_S = 3 * HOUR
+
+
+def heartbeat_due(path, now=None):
+    """True when the published status is missing, unreadable, or its
+    generated_at is HEARTBEAT_S old. Unreadable counts as due: rewriting a
+    broken file is the repair, and never rewriting it would freeze the stamp."""
+    now = now or _now()
+    try:
+        g = json.loads(Path(path).read_text()).get("generated_at")
+        age = (now - datetime.fromisoformat(g)).total_seconds()
+    except (OSError, ValueError, TypeError, AttributeError):
+        return True
+    return age >= HEARTBEAT_S
+
+
 def publish(report, root, remote=REPORTS_REMOTE):
     tracker = Path(root) / "institutional-tracker"
     sys.path.insert(0, str(tracker))
@@ -551,10 +570,17 @@ def publish(report, root, remote=REPORTS_REMOTE):
         r = run(["git", "clone", "--quiet", "--depth", "1", remote, tmp], timeout=120)
         if r.returncode:
             return "FAILED: clone: %s" % r.stderr.strip()[:200]
+        # HEARTBEAT. Skipping an identical push left "Checked:" frozen at the
+        # last CHANGE, not the last RUN: on 2026-11-24 the job had run hourly
+        # for two days while the published copy still said 11-22, and a reader
+        # (and the VM watchdog, sync_check_watchdog.py) saw a dead job. So an
+        # unchanged report is still re-pushed once its stamp is HEARTBEAT_S old.
+        beat = heartbeat_due(Path(tmp) / "sync_status.json")
         changed = []
         for name, body in files.items():
             p = Path(tmp) / name
-            if p.exists() and _stable(name, p.read_text()) == _stable(name, body):
+            if (not beat and p.exists()
+                    and _stable(name, p.read_text()) == _stable(name, body)):
                 continue
             p.write_text(body)
             changed.append(name)
