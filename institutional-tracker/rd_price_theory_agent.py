@@ -590,6 +590,14 @@ def _route(comments: List[dict]) -> int:
         if not isinstance(pending, list):
             pending = []
         have = {str(p.get("id")) for p in pending if isinstance(p, dict)}
+        # An approved proposal leaves the pending queue for rd_pod_approved.json.
+        # Deduping on pending alone re-filed the same PT-<signature> every time a
+        # lens went quiet for a run and then fired again: on the VM one
+        # observation had been approved 5 times by 2026-11-24. An unreadable
+        # approved file only loses the dedup, never the routing.
+        approved = _load(POD_APPROVED, [])
+        if isinstance(approved, list):
+            have |= {str(p.get("id")) for p in approved if isinstance(p, dict)}
         added = 0
         for c in fresh:
             pid = f"PT-{c['signature']}"

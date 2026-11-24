@@ -37797,6 +37797,55 @@ class TestNegativeEquityIsNotImpossibleFundamentals(unittest.TestCase):
         self.assertTrue(f["impossible"], "cannot verify, so fail closed")
 
 
+class TestPriceTheoryDoesNotReFileAnApprovedComment(unittest.TestCase):
+    """rd_price_theory_agent._route deduped a new PT-<signature> only against
+    rd_pod_pending.json. Once the R&D pod board approved a proposal it moved to
+    rd_pod_approved.json; when the lens went quiet for a run its comment was
+    dropped, and when it fired again _merge saw it as new (routed=False) and
+    _route queued the same id again. On the VM (2026-11-24)
+    PT-a_proxy_that_disagrees_with_its_quantity-faf0256d66 had been approved
+    5 times (10-14, 10-20, 11-02, 11-11, 11-18): one observation voted on as
+    five, and the approved-but-unimplemented lens counting it five times."""
+
+    def setUp(self):
+        import rd_price_theory_agent as P
+        self.P = P
+        self._td = tempfile.TemporaryDirectory()
+        self.addCleanup(self._td.cleanup)
+        tmp = Path(self._td.name)
+        for name, path in (("DATA", tmp), ("POD_QUEUE", tmp / "pending.json"),
+                           ("POD_APPROVED", tmp / "approved.json")):
+            p = patch.object(P, name, path)
+            p.start()
+            self.addCleanup(p.stop)
+        self.tmp = tmp
+
+    def _comment(self, sig="lens-x-abc123"):
+        return {"signature": sig, "severity": "MEDIUM", "headline": "h",
+                "question": "q", "numbers": {"n": 1}, "sources": ["s.json"],
+                "proposal": "p", "lens": "lens-x", "routed": False}
+
+    def test_an_already_approved_signature_is_not_queued_again(self):
+        (self.tmp / "approved.json").write_text(json.dumps(
+            [{"id": "PT-lens-x-abc123", "status": "approved"}]))
+        (self.tmp / "pending.json").write_text("[]")
+        c = self._comment()
+        added = self.P._route([c])
+        self.assertEqual(added, 0, "re-queued a proposal the board already approved")
+        self.assertEqual(json.loads((self.tmp / "pending.json").read_text()), [])
+        self.assertTrue(c["routed"], "must be marked routed so the next run is quiet")
+
+    def test_a_new_signature_still_routes(self):
+        (self.tmp / "approved.json").write_text(json.dumps(
+            [{"id": "PT-lens-x-abc123", "status": "approved"}]))
+        added = self.P._route([self._comment("lens-x-def456")])
+        self.assertEqual(added, 1)
+
+    def test_unreadable_approved_file_does_not_block_routing(self):
+        (self.tmp / "approved.json").write_text("{not json")
+        self.assertEqual(self.P._route([self._comment()]), 1)
+
+
 class TestAnIndexIsNotAPick(unittest.TestCase):
     """historicalcontextanalyst_cos watches ^VIX as context and emitted it as
     a BUY_NEW pick. The Manager APPROVED it, the broker rejected it, it showed
