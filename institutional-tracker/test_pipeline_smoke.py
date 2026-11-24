@@ -37797,6 +37797,54 @@ class TestNegativeEquityIsNotImpossibleFundamentals(unittest.TestCase):
         self.assertTrue(f["impossible"], "cannot verify, so fail closed")
 
 
+class TestEdgarDerivesLiabilitiesWhenTheTagIsMissing(unittest.TestCase):
+    """SBAC files no us-gaap `Liabilities` tag, so fe_edgar_fundamentals stored
+    total_liabilities {} and fundamentals_sanity failed closed: "long-term debt
+    $12.90B exceeds total assets $11.58B — physically impossible". SBAC does
+    file LiabilitiesAndStockholdersEquity ($11.575B) and StockholdersEquity
+    (-$4.854B), so liabilities are $16.43B >= debt: negative equity, real data.
+    The fetcher must derive the missing years from that identity, and must
+    never overwrite a year the issuer reported directly (2026-11-24)."""
+
+    @staticmethod
+    def _facts(liabilities=None):
+        def bal(v):
+            return {"units": {"USD": [{"form": "10-K", "end": "2025-12-31",
+                                       "filed": "2026-02-20", "val": v}]}}
+        g = {"Assets": bal(11.575e9), "LongTermDebt": bal(12.90e9),
+             "LiabilitiesAndStockholdersEquity": bal(11.575e9),
+             "StockholdersEquity": bal(-4.854e9)}
+        if liabilities is not None:
+            g["Liabilities"] = bal(liabilities)
+        return {"facts": {"us-gaap": g}}
+
+    def _fetch(self, facts):
+        import fe_edgar_fundamentals as fe
+        with patch.object(fe, "_fetch_facts_json", return_value=facts):
+            return fe._fetch_edgar_fundamentals("SBAC", "0001034054")
+
+    def test_missing_liabilities_are_derived_from_the_balance_identity(self):
+        out = self._fetch(self._facts())
+        tl = out["by_year"]["total_liabilities"]
+        self.assertAlmostEqual(tl.get("2025", 0), 16.429e9, delta=1e6)
+        self.assertIn("total_liabilities", out.get("derived_fields", {}))
+
+    def test_sbac_shape_is_negative_equity_not_impossible(self):
+        import fundamentals_sanity as fs
+        out = self._fetch(self._facts())
+        out.update(shares_outstanding=[1e8], revenue=[1], net_income=[1])
+        hits = [v for v in fs.check_ticker("SBAC", out)
+                if v["metric"] == "long_term_debt/total_assets"]
+        self.assertTrue(hits, "debt above assets must still gate valuation")
+        self.assertTrue(hits[0]["gate"])
+        self.assertFalse(hits[0]["impossible"])
+
+    def test_a_reported_liabilities_value_is_never_overwritten(self):
+        out = self._fetch(self._facts(liabilities=1.0e9))
+        self.assertEqual(out["by_year"]["total_liabilities"]["2025"], 1.0e9)
+        self.assertNotIn("total_liabilities", out.get("derived_fields", {}))
+
+
 class TestAnIndexIsNotAPick(unittest.TestCase):
     """historicalcontextanalyst_cos watches ^VIX as context and emitted it as
     a BUY_NEW pick. The Manager APPROVED it, the broker rejected it, it showed

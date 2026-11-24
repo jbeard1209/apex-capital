@@ -344,7 +344,37 @@ def _fetch_edgar_fundamentals(ticker: str, cik: str) -> Optional[dict]:
         by_year = _extract_by_year(facts, *names, flow=flow)
         out[field] = [by_year[y] for y in sorted(by_year)]  # legacy oldest-first list
         out["by_year"][field] = by_year                     # year-keyed for alignment
+    _derive_missing_liabilities(facts, out)
     return _drop_stale_fields(out)
+
+
+def _derive_missing_liabilities(facts: dict, out: dict) -> None:
+    """Fill years with no `Liabilities` tag from LiabilitiesAndStockholdersEquity
+    minus equity (including NCI where reported).
+
+    Some issuers never tag total liabilities. SBAC (2026-11-24): `Liabilities`
+    absent, so total_liabilities was {} and fundamentals_sanity failed closed
+    on debt $12.90B > assets $11.58B as "physically impossible", although
+    L&SE $11.575B - equity -$4.854B = liabilities $16.43B covers the debt
+    (negative equity from buybacks). The difference also includes any
+    temporary/mezzanine equity, which is usually small. A year the issuer
+    reported directly is never overwritten; derived years are named in
+    out["derived_fields"] so a reader can tell them apart."""
+    les = _extract_by_year(facts, "LiabilitiesAndStockholdersEquity", flow=False)
+    eq = _extract_by_year(facts,
+                          "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
+                          "StockholdersEquity", flow=False)
+    tl = out["by_year"].setdefault("total_liabilities", {})
+    derived = []
+    for y, total in les.items():
+        if y in tl or y not in eq:
+            continue
+        tl[y] = total - eq[y]
+        derived.append(y)
+    if derived:
+        out["by_year"]["total_liabilities"] = dict(sorted(tl.items()))
+        out["total_liabilities"] = [tl[y] for y in sorted(tl)]
+        out.setdefault("derived_fields", {})["total_liabilities"] = sorted(derived)
 
 
 def _fetch_yfinance_fundamentals(ticker: str) -> Optional[dict]:
