@@ -71,10 +71,13 @@ def _iter_numbers(obj):
 # status in {"GREEN","YELLOW","RED"}.
 # ---------------------------------------------------------------------------
 
-def check_fundamentals():
+# Each check takes `write`. The two composed specialists used to be called with
+# write=True unconditionally, so `--report` (documented read-only above) rewrote
+# their reports and could file CIT proposals and Chairman decisions.
+def check_fundamentals(write: bool = True):
     try:
         import fundamentals_sanity as fs
-        rep = fs.run(write=True)  # dedupes its own CIT proposals
+        rep = fs.run(write=write)  # dedupes its own CIT proposals
         bad = rep.get("impossible_tickers", [])
         status = "RED" if bad else "GREEN"
         findings = [{"note": f"{len(bad)} ticker(s) with physically-impossible "
@@ -84,10 +87,10 @@ def check_fundamentals():
         return ("fundamentals", "YELLOW", [{"note": f"validator error: {e}"}])
 
 
-def check_risk_and_model():
+def check_risk_and_model(write: bool = True):
     try:
         import metric_sanity_sentinel as ms
-        rep = ms.run(write=True)
+        rep = ms.run(write=write)
         viols = rep.get("violations", [])
         impossible = [v for v in viols if v.get("impossible")]
         status = "RED" if impossible else ("YELLOW" if viols else "GREEN")
@@ -97,7 +100,7 @@ def check_risk_and_model():
         return ("risk_and_model", "YELLOW", [{"note": f"sentinel error: {e}"}])
 
 
-def check_freshness():
+def check_freshness(write: bool = True):
     findings, worst = [], "GREEN"
     now = datetime.datetime.now()
     for fname, max_h in FRESHNESS.items():
@@ -114,28 +117,43 @@ def check_freshness():
     return ("freshness", worst, findings)
 
 
-def check_json_health():
+# A number literal too large for a float (1e999) parses to inf without passing
+# through parse_constant. Python's json never writes one (it writes Infinity), so
+# the tree walk only runs when the raw text holds a 3-digit exponent.
+_BIG_EXPONENT = re.compile(r'[eE][+-]?\d{3}')
+
+
+def check_json_health(write: bool = True):
+    """One parse per file. The bare NaN/Infinity tokens are caught BY the parse:
+    json.loads hands every bare constant to parse_constant and never a string, so
+    "pe_ratio": "Infinity" and this sentinel's own prose stay clean.
+
+    It used to scan each file with the _NONFINITE regex, then parse it, then walk
+    every number. On the VM (2026-11-25, 374 files, 454 MB, kalshi_shadow_book.json
+    alone 162 MB) that took 49s, 30s of it the regex, so `--report` missed the
+    sweep's 75s probe budget and the sweep filed AGENT_REPORT_FAILS every week."""
     findings, worst = [], "GREEN"
     for p in sorted(DATA.glob("*.json")):
         raw = p.read_text() if p.exists() else ""
-        # 1) BARE NaN/Infinity tokens that Python's json writes but standards forbid.
-        # Must use the token regex, not a substring scan: the words "NaN"/"Infinity"
-        # legitimately appear inside string values (e.g. "pe_ratio": "Infinity") and in
-        # prose (this sentinel's own report). Only unquoted structural tokens are corrupt.
-        if _NONFINITE.search(raw):
+        bare: list = []
+        try:
+            obj = json.loads(raw, parse_constant=bare.append) if raw.strip() else None
+        except Exception as e:
+            obj, err = None, e
+        else:
+            err = None
+        if bare:
             findings.append({"file": p.name, "note": "contains NaN/Infinity — invalid JSON; "
                              "downstream json.loads in other languages/tools will fail."})
             worst = "RED"
             continue
-        # 2) parseability + non-finite floats (belt and suspenders)
-        try:
-            obj = json.loads(raw) if raw.strip() else None
-        except Exception as e:
-            findings.append({"file": p.name, "note": f"does not parse: {e}"})
+        if err is not None:
+            findings.append({"file": p.name, "note": f"does not parse: {err}"})
             worst = "RED"
             continue
-        if obj is not None and any(isinstance(n, float) and not math.isfinite(n)
-                                   for n in _iter_numbers(obj)):
+        if (obj is not None and _BIG_EXPONENT.search(raw)
+                and any(isinstance(n, float) and not math.isfinite(n)
+                        for n in _iter_numbers(obj))):
             findings.append({"file": p.name, "note": "holds a non-finite float"})
             worst = "RED"
     return ("json_health", worst, findings)
@@ -202,7 +220,7 @@ def run(write: bool = True) -> dict:
     sections = {}
     overall = "GREEN"
     for chk in CHECKS:
-        name, status, findings = chk()
+        name, status, findings = chk(write=write)
         sections[name] = {"status": status, "findings": findings}
         if _RANK[status] > _RANK[overall]:
             overall = status

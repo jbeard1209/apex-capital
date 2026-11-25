@@ -91,3 +91,17 @@ Backup before claim: VM `data/cit_implementation_queue.before-fixer-claim.<UTC s
 The PT-collision row's second half ("PROCESS_IMPROVEMENT unrouted") is not fixed: PT proposals go to
 `rd_pod_pending.json` → `rd_pod_board` → `rd_pod_approved.json`, and no executor reads
 `rd_pod_approved.json`. Whether R&D pod approvals should reach `board_dispatch` is a design call.
+
+## specialist-fixer-run 2026-11-25 ~20:20Z (wiring area; VM at 5c0ce93, deployed 2026-11-24)
+
+Claimed and PR'd: `loop-sig-efde3449bef4` ("Sweep: N finding(s) — agents that crash on --report",
+re-seen 112x; an earlier claim on 2026-11-20 expired with no PR). Premise TRUE today: the
+2026-11-23 sweep reports 1 finding, `data_integrity_sentinel --report` TIMEOUT (75s budget).
+Measured on the VM read-only: `check_json_health` 49.3s over 374 files / 454 MB (regex 29.8s,
+parse 12.9s, number walk 8.3s); also `--report` called both specialists with write=True.
+After the fix (temp copy run outside the repo dir): json_health 18.2s, whole `--report` 17.1s,
+specialist report mtimes unchanged. Branch `claude/fixer-wiring-20261125-integrity`.
+
+Groups skipped this run: every open ops row is already recorded above as false/not-code or a
+job with no crontab entry (Jack's deploy call); risk's only open group (attribution stale) is a
+board/Chairman judgment; the other wiring rows are false (see 11-20/11-24) or PR #87.
