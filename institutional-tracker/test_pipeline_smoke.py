@@ -39164,6 +39164,91 @@ class TestTheSyncCheckIsItselfWatched(unittest.TestCase):
         self.assertLess(S.HEARTBEAT_S / 3600.0 * 2, self.W.STALE_H)
 
 
+class TestIntegrityReportIsReadOnlyAndFitsTheProbe(unittest.TestCase):
+    """`data_integrity_sentinel.py --report` failed the weekly sweep's 75s probe on
+    the VM (AGENT_REPORT_FAILS, loop-sig-efde3449bef4, re-seen 112x). Two defects:
+
+    1. --report is documented read-only, but the composed specialists were called
+       with write=True regardless, so a "report" rewrote their files and could
+       file CIT proposals and Chairman decisions.
+    2. json_health ran a lookbehind regex, a parse and a full number walk over
+       every data/*.json: 49s on the VM's 454 MB, 30s of it the regex."""
+
+    def setUp(self):
+        import data_integrity_sentinel as dis
+        self.dis = dis
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.data = Path(self.tmp.name)
+        self._old = (dis.DATA, dis.REPORT_PATH, dis.CHAIR_ACTION)
+        dis.DATA = self.data
+        dis.REPORT_PATH = self.data / "data_integrity_report.json"
+        dis.CHAIR_ACTION = self.data / "chairman_action_required.json"
+        self.addCleanup(self._restore)
+
+    def _restore(self):
+        self.dis.DATA, self.dis.REPORT_PATH, self.dis.CHAIR_ACTION = self._old
+
+    def test_report_passes_write_false_to_every_specialist(self):
+        from unittest import mock
+        import fundamentals_sanity as fs, metric_sanity_sentinel as ms
+        seen = []
+
+        def fake(tag):
+            def run(write=True):
+                seen.append((tag, write))
+                return {"impossible_tickers": [], "violations": []}
+            return run
+        with mock.patch.object(fs, "run", fake("fundamentals")), \
+             mock.patch.object(ms, "run", fake("metric")):
+            self.dis.run(write=False)
+        self.assertEqual(sorted(seen), [("fundamentals", False), ("metric", False)],
+                         "--report wrote through a composed specialist")
+        self.assertFalse(self.dis.REPORT_PATH.exists())
+
+    def test_json_health_verdicts_are_unchanged(self):
+        cases = {
+            "clean.json": ('{"note": "NaN is fine in text", "pe": "Infinity"}', "GREEN"),
+            "nan.json": ('{"a": NaN}', "RED"),
+            "neg_inf.json": ('[1, -Infinity]', "RED"),
+            "top.json": ('NaN', "RED"),
+            "broken.json": ('{"a": ', "RED"),
+            "overflow.json": ('{"a": 1e999}', "RED"),
+            "empty.json": ('', "GREEN"),
+        }
+        for name, (raw, want) in cases.items():
+            for p in self.data.glob("*.json"):
+                p.unlink()
+            (self.data / name).write_text(raw)
+            _, status, findings = self.dis.check_json_health()
+            self.assertEqual(status, want, "%s: %s" % (name, findings))
+        (self.data / "overflow.json").write_text('{"a": 1e999}')
+        self.assertIn("non-finite", self.dis.check_json_health()[2][0]["note"])
+
+    def test_json_health_costs_about_one_parse(self):
+        """Ratio to a bare json.loads of the same bytes, so machine speed cancels.
+        Measured 5.4x before the fix and ~1.2x after, on a 22 MB file."""
+        import random, time
+        rnd = random.Random(1)
+        rows = [{"t": "KX%05d" % i, "p": rnd.random(), "note": "NaN in text",
+                 "q": [rnd.random() for _ in range(8)]} for i in range(30000)]
+        raw = json.dumps(rows, indent=2)
+        (self.data / "big.json").write_text(raw)
+
+        def best(fn):
+            out = []
+            for _ in range(3):
+                t = time.perf_counter()
+                fn()
+                out.append(time.perf_counter() - t)
+            return min(out)
+        base = best(lambda: json.loads(raw))
+        cost = best(self.dis.check_json_health)
+        self.assertLess(cost / base, 3.0,
+                        "json_health costs %.1fx a parse; the sweep probe has 75s"
+                        % (cost / base))
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

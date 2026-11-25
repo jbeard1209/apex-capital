@@ -91,3 +91,25 @@ Backup before claim: VM `data/cit_implementation_queue.before-fixer-claim.<UTC s
 The PT-collision row's second half ("PROCESS_IMPROVEMENT unrouted") is not fixed: PT proposals go to
 `rd_pod_pending.json` → `rd_pod_board` → `rd_pod_approved.json`, and no executor reads
 `rd_pod_approved.json`. Whether R&D pod approvals should reach `board_dispatch` is a design call.
+
+## specialist-fixer-run 2026-11-25 ~20:20Z (wiring area; VM at 5c0ce93, deployed 2026-11-24)
+
+Claimed and PR'd: `loop-sig-efde3449bef4` ("Sweep: N finding(s) — agents that crash on --report",
+re-seen 112x; an earlier claim on 2026-11-20 expired with no PR). Premise TRUE today: the
+2026-11-23 sweep reports 1 finding, `data_integrity_sentinel --report` TIMEOUT (75s budget).
+Measured on the VM read-only: `check_json_health` 49.3s over 374 files / 454 MB (regex 29.8s,
+parse 12.9s, number walk 8.3s); also `--report` called both specialists with write=True.
+After the fix (temp copy run outside the repo dir): json_health 18.2s, whole `--report` 17.1s,
+specialist report mtimes unchanged. Branch `claude/fixer-wiring-20261125-integrity`.
+
+Groups skipped this run: every open ops row is already recorded above as false/not-code or a
+job with no crontab entry (Jack's deploy call); risk's only open group (attribution stale) is a
+board/Chairman judgment; the other wiring rows are false (see 11-20/11-24) or PR #87.
+
+Checked, not claimed (premise TRUE, fix is an ML design call): wiring row "Sweep: 1 finding(s) —
+agents that have never produced output" = `ml_feature_drift_monitor` (VM cron `0 12 * * 1-5`).
+It runs and logs "historical window: 0 rows. Skipping." every day, so `feature_drift_report.json`
+is never written. `pipeline_snapshots` by month (read-only, 2026-11-25): 2025-11 7004, 2026-02
+7045, 2026-05 17531, Jun-Oct none, 2026-11 136. The fixed reference window
+`[now-180d, now-60d)` lands in the Jun-Oct gap. Choosing the baseline (e.g. the latest snapshot
+dates before the recent window) belongs to the ML brief. Also open: why no snapshots Jun-Oct.
