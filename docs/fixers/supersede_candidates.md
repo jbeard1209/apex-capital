@@ -105,3 +105,11 @@ specialist report mtimes unchanged. Branch `claude/fixer-wiring-20261125-integri
 Groups skipped this run: every open ops row is already recorded above as false/not-code or a
 job with no crontab entry (Jack's deploy call); risk's only open group (attribution stale) is a
 board/Chairman judgment; the other wiring rows are false (see 11-20/11-24) or PR #87.
+
+Checked, not claimed (premise TRUE, fix is an ML design call): wiring row "Sweep: 1 finding(s) —
+agents that have never produced output" = `ml_feature_drift_monitor` (VM cron `0 12 * * 1-5`).
+It runs and logs "historical window: 0 rows. Skipping." every day, so `feature_drift_report.json`
+is never written. `pipeline_snapshots` by month (read-only, 2026-11-25): 2025-11 7004, 2026-02
+7045, 2026-05 17531, Jun-Oct none, 2026-11 136. The fixed reference window
+`[now-180d, now-60d)` lands in the Jun-Oct gap. Choosing the baseline (e.g. the latest snapshot
+dates before the recent window) belongs to the ML brief. Also open: why no snapshots Jun-Oct.
