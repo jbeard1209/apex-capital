@@ -39203,7 +39203,7 @@ class TestKalshiWeatherEdgeIsSafeAndShared(unittest.TestCase):
                  (ct, "SPEND_LOCK_FILE"): td / "spend.lock",
                  (wx, "ARM_FILE"): td / "wx_armed", (wx, "STATE_FILE"): td / "wx_state.json",
                  (wx, "PAPER_LEDGER"): td / "paper.jsonl", (wx, "EVAL_LOG"): td / "log.jsonl",
-                 (wx, "CONFIG_FILE"): td / "wx_cfg.json"}
+                 (wx, "CONFIG_FILE"): td / "wx_cfg.json", (wx, "AUTO_ARM_FILE"): td / "auto.json"}
         for (mod, attr), val in names.items():
             p = patch.object(mod, attr, val)
             p.start()
@@ -39483,6 +39483,99 @@ class TestKalshiWeatherEdgeIsSafeAndShared(unittest.TestCase):
         beat.assert_called_once_with("kalshi_weather_edge", 0, 1)
         reg = json.loads((Path(self.wx.__file__).parent / "config" / "liveness.json").read_text())
         self.assertTrue(reg["features"]["kalshi_weather_edge"]["instrumented"])
+
+    # ------------------------------------------------------------ scheduled go-live
+    def _paper(self, ticker, cost=1.0, count=3, price=0.32, at=None):
+        self.wx._append_paper({"at": (at or self.NOW).isoformat(), "leader": "weather-edge",
+                               "ticker": ticker, "side": "bid", "count": count, "price": price,
+                               "cost_usd": cost, "status": "paper", "reduce_only": False})
+
+    def _auto(self, now, results, mail=None):
+        mail = [] if mail is None else mail
+        rec = self.wx.auto_arm_check(now=now, market=lambda t: results.get(t, {}),
+                                     notify=lambda s, b: mail.append(s) or True)
+        return rec, mail
+
+    def test_it_stays_on_paper_before_the_go_live_date(self):
+        due = self.ct._parse_ts(self.wx.AUTO_ARM_AT)
+        rec, mail = self._auto(due - timedelta(minutes=1), {})
+        self.assertEqual((rec, mail), ({}, []))
+        with patch.object(self.ct, "armed", return_value=(True, "")):
+            self.assertFalse(self.wx.armed()[0])
+
+    def test_it_arms_itself_on_the_date_with_no_trades_and_emails(self):
+        """Chairman: "if it made fewer than 5 trades thats just fine"."""
+        due = self.ct._parse_ts(self.wx.AUTO_ARM_AT)
+        rec, mail = self._auto(due, {})
+        self.assertEqual(rec["decision"], "armed")
+        self.assertEqual(len(mail), 1)
+        self.assertIn("LIVE", mail[0])
+        with patch.object(self.ct, "armed", return_value=(True, "")):
+            self.assertEqual(self.wx.armed(), (True, ""))
+        # and every copier gate still applies: the halt file / env still stop it
+        with patch.object(self.ct, "armed", return_value=(False, "halted")):
+            self.assertEqual(self.wx.armed(), (False, "halted"))
+
+    def test_a_small_paper_loss_still_arms(self):
+        due = self.ct._parse_ts(self.wx.AUTO_ARM_AT)
+        at = due - timedelta(days=2)
+        self._paper("KXRAIN-A", at=at, price=0.45, count=2)     # wins
+        self._paper("KXRAIN-B", at=at, price=0.45, count=2)     # loses
+        self._paper("KXRAIN-C", at=at, price=0.45, count=1)     # loses
+        rec, _ = self._auto(due, {"KXRAIN-A": {"result": "yes"}, "KXRAIN-B": {"result": "no"},
+                                  "KXRAIN-C": {"result": "no"}})
+        wk = rec["paper_week"]
+        self.assertLess(wk["pnl_usd"], 0)
+        self.assertLess(wk["loss_pct"], 20.0)
+        self.assertEqual(rec["decision"], "armed", rec)
+
+    def test_a_twenty_percent_paper_loss_refuses_for_good(self):
+        """Chairman: "only dont turn it on if it lost 20% or more"."""
+        due = self.ct._parse_ts(self.wx.AUTO_ARM_AT)
+        for t in ("KXRAIN-A", "KXRAIN-B", "KXRAIN-C"):
+            self._paper(t, at=due - timedelta(days=1))
+        lose = {t: {"result": "no"} for t in ("KXRAIN-A", "KXRAIN-B", "KXRAIN-C")}
+        rec, mail = self._auto(due, lose)
+        self.assertEqual(rec["decision"], "refused")
+        self.assertIn("REFUSED", mail[0])
+        with patch.object(self.ct, "armed", return_value=(True, "")):
+            self.assertFalse(self.wx.armed()[0])
+        # final: a later check, even after a winning week, never flips it
+        rec, mail = self._auto(due + timedelta(days=3), {})
+        self.assertEqual((rec["decision"], mail), ("refused", []))
+
+    def test_trades_older_than_the_week_do_not_count(self):
+        due = self.ct._parse_ts(self.wx.AUTO_ARM_AT)
+        self._paper("KXRAIN-OLD", at=due - timedelta(days=9))
+        rec, _ = self._auto(due, {"KXRAIN-OLD": {"result": "no"}})
+        self.assertEqual(rec["decision"], "armed")
+        self.assertEqual(rec["paper_week"]["settled"], 0)
+
+    def test_the_go_live_can_be_switched_off_and_the_threshold_changed(self):
+        due = self.ct._parse_ts(self.wx.AUTO_ARM_AT)
+        self.wx.CONFIG_FILE.write_text(json.dumps({"auto_arm_max_loss_pct": 10}))
+        self.assertEqual(self.wx.load_config()["auto_arm_max_loss_pct"], 10.0)
+        self.wx.CONFIG_FILE.write_text(json.dumps({"auto_arm_max_loss_pct": 400}))
+        self.assertEqual(self.wx.load_config()["auto_arm_max_loss_pct"],
+                         self.wx.HARD_MAX_AUTO_ARM_LOSS_PCT)
+        rec, _ = self._auto(due, {})
+        self.assertEqual(rec["decision"], "armed")
+        with patch.object(self.ct, "armed", return_value=(True, "")):
+            self.wx.disarm()
+            live, why = self.wx.armed()
+        self.assertFalse(live)
+        self.assertIn("switched off", why)
+
+    def test_the_bot_never_writes_an_arm_file(self):
+        src = Path(self.wx.__file__).read_text()
+        self.assertNotRegex(src, r"_write_json\(\s*ARM_FILE|ARM_FILE\.write|ct\.ARM_FILE\.write")
+
+    def test_manager_flags_a_missed_go_live_check(self):
+        due = self.ct._parse_ts(self.wx.AUTO_ARM_AT)
+        self.wx.STATE_FILE.write_text(json.dumps({"last_run": (due + timedelta(hours=4)).isoformat(),
+                                                  "stats": {"eligible": 3, "priced": 3}}))
+        kinds = [f["kind"] for f in self.wx.health(due + timedelta(hours=4))]
+        self.assertIn("WEATHER_AUTO_ARM_MISSED", kinds)
 
     def test_paper_pnl_uses_the_managers_math(self):
         self.wx._append_paper({"at": self.NOW.isoformat(), "leader": "weather-edge",
