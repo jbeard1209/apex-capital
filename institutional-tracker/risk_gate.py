@@ -108,6 +108,20 @@ only one of them should. That race is how a cap of 20 ends up holding 21. Every
 allowed entry therefore reserves its symbol and its estimated cost until the
 broker confirms it, and the next check sizes against what is left.
 
+ORDERS STILL WAITING TO FILL (2026-11-25, audit M03)
+-----------------------------------------------------
+Reservations live in one process for three minutes. An order sent while the
+market is shut stays open at the broker for hours or days, in no position list.
+Over 2026-11-21/22 every Canary RED cycle (a fresh process each time) saw "SH
+not held" and bought it again; the queued orders filled together on Monday and
+put 2,206 shares, about 80% of the account, into one ETF. No cap, floor or
+hedge check had seen any of them. So the snapshot now reads open orders too:
+
+  - an order that adds exposure is refused while another on the same symbol and
+    side is still open (BLOCK_PENDING_ORDER);
+  - pending entries take their slot and their cash, like reservations do;
+  - the hedge carve-out is not granted when open orders cannot be read.
+
 Consumers: order_ledger.install() (the one submit_order choke point).
 Guarded by test_pipeline_smoke.py::TestPreTradeRiskGate.
 """
@@ -243,7 +257,8 @@ def _finite(x) -> Optional[float]:
 
 
 def snapshot(client=None, force=False):
-    """{"cash", "portfolio_value", "positions": {SYM: {"qty", "price"}}} or None.
+    """{"cash", "portfolio_value", "positions": {SYM: {"qty", "price"}},
+    "open_orders": [{"symbol", "side", "qty", "price"}] or None} or None.
 
     One account read and one positions read, together, so the cash and the
     positions the gate reasons about are the same instant. None means "could not
@@ -275,12 +290,51 @@ def snapshot(client=None, force=False):
             if q is None:
                 continue
             positions[str(p.symbol).upper()] = {"qty": q, "price": px}
-        snap = {"cash": cash, "portfolio_value": pv, "positions": positions}
+        snap = {"cash": cash, "portfolio_value": pv, "positions": positions,
+                "open_orders": _open_orders(client)}
         _snapshot_cache.update(at=now, snap=snap)
         return snap
     except Exception as e:
         logger.warning(f"  [risk_gate] broker snapshot failed: {e}")
         return None
+
+
+def _open_orders(client) -> Optional[list]:
+    """Orders the broker holds unfilled, or None if they could not be read.
+
+    None and [] are different answers: [] is "nothing is waiting", None is
+    "cannot tell", and only the first may clear a hedge for its exemption.
+    """
+    try:
+        from alpaca.trading.requests import GetOrdersRequest
+        from alpaca.trading.enums import QueryOrderStatus
+        raw = client.get_orders(GetOrdersRequest(status=QueryOrderStatus.OPEN,
+                                                 limit=500))
+        if not isinstance(raw, (list, tuple)):
+            raise TypeError(f"get_orders returned {type(raw).__name__}")
+        out = []
+        for o in raw:
+            side = getattr(o, "side", "")
+            side = str(getattr(side, "value", side)).lower()
+            qty = _finite(getattr(o, "qty", None))
+            done = _finite(getattr(o, "filled_qty", None)) or 0.0
+            out.append({"symbol": str(getattr(o, "symbol", "")).upper(),
+                        "side": "buy" if "buy" in side else "sell",
+                        "qty": None if qty is None else max(qty - done, 0.0),
+                        "price": _finite(getattr(o, "limit_price", None))})
+        return out
+    except Exception as e:
+        logger.warning(f"  [risk_gate] open orders unreadable: {e}")
+        return None
+
+
+def _pending_entries(snap) -> list:
+    """The open orders that ADD exposure (not those closing a position)."""
+    import single_writer
+    held = qty_map(snap) or {}
+    return [o for o in ((snap or {}).get("open_orders") or [])
+            if single_writer.is_risk_reducing(o["symbol"], o["side"],
+                                              o["qty"] or 0, held) is not True]
 
 
 def qty_map(snap) -> Optional[dict]:
@@ -297,6 +351,8 @@ def reserve(symbol, cost, now=None) -> None:
     _inflight.append({"symbol": str(symbol).upper(),
                       "cost": _finite(cost) or 0.0,
                       "at": now if now is not None else time.time()})
+    # The broker now holds an order this cached snapshot has never seen.
+    _snapshot_cache.update(at=0.0, snap=None)
 
 
 def _live_inflight(snap, now=None):
@@ -408,8 +464,9 @@ def check(symbol="", side="", qty=0, price=None, snap=None, now=None) -> tuple:
 
     verdict is one of ALLOW_EXIT / ALLOW_WITHIN_LIMITS / ALLOW_UNVERIFIED /
     ALLOW_HEDGE_REDUCES_BETA / BLOCK_CASH_FLOOR / BLOCK_HARD_CASH_FLOOR /
-    BLOCK_MAX_POSITIONS / BLOCK_BOARD_PAUSE / ALLOW_POD_SLOT, so the log names the rule that fired rather than only
-    that something did.
+    BLOCK_MAX_POSITIONS / BLOCK_BOARD_PAUSE / BLOCK_PENDING_ORDER /
+    ALLOW_POD_SLOT, so the log names the rule that fired rather than only that
+    something did.
     """
     try:
         import single_writer
@@ -422,6 +479,16 @@ def check(symbol="", side="", qty=0, price=None, snap=None, now=None) -> tuple:
         if reducing is True:
             return (True, "ALLOW_EXIT",
                     "reduces an open position — exits are never gated")
+
+        # ── an order for this is already waiting ─────────────────────────────
+        sym = str(symbol).upper()
+        want = "buy" if _is_buy(side) else "sell"
+        waiting = [o for o in _pending_entries(snap)
+                   if o["symbol"] == sym and o["side"] == want]
+        if waiting:
+            return (False, "BLOCK_PENDING_ORDER",
+                    f"{len(waiting)} open {want} order(s) for {sym} have not "
+                    f"filled yet — another would stack exposure no limit can see")
 
         # ── board pause ──────────────────────────────────────────────────────
         pause = pause_state(now if isinstance(now, datetime) else None)
@@ -444,7 +511,6 @@ def check(symbol="", side="", qty=0, price=None, snap=None, now=None) -> tuple:
                     "broker snapshot unavailable — limits could not be checked")
 
         lim = limits()
-        sym = str(symbol).upper()
         # Re-validated even though snapshot() already did: a caller may pass a
         # hand-built snap, and a NaN reaching the comparison below would pass
         # the floor silently rather than fail it.
@@ -456,6 +522,15 @@ def check(symbol="", side="", qty=0, price=None, snap=None, now=None) -> tuple:
                     f"equity={snap.get('portfolio_value')!r})")
         held_syms = {s for s, v in snap["positions"].items() if v["qty"] != 0}
         infl_syms, infl_cost = _live_inflight(snap, now=now)
+        # Pending entries from ANY process. A symbol also reserved here is
+        # already costed above, so it is not counted twice.
+        for o in _pending_entries(snap):
+            if o["symbol"] in infl_syms:
+                continue
+            if o["side"] == "buy":
+                infl_cost += _order_cost(o["symbol"], o["qty"] or 0,
+                                         o["price"], snap) or 0.0
+        infl_syms = infl_syms | {o["symbol"] for o in _pending_entries(snap)}
 
         # ── position cap ─────────────────────────────────────────────────────
         # Adding to a position the firm already holds does not consume a slot,
@@ -607,6 +682,13 @@ def _hedge_verdict(symbol, side, qty, price, snap) -> dict:
         if not portfolio_beta.is_structural_hedge(sym):
             return out
         out["consulted"] = True
+
+        if snap is not None and "open_orders" in snap \
+                and snap["open_orders"] is None:
+            out["reason"] = (f"{sym} is a structural hedge but open orders could "
+                             f"not be read, so a hedge may already be waiting "
+                             f"(CANNOT_TELL)")
+            return out
 
         # Second-order kill switch. The carve-out is auto-disabled when its
         # recent graded outcomes fail at rate ≥ THRESHOLD_FAILURE_RATE — the
