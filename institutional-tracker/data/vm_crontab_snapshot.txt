@@ -1,5 +1,5 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-11-19T20:15:42Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-11-25T21:39:47Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
@@ -491,7 +491,7 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 0 11 * * 1 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 predictive_model/edgar_historical_scraper.py >> logs/edgar_13f_$(date +\%Y\%m\%d).log 2>&1
 * * * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 kalshi_copytrade.py --run-for 55 >> logs/kalshi_copytrade.log 2>&1
 30 13 * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 kalshi_copytrade_scout.py --report >> logs/kalshi_copytrade.log 2>&1
-*/15 * * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 kalshi_copytrade_manager.py --check >> logs/kalshi_copytrade.log 2>&1
+45 * * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 kalshi_copytrade_manager.py --check >> logs/kalshi_copytrade.log 2>&1
 40 * * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 job_failure_monitor.py >> logs/job_failure_$(date +\%Y\%m\%d).log 2>&1
 # Kalshi + pod daily P&L history (added 2026-11-12). VM publishes apex-reports at :55 (deploy key added 2026-11-12); Mac launchd publisher unloaded.
 50 * * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 kalshi_pnl_history.py --record >> logs/kalshi_copytrade.log 2>&1
@@ -502,3 +502,4 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # FE + ML research chain: scheduled 2026-11-19 (were scheduled nowhere; see docs/audit/OVERNIGHT_2026-11-19.md)
 0 2 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 fe_research_scheduler.py >> logs/fe_research_scheduler.log 2>&1
 0 7 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 ml_research_team_leader.py >> logs/ml_research_team_leader.log 2>&1
+20 * * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 kalshi_weather_edge.py --run >> logs/kalshi_weather_edge.log 2>&1
