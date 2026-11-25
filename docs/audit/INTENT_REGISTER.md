@@ -66,6 +66,7 @@ control that would currently catch it, or `NONE`, which means it is on
 | 3.8 | Hourly report | Pushes a status report to the `jbeard1209/apex-reports` repo. | Mac launchd `com.apexcapital.kalshireport` | Mac launchd hourly | Stops whenever the Mac sleeps | NONE |
 | 3.9 | Daily status / watchdog | One-page Kalshi status; the watchdog checks the jobs ran. | `kalshi_daily_status.py`, `kalshi_watchdog.py` | VM cron 12:20, 12:15 | — | itself |
 | 3.10 | Polymarket survey | Research only. The mirror strategy does not transplant. | research scripts | manual | — | n/a |
+| 3.11 | Weather-edge strategy (2026-11-25) | Buys a Kalshi weather contract (daily high/low temp, rain) by itself when NBM + GFS MOS + NWS grid all say the price is wrong and the blend beats break-even by ≥8 points. Rechecks the price, then IOC at that ask. Shares the copier's $1/market, $3/day caps, ledger, halt file and loss breaker. Paper unless `data/.kalshi_weather_armed` AND every copier gate. | `kalshi_weather_edge.py` | VM cron hourly `:20` (`--run`) | Not running; armed but paper; prices nothing (feed down); spends beside the copier's caps | Manager (WEATHER_NOT_RUNNING / _ARMED_BUT_PAPER / _FEED_DOWN) + liveness `kalshi_weather_edge` (6h) |
 
 ## 4. Governance: board, CIT, logic team
 

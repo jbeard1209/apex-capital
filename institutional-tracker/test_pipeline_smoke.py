@@ -2357,6 +2357,23 @@ class TestBoardVoteHeartbeatCountsDeferrals(unittest.TestCase):
 
 class TestWiringContracts(unittest.TestCase):
 
+    def test_weather_edge_rows_reach_the_manager_and_the_copier_leaves_them_alone(self):
+        """kalshi_weather_edge.py writes live orders to the copier's ledger as
+        leader "weather-edge" (one budget, one loss breaker). Consumers: the
+        Manager must call its health() and report_lines(), the copier's exit
+        logic must treat that leader as not-a-copy, and liveness must know the
+        feature it beats (2026-11-25)."""
+        import inspect
+        import kalshi_copytrade as ct
+        import kalshi_copytrade_manager as mgr
+        import kalshi_weather_edge as wx
+        self.assertIn(wx.LEADER, ct.NON_COPY_LEADERS)
+        self.assertIn("wx.health(now)", inspect.getsource(mgr.check_health))
+        self.assertIn("wx.report_lines()", inspect.getsource(mgr.print_report))
+        self.assertEqual(wx.DATA_DIR, ct.DATA_DIR)
+        reg = json.loads((Path(wx.__file__).parent / "config" / "liveness.json").read_text())
+        self.assertIn("kalshi_weather_edge", reg["features"])
+
     def test_fe_research_library_reads_only_keys_the_synthesis_memo_writes(self):
         """synthesis_agent.run_synthesis -> synthesis_memo.json ->
         fe_pipeline._check_research_library (called by run_pipeline, the cron
@@ -39162,6 +39179,302 @@ class TestTheSyncCheckIsItselfWatched(unittest.TestCase):
         self.assertTrue(S.heartbeat_due(p, self.now))
         # the heartbeat must stay well inside the watchdog's stale limit
         self.assertLess(S.HEARTBEAT_S / 3600.0 * 2, self.W.STALE_H)
+
+
+
+class TestKalshiWeatherEdgeIsSafeAndShared(unittest.TestCase):
+    """kalshi_weather_edge.py (2026-11-25) is the desk's second automatic
+    strategy. It places real orders when armed, so these pin: it ships on
+    paper, its own arm file AND the copier's gates are both required, it
+    spends from the copier's $1/market and $3/day caps (never beside them),
+    it rechecks the price before ordering, its probability math is right,
+    and the Manager + liveness see it."""
+
+    NOW = datetime(2026, 11, 25, 20, 0, tzinfo=timezone.utc)
+
+    def setUp(self):
+        import kalshi_copytrade as ct
+        import kalshi_weather_edge as wx
+        self.ct, self.wx = ct, wx
+        self.td = tempfile.mkdtemp()
+        td = Path(self.td)
+        names = {(ct, "LEDGER_FILE"): td / "ledger.jsonl", (ct, "HALT_FILE"): td / "halt",
+                 (ct, "ARM_FILE"): td / "ct_armed", (ct, "CONFIG_FILE"): td / "ct_cfg.json",
+                 (ct, "SPEND_LOCK_FILE"): td / "spend.lock",
+                 (wx, "ARM_FILE"): td / "wx_armed", (wx, "STATE_FILE"): td / "wx_state.json",
+                 (wx, "PAPER_LEDGER"): td / "paper.jsonl", (wx, "EVAL_LOG"): td / "log.jsonl",
+                 (wx, "CONFIG_FILE"): td / "wx_cfg.json"}
+        for (mod, attr), val in names.items():
+            p = patch.object(mod, attr, val)
+            p.start()
+            self.addCleanup(p.stop)
+        (td / "ct_cfg.json").write_text(json.dumps({"per_trade_usd": 1.0, "per_day_usd": 3.0}))
+        self.addCleanup(shutil.rmtree, self.td, True)
+
+    # ---------------------------------------------------------------- helpers
+    def _market(self, ticker="KXHIGHCHI-26NOV26-B44.5", bid="0.30", ask="0.32", **kw):
+        m = {"ticker": ticker, "event_ticker": ticker.rsplit("-", 1)[0],
+             "yes_bid_dollars": bid, "yes_ask_dollars": ask, "status": "active"}
+        m.update(kw)
+        return m
+
+    def _eval(self, ticker="KXHIGHCHI-26NOV26-B44.5", p=0.60, by=None, bid="0.30", ask="0.32"):
+        model = {"p": p, "by_source": by or {"nbm": p, "gfs": p, "nws": p}}
+        e = self.wx.evaluate(self._market(ticker, bid, ask), model, self.wx.load_config())
+        e.update(kind="high", station="KMDW", day="2026-11-26")
+        return e
+
+    def _run(self, evals, armed=True, fresh=None, place=None, dry_run=False):
+        sent = []
+
+        def _place(**k):
+            sent.append(k)
+            return {"order_id": "o1", "fill_count": str(k["count"])}
+        fresh = fresh or (lambda t: self._market(t))
+        with patch.object(self.wx, "armed", return_value=(armed, "" if armed else "test: not armed")), \
+                patch("liveness.beat", return_value=True):
+            st = self.wx.run(now=self.NOW, dry_run=dry_run, place=place or _place,
+                             market_fetch=fresh,
+                             scan_fn=lambda now, cfg: (evals, {"eligible": len(evals),
+                                                               "priced": len(evals)}))
+        return st, sent
+
+    # ------------------------------------------------------------ G1/G2 arming
+    def test_unarmed_it_records_paper_and_never_calls_the_broker(self):
+        st, sent = self._run([self._eval()], armed=False)
+        self.assertEqual(sent, [], "an unarmed run sent an order")
+        self.assertEqual([o["status"] for o in st["orders"]], ["paper"])
+        self.assertEqual(self.ct.ledger_rows(), [], "paper rows must not enter the live ledger")
+        self.assertEqual(len(self.wx.paper_rows()), 1)
+
+    def test_live_needs_its_own_arm_file_and_every_copier_gate(self):
+        wx, ct = self.wx, self.ct
+        with patch.object(ct, "armed", return_value=(False, "KALSHI_ENV=shadow")):
+            self.assertEqual(wx.armed(), (False, "KALSHI_ENV=shadow"))
+        with patch.object(ct, "armed", return_value=(True, "")):
+            self.assertFalse(wx.armed()[0], "copier armed alone must not arm weather-edge")
+            wx.ARM_FILE.write_text(json.dumps({"env": "demo", "armed": True}))
+            self.assertFalse(wx.armed()[0])
+            wx.ARM_FILE.write_text(json.dumps({"env": "live", "armed": True}))
+            self.assertEqual(wx.armed(), (True, ""))
+
+    def test_the_copiers_halt_file_stops_it(self):
+        # the real ct.armed() reads the halt file; with it present nothing is live
+        self.wx.ARM_FILE.write_text(json.dumps({"env": "live", "armed": True}))
+        self.ct.ARM_FILE.write_text(json.dumps({"env": "live", "armed": True}))
+        self.ct.HALT_FILE.write_text("{}")
+        with patch.object(self.ct.kc, "env_name", return_value="live"), \
+                patch.object(self.ct.kc, "armed_for", return_value=True):
+            live, why = self.wx.armed()
+        self.assertFalse(live)
+        self.assertIn("halted", why)
+
+    def test_dry_run_writes_nothing(self):
+        st, sent = self._run([self._eval()], armed=True, dry_run=True)
+        self.assertEqual(sent, [])
+        self.assertEqual([o["status"] for o in st["orders"]], ["dry_run"])
+        self.assertFalse(self.wx.PAPER_LEDGER.exists())
+        self.assertFalse(self.wx.STATE_FILE.exists())
+
+    # ------------------------------------------------------------ G3 caps
+    def test_live_order_goes_into_the_copiers_ledger_and_counts_against_its_caps(self):
+        st, sent = self._run([self._eval()], armed=True)
+        self.assertEqual(len(sent), 1)
+        rows = self.ct.ledger_rows()
+        self.assertEqual(rows[0]["leader"], "weather-edge")
+        self.assertEqual(rows[0]["status"], "placed")
+        self.assertLessEqual(rows[0]["cost_usd"], 1.0)
+        self.assertEqual(self.ct.spent_today(rows, now=self.NOW, live=True), rows[0]["cost_usd"])
+        self.assertEqual(sent[0]["time_in_force"], "immediate_or_cancel")
+
+    def test_the_daily_cap_is_shared_with_the_copier(self):
+        # the copier already spent $2.70 today: $0.30 left buys no 32c contract
+        self.ct._append({"at": self.NOW.isoformat(), "leader": "someone", "ticker": "KXOTHER-1",
+                         "side": "bid", "count": 3, "price": 0.9, "cost_usd": 2.70,
+                         "status": "placed", "fill_count": 3, "reduce_only": False})
+        st, sent = self._run([self._eval()], armed=True)
+        self.assertEqual(sent, [])
+        self.assertEqual(st["orders"][0]["status"], "capped")
+
+    def test_caps_are_clipped_to_one_and_three_dollars_even_if_the_copier_is_raised(self):
+        self.ct.CONFIG_FILE.write_text(json.dumps({"per_trade_usd": 20.0, "per_day_usd": 90.0}))
+        caps = self.wx.shared_caps()
+        self.assertEqual((caps["per_trade_usd"], caps["per_day_usd"]), (1.0, 3.0))
+        st, sent = self._run([self._eval()], armed=True)
+        self.assertLessEqual(sum(float(k["count"]) * 0.32 for k in sent), 1.0)
+
+    def test_one_order_per_event_per_day(self):
+        evs = [self._eval("KXHIGHCHI-26NOV26-B44.5"), self._eval("KXHIGHCHI-26NOV26-B46.5")]
+        st, sent = self._run(evs, armed=True)
+        self.assertEqual(len(sent), 1)
+        st, sent = self._run(evs, armed=True)
+        self.assertEqual(sent, [], "a second run bought the same city-day again")
+
+    def test_a_copier_exit_never_sells_weather_edge_contracts(self):
+        self.assertIn(self.wx.LEADER, self.ct.NON_COPY_LEADERS)
+        src = Path(self.ct.__file__).read_text()
+        self.assertIn('own = [r for r in rows_ if r.get("leader") not in NON_COPY_LEADERS]', src)
+        self.assertIn("net_position(dec[\"ticker\"], own, live=is_live)", src)
+
+    def test_both_strategies_take_the_same_spend_lock(self):
+        import inspect
+        self.assertIn("with spend_lock():", inspect.getsource(self.ct.poll_once))
+        self.assertIn("with ct.spend_lock():", inspect.getsource(self.wx.run))
+
+    # ------------------------------------------------------------ G4 rule + recheck
+    def test_recheck_skips_when_the_price_moved_away(self):
+        st, sent = self._run([self._eval(p=0.60)], armed=True,
+                             fresh=lambda t: self._market(t, bid="0.55", ask="0.57"))
+        self.assertEqual(sent, [])
+        self.assertEqual(st["orders"][0]["status"], "moved")
+
+    def test_the_order_never_pays_more_than_the_rechecked_ask(self):
+        st, sent = self._run([self._eval(p=0.60)], armed=True,
+                             fresh=lambda t: self._market(t, bid="0.29", ask="0.31"))
+        self.assertEqual(sent[0]["price"], 0.31)
+        self.assertEqual(sent[0]["side"], "bid")
+
+    def test_every_source_must_agree(self):
+        e = self._eval(p=0.60, by={"nbm": 0.70, "gfs": 0.75, "nws": 0.30})
+        self.assertEqual(e["action"], "pass")
+        self.assertIn("nws", e["why"])
+
+    def test_margin_band_and_spread(self):
+        self.assertEqual(self._eval(p=0.38)["action"], "pass")          # edge 6c < 8c
+        self.assertEqual(self._eval(p=0.50)["action"], "buy")
+        self.assertIn("band", self.wx.evaluate(self._market(bid="0.05", ask="0.06"),
+                                               {"p": 0.5, "by_source": {"nbm": .5, "gfs": .5}},
+                                               self.wx.load_config())["why"])
+        self.assertIn("spread", self.wx.evaluate(self._market(bid="0.20", ask="0.40"),
+                                                 {"p": 0.9, "by_source": {"nbm": .9, "gfs": .9}},
+                                                 self.wx.load_config())["why"])
+
+    def test_buys_no_when_the_market_overprices_yes(self):
+        e = self._eval(p=0.20, bid="0.60", ask="0.62")
+        self.assertEqual((e["action"], e["side"], e["buy"]), ("buy", "ask", "no"))
+        self.assertAlmostEqual(e["cost"], 0.40)
+        self.assertEqual(e["limit"], 0.60)
+
+    def test_the_margin_cannot_be_configured_below_the_hard_floor(self):
+        self.wx.CONFIG_FILE.write_text(json.dumps({"margin": 0.0001}))
+        self.assertEqual(self.wx.load_config()["margin"], self.wx.HARD_MIN_MARGIN)
+
+    def test_no_nbm_no_trade(self):
+        self.assertIsNone(self.wx.blend("high", {"gfs": {"mu": 50, "sigma": 3},
+                                                 "nws": {"mu": 50, "sigma": 2.5}}, 49, 50))
+        self.assertIsNone(self.wx.blend("high", {"nbm": {"mu": 50, "sigma": 2}}, 49, 50))
+        self.assertEqual(self.wx.evaluate(self._market(), None, self.wx.load_config())["action"],
+                         "pass")
+
+    # ------------------------------------------------------------ G5 the math
+    def test_bracket_probabilities_cover_every_outcome_once(self):
+        wx = self.wx
+        brackets = [(None, 41), (42, 43), (44, 45), (46, 47), (48, 49), (50, None)]
+        total = sum(wx.prob_temp(45.3, 2.2, lo, hi) for lo, hi in brackets)
+        self.assertAlmostEqual(total, 1.0, places=9)
+        # continuity: P(reading == 44) for mu 44 is the mass in [43.5, 44.5)
+        self.assertAlmostEqual(wx.prob_temp(44, 1.0, 44, 44), 0.3829, places=3)
+
+    def test_kalshi_strike_wording_maps_to_whole_degree_outcomes(self):
+        wx = self.wx
+        rules = ("If the maximum temperature recorded at Chicago (CLIMDW) for Nov 26, 2026, "
+                 "is greater than 49° fahrenheit according to The Weather Company")
+        p, _ = wx.parse_market({"ticker": "KXHIGHCHI-26NOV26-T49", "rules_primary": rules,
+                                "strike_type": "greater", "floor_strike": 49})
+        self.assertEqual((p["kind"], p["station"], p["day"], p["lo"], p["hi"]),
+                         ("high", "KMDW", date(2026, 11, 26), 50, None))
+        p, _ = wx.parse_market({"ticker": "KXHIGHCHI-26NOV26-T42", "rules_primary": rules,
+                                "strike_type": "less", "cap_strike": 42})
+        self.assertEqual((p["lo"], p["hi"]), (None, 41))
+        p, _ = wx.parse_market({"ticker": "KXHIGHCHI-26NOV26-B44.5", "rules_primary": rules,
+                                "strike_type": "between", "floor_strike": 44, "cap_strike": 45})
+        self.assertEqual((p["lo"], p["hi"]), (44, 45))
+        rain = ("If the total precipitation at Boston (Logan Airport), MA (KBOS) in Boston on "
+                "Dec 31, 2026 is strictly greater than 0 inches")
+        p, _ = wx.parse_market({"ticker": "KXRAINDBOS-261231-0", "rules_primary": rain,
+                                "strike_type": "greater", "floor_strike": 0})
+        self.assertEqual((p["kind"], p["station"], p["day"]), ("rain", "KBOS", date(2026, 12, 31)))
+        self.assertIsNone(wx.parse_market({"ticker": "KXRAINNYCM-26NOV-4",
+                                           "rules_primary": rain.replace("0 inches", "4 inches"),
+                                           "strike_type": "greater", "floor_strike": 4})[0])
+
+    def test_rain_pops_combine_between_correlated_and_independent(self):
+        wx = self.wx
+        p = wx.combine_pops([0.5, 0.5, 0.0, 0.0])
+        self.assertGreater(p, 0.5)
+        self.assertLess(p, 0.75)
+        self.assertEqual(wx.combine_pops([0.0, 0.0]), 0.0)
+        self.assertIsNone(wx.combine_pops([]))
+
+    def test_the_climate_day_is_four_six_hour_blocks_in_every_us_zone(self):
+        wx = self.wx
+        for off in (-5, -6, -7, -8, -10):
+            s, e = wx.day_window(date(2026, 11, 26), off)
+            self.assertEqual(len(wx._blocks_for_day(s, e)), 4, off)
+
+    def test_the_days_extreme_includes_its_boundaries(self):
+        """Atlanta 2026-11-26: the low comes at midnight behind a front, between
+        two 3-hourly NBM points; the boundary value must count."""
+        wx = self.wx
+        s, e = wx.day_window(date(2026, 11, 26), -5)
+        pts = [(s - timedelta(hours=2), 50.0), (e - timedelta(hours=2), 43.0),
+               (e + timedelta(hours=1), 40.0)]
+        self.assertLess(min(wx._day_temps(pts, s, e)), 43.0)
+
+    def test_only_days_that_have_not_started_are_traded(self):
+        wx = self.wx
+        rules = ("If the maximum temperature recorded at Chicago (CLIMDW) for Nov 25, 2026, "
+                 "is greater than 49° fahrenheit")
+        m = {"ticker": "KXHIGHCHI-26NOV25-T49", "rules_primary": rules, "strike_type": "greater",
+             "floor_strike": 49, "yes_bid_dollars": "0.3", "yes_ask_dollars": "0.32"}
+        info = {"lat": 41.78, "lon": -87.75, "tz": "America/Chicago", "std_offset_h": -6.0,
+                "grid": None}
+        with patch.object(wx, "station_info", return_value=info), \
+                patch.object(wx.ct, "_write_json"):
+            evals, stats = wx.scan(now=self.NOW, cfg=dict(wx.load_config(), pause_s=0),
+                                   series_fetch=lambda: {"series": [{"ticker": "KXHIGHCHI",
+                                                                     "frequency": "daily"}]},
+                                   markets_fetch=lambda s: {"markets": [m]},
+                                   mos_fetch=lambda st, mdl: None)
+        self.assertEqual((stats["markets"], stats["eligible"]), (1, 0))
+
+    # ------------------------------------------------------------ G6/G7 oversight
+    def test_manager_reports_not_running_and_armed_but_paper(self):
+        wx = self.wx
+        self.assertEqual(wx.health(self.NOW), [], "not deployed here: must stay quiet")
+        wx.STATE_FILE.write_text(json.dumps({"last_run": (self.NOW - timedelta(hours=5)).isoformat(),
+                                             "stats": {"eligible": 40, "priced": 0}}))
+        wx.ARM_FILE.write_text(json.dumps({"env": "live", "armed": True}))
+        with patch.object(self.ct, "armed", return_value=(False, "KALSHI_ENV=shadow")):
+            kinds = {f["kind"]: f["severity"] for f in wx.health(self.NOW)}
+        self.assertEqual(kinds, {"WEATHER_NOT_RUNNING": "CRITICAL",
+                                 "WEATHER_ARMED_BUT_PAPER": "CRITICAL",
+                                 "WEATHER_FEED_DOWN": "MEDIUM"})
+
+    def test_the_manager_calls_it_and_prints_its_report(self):
+        import inspect
+        import kalshi_copytrade_manager as mgr
+        self.assertIn("wx.health(now)", inspect.getsource(mgr.check_health))
+        self.assertIn("wx.report_lines()", inspect.getsource(mgr.print_report))
+        lines = self.wx.report_lines(self.NOW)
+        self.assertTrue(lines[0].strip().startswith("WEATHER-EDGE"))
+
+    def test_a_run_beats_liveness_with_markets_priced_of_examined(self):
+        with patch.object(self.wx, "armed", return_value=(False, "x")), \
+                patch("liveness.beat", return_value=True) as beat:
+            self.wx.run(now=self.NOW, place=lambda **k: {}, market_fetch=lambda t: {},
+                        scan_fn=lambda now, cfg: ([], {"eligible": 0, "priced": 0}))
+        beat.assert_called_once_with("kalshi_weather_edge", 0, 1)
+        reg = json.loads((Path(self.wx.__file__).parent / "config" / "liveness.json").read_text())
+        self.assertTrue(reg["features"]["kalshi_weather_edge"]["instrumented"])
+
+    def test_paper_pnl_uses_the_managers_math(self):
+        self.wx._append_paper({"at": self.NOW.isoformat(), "leader": "weather-edge",
+                               "ticker": "KXHIGHCHI-26NOV26-B44.5", "side": "bid", "count": 3,
+                               "price": 0.32, "cost_usd": 1.0, "status": "paper",
+                               "reduce_only": False})
+        perf = self.wx.paper_performance(market=lambda t: {"result": "yes"}, now=self.NOW)
+        self.assertGreater(perf["all_time"]["total_usd"], 1.9)
 
 
 if __name__ == "__main__":

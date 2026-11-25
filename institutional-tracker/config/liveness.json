@@ -7,6 +7,7 @@
     "pod_orders":        {"max_silence_hours": 72, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G04", "weekdays_only": true},
     "short_covers":      {"max_silence_hours": 72, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G05", "weekdays_only": true},
     "kalshi_copy_trader":{"max_silence_hours": 48, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G06"},
+    "kalshi_weather_edge":{"max_silence_hours": 6, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-25T20:30:00Z", "gap": "G06"},
     "cro_buy_block":     {"max_silence_hours": 72, "min_n_done": 0, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G07", "weekdays_only": true},
     "canary":            {"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G10"},
     "job_failure_monitor":{"max_silence_hours": 26, "min_n_done": 1, "instrumented": true, "instrumented_since": "2026-11-19T08:09:20Z", "gap": "G09"},

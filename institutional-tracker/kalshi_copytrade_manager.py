@@ -348,6 +348,17 @@ def check_health(now=None, rows=None, balance=None, market=None, fetch=None):
     if unreadable:
         add("MARKS_UNREADABLE", f"could not price {len(unreadable)} market(s) "
             f"({', '.join(unreadable[:3])}); the loss breaker cannot see them", "MEDIUM")
+    # The weather-edge strategy (kalshi_weather_edge.py) trades the same account
+    # under the same caps and ledger, so its live orders are already inside
+    # the loss breaker below and the ORDER_ERRORS check above. Its own failure
+    # modes (not running, armed-but-paper, forecast feed down) are its health().
+    try:
+        import kalshi_weather_edge as wx
+        findings.extend(wx.health(now))
+    except Exception as e:
+        add("WEATHER_CHECK_FAILED", f"could not check the weather-edge strategy: "
+            f"{type(e).__name__}: {str(e)[:120]}", "MEDIUM")
+
     limit = LOSS_LIMIT_DAYS * cfg["per_day_usd"]
     if real7 < -limit:
         add("LOSING", f"down ${-real7:.2f} on open copies plus copies settled "
@@ -532,6 +543,12 @@ def print_report(rep):
               f"{p['markets']:>8} {p['settled']:>8} {p['wins']:>5}")
     for L, v in rep["performance"]["by_leader"].items():
         print(f"    by leader: {L:<24} {v['total_usd']:+.2f} on {v['markets']} market(s)")
+    try:
+        import kalshi_weather_edge as wx
+        for ln in wx.report_lines():
+            print(ln)
+    except Exception as e:
+        print(f"  WEATHER-EDGE: report unavailable ({type(e).__name__}: {str(e)[:100]})")
     rows = ct.ledger_rows()
     lines = explain_copies(rows)
     print("  orders sent (latest 15; price = cost of the side bought, $1 payout each):")

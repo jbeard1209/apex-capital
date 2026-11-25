@@ -63,7 +63,7 @@ Your current file has only `env` and `agentPushNotifEnabled`. Keep those and add
       "Source control: github.com/jbeard1209 (apex-capital code, apex-reports published reports). Both are Jack's own repos.",
       "Key internal services: the GCP VM 'apex-capital' (ssh alias apex-capital, project apex-capital-495523, code in ~/institutional-tracker, python ~/venv/bin/python3). It is Jack's own always-on host for the firm, not a shared or multi-tenant production system. Running commands on it over ssh is routine.",
       "Key internal services: the Alpaca account is a PAPER trading account (paper-api.alpaca.markets); its orders move no real money.",
-      "Sensitive remote targets: Kalshi is the only real-money venue (caps $1 per market, $3 per day). Real orders are enabled only by the files data/.kalshi_armed and data/.kalshi_copytrade_armed on either host.",
+      "Sensitive remote targets: Kalshi is the only real-money venue (caps $1 per market, $3 per day). Real orders are enabled only by the files data/.kalshi_armed and data/.kalshi_copytrade_armed (plus data/.kalshi_weather_armed for the weather-edge strategy) on either host.",
       "CI/CD deploy targets: the only sanctioned deploy path is `bash gcp_setup/deploy.sh` or `bash gcp_setup/ship.sh`, run from institutional-tracker/ on the Mac. It rsyncs code and the Mac's .env to the VM."
     ],
     "allow": [
@@ -74,7 +74,7 @@ Your current file has only `env` and `agentPushNotifEnabled`. Keep those and add
     ],
     "soft_deny": [
       "$defaults",
-      "Creating, editing or deleting data/.kalshi_armed or data/.kalshi_copytrade_armed, setting KALSHI_ENV=live, or otherwise enabling real-money Kalshi orders needs Jack's explicit request naming that action.",
+      "Creating, editing or deleting data/.kalshi_armed, data/.kalshi_copytrade_armed or data/.kalshi_weather_armed, setting KALSHI_ENV=live, or otherwise enabling real-money Kalshi orders needs Jack's explicit request naming that action.",
       "Changing Kalshi copy-trade settings (--reset-breaker, --add-leader, --remove-leader, spend caps) needs Jack's explicit request naming the change.",
       "Deleting or truncating anything under data/ or logs/ on either host, or replacing either host's crontab, needs Jack's explicit request.",
       "Editing any .env file needs Jack's explicit request (deploy.sh copies the Mac's .env over the VM's)."
@@ -92,7 +92,10 @@ Your current file has only `env` and `agentPushNotifEnabled`. Keep those and add
       "Write(**/.kalshi_armed)",
       "Edit(**/.kalshi_armed)",
       "Write(**/.kalshi_copytrade_armed)",
-      "Edit(**/.kalshi_copytrade_armed)"
+      "Edit(**/.kalshi_copytrade_armed)",
+      "Bash(*kalshi_weather_armed*)",
+      "Write(**/.kalshi_weather_armed)",
+      "Edit(**/.kalshi_weather_armed)"
     ],
     "ask": [
       "Bash(crontab -)",
