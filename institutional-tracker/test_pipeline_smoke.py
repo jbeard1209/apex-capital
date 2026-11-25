@@ -39220,8 +39220,8 @@ class TestKalshiWeatherEdgeIsSafeAndShared(unittest.TestCase):
 
     def _eval(self, ticker="KXHIGHCHI-26NOV26-B44.5", p=0.60, by=None, bid="0.30", ask="0.32"):
         model = {"p": p, "by_source": by or {"nbm": p, "gfs": p, "nws": p}}
-        e = self.wx.evaluate(self._market(ticker, bid, ask), model, self.wx.load_config())
-        e.update(kind="high", station="KMDW", day="2026-11-26")
+        e = self.wx.evaluate(self._market(ticker, bid, ask), model, self.wx.load_config(), "rain")
+        e.update(kind="rain", station="KMDW", day="2026-11-26")
         return e
 
     def _run(self, evals, armed=True, fresh=None, place=None, dry_run=False):
@@ -39354,6 +39354,22 @@ class TestKalshiWeatherEdgeIsSafeAndShared(unittest.TestCase):
         self.assertEqual((e["action"], e["side"], e["buy"]), ("buy", "ask", "no"))
         self.assertAlmostEqual(e["cost"], 0.40)
         self.assertEqual(e["limit"], 0.60)
+
+    def test_temperature_is_priced_but_never_bought(self):
+        """Backtest 2026-11-25: temperature signals returned -18% (high) and
+        -27% (low); the market's favourite bracket beat NBM. Only rain buys."""
+        model = {"p": 0.60, "by_source": {"nbm": 0.6, "gfs": 0.6, "nws": 0.6}}
+        cfg = self.wx.load_config()
+        self.assertEqual(self.wx.BUY_KINDS, frozenset({"rain"}))
+        for kind in ("high", "low"):
+            e = self.wx.evaluate(self._market(), model, cfg, kind)
+            self.assertEqual(e["action"], "pass", kind)
+            self.assertIn("not bought", e["why"])
+        self.assertEqual(self.wx.evaluate(self._market(), model, cfg, "rain")["action"], "buy")
+        # and the recheck re-applies it: a temperature candidate can never be placed
+        e = dict(self._eval(), kind="high")
+        st, sent = self._run([e], armed=True)
+        self.assertEqual(sent, [])
 
     def test_the_margin_cannot_be_configured_below_the_hard_floor(self):
         self.wx.CONFIG_FILE.write_text(json.dumps({"margin": 0.0001}))

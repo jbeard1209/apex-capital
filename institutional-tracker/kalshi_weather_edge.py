@@ -125,6 +125,21 @@ USER_AGENT = "apex-weather-edge/1.0"
 IEM_MOS = "https://mesonet.agron.iastate.edu/api/1/mos.json"
 NWS = "https://api.weather.gov"
 SERIES_PREFIXES = ("KXHIGH", "KXLOWT", "KXRAIN")
+# Which market kinds it may BUY. Backtest 2026-11-25 (target days Nov 18-25,
+# 2,176 settled markets, decisions at D-1 20:00Z on archived NBM + GFS MOS):
+#   high-temp signals  199, return -18%;  low-temp 99, -27%.
+# The market's favourite bracket beat the public NBM forecast (NBM's own
+# error that week: sd 2.3F, within 1F only 45-49% of the time), so "the
+# forecast says this bracket is overpriced" was mostly wrong. Temperature is
+# still PRICED and logged every run (that is the evidence for turning it back
+# on); it is not bought. Changing this set needs a new backtest that wins.
+# Rain, same method, target days Nov 4-25 (734 markets, 645 priced): 53
+# signals, return -0.4% (NO) / +1.0% (YES) per contract, and -$4.05 on $33
+# under the $1/$3 caps. Break-even, NOT a proven edge: most losers were NO
+# bets on days with a trace-to-0.05in shower, so combine_pops() probably
+# under-calls a day's rain. Rain stays the only buyable kind so paper mode
+# measures it forward; arming it is the Chairman's call on that paper record.
+BUY_KINDS = frozenset({"rain"})
 
 DEFAULTS = {
     "margin": 0.08,            # probability points the blend must clear break-even by
@@ -582,7 +597,7 @@ def blend(kind, sources, lo=None, hi=None):
 
 # --------------------------------------------------------------- the rule --
 
-def evaluate(market, model, cfg):
+def evaluate(market, model, cfg, kind=None):
     """One market + its model probability -> a candidate dict with
     "action": "buy" (and side/limit/edge) or "pass" (and why). Pure."""
     t = market.get("ticker")
@@ -591,6 +606,7 @@ def evaluate(market, model, cfg):
     base = {"ticker": t, "event": market.get("event_ticker") or t.rsplit("-", 1)[0]}
     if model is None:
         return dict(base, action="pass", why="no forecast (NBM missing or one source only)")
+    p_only = kind is not None and kind not in BUY_KINDS
     p = model["p"]
     base.update(p=round(p, 4), by_source={k: round(v, 4) for k, v in model["by_source"].items()})
     if ask is None or bid is None:
@@ -618,6 +634,9 @@ def evaluate(market, model, cfg):
             best = row
     if "why" in best:
         return dict(base, action="pass", **best)
+    if p_only:
+        return dict(base, action="pass", **dict(best, why=f"{kind} markets are priced, not "
+                                                "bought (backtest 2026-11-25 lost)"))
     return dict(base, action="buy", **best)
 
 
@@ -712,7 +731,7 @@ def scan(now=None, cfg=None, series_fetch=None, markets_fetch=None, mos_fetch=No
         srcs["nws"] = nws_source(grid_cache.get(g), kind, start, end, now) if g else None
         for m, parsed, _i, _s, _e in items:
             model = blend(kind, srcs, parsed["lo"], parsed["hi"])
-            ev = evaluate(m, model, cfg)
+            ev = evaluate(m, model, cfg, kind)
             ev.update(kind=kind, station=station, day=day.isoformat(),
                       lead_h=round((start - now).total_seconds() / 3600.0, 1),
                       sources={k: v for k, v in srcs.items() if v})
@@ -815,7 +834,7 @@ def run(now=None, dry_run=False, place=None, market_fetch=None, scan_fn=None, cf
                 orders.append(dict(e, status="recheck_failed", error=str(ex)[:120]))
                 continue
             model = {"p": e["p"], "by_source": e["by_source"]}
-            re_ev = evaluate(dict(fresh, ticker=e["ticker"]), model, cfg)
+            re_ev = evaluate(dict(fresh, ticker=e["ticker"]), model, cfg, e.get("kind"))
             if re_ev["action"] != "buy" or re_ev["side"] != e["side"]:
                 orders.append(dict(e, status="moved", why=re_ev.get("why", "side flipped")))
                 continue
@@ -1007,7 +1026,7 @@ def _error_stats(errors):
     return out
 
 
-def backtest(first, last, decide_hour_utc=20, cfg=None, verbose=True):
+def backtest(first, last, decide_hour_utc=20, cfg=None, verbose=True, kinds=None):
     """What the rule would have bought for target days first..last.
 
     For each target day D the decision is made at D-1 {decide_hour_utc}:00
@@ -1028,19 +1047,27 @@ def backtest(first, last, decide_hour_utc=20, cfg=None, verbose=True):
                  + timedelta(days=2)).timestamp())
     events = {}
     for s in series:
-        try:
-            ms = kc._get("/markets", {"series_ticker": s, "status": "settled", "limit": 200,
-                                       "min_close_ts": lo_ts, "max_close_ts": hi_ts}).get("markets") or []
-        except Exception:
-            ms = []
-        time.sleep(cfg["pause_s"])
+        ms, cursor = [], None
+        for _page in range(30):          # KXRAIN alone lists ~70 cities a day
+            try:
+                d = kc._get("/markets", {"series_ticker": s, "status": "settled", "limit": 1000,
+                                         "min_close_ts": lo_ts, "max_close_ts": hi_ts,
+                                         "cursor": cursor})
+            except Exception:
+                break
+            ms += d.get("markets") or []
+            cursor = d.get("cursor")
+            time.sleep(cfg["pause_s"])
+            if not cursor or not d.get("markets"):
+                break
         for m in ms:
             p, _ = parse_market(m)
-            if p is None or not (d0 <= p["day"] <= d1):
+            if p is None or not (d0 <= p["day"] <= d1) or (kinds and p["kind"] not in kinds):
                 continue
-            events.setdefault((s, m.get("event_ticker")), []).append((m, p))
+            # KXRAIN lists many cities in ONE event: group by station too
+            events.setdefault((s, m.get("event_ticker"), p["station"]), []).append((m, p))
     mos = {}
-    for (s, ev), items in sorted(events.items()):
+    for (s, ev, _stn), items in sorted(events.items()):
         p0 = items[0][1]
         info = station_info(p0["station"], cache)
         if info is None:
@@ -1082,7 +1109,8 @@ def backtest(first, last, decide_hour_utc=20, cfg=None, verbose=True):
             model = blend(p["kind"], srcs, p["lo"], p["hi"])
             if model is not None:
                 priced += 1
-            e = evaluate(mk, model, cfg)
+            e = evaluate(mk, model, cfg)      # every kind, so the backtest can judge each
+            e["event"] = f"{ev}:{p0['station']}"
             if e["action"] == "buy":
                 won = (str(m.get("result")).lower() == e["buy"])
                 picks.append(dict(e, decided_at=dec.isoformat(), result=m.get("result"),
@@ -1092,6 +1120,8 @@ def backtest(first, last, decide_hour_utc=20, cfg=None, verbose=True):
     # apply the shared caps, best edge first within each decision day, one per event
     taken, by_day = [], {}
     for e in sorted(picks, key=lambda x: (x["decided_at"], -x["edge"] / max(x["breakeven"], .01))):
+        if e["kind"] not in BUY_KINDS:
+            continue                 # judged in by_kind, never "bought"
         d = by_day.setdefault(e["decided_at"][:10], {"spent": 0.0, "events": set()})
         if e["event"] in d["events"]:
             continue
@@ -1105,6 +1135,16 @@ def backtest(first, last, decide_hour_utc=20, cfg=None, verbose=True):
         d["events"].add(e["event"])
         taken.append(dict(e, count=n, cost_usd=round(cost, 2), pnl_usd=round(pnl, 2)))
     all_pnl = sum(((1.0 if e["won"] else 0.0) - e["breakeven"]) for e in picks)
+    by_kind = {}
+    for e in picks:
+        k = by_kind.setdefault(f"{e['kind']}_{e['buy']}", {"n": 0, "won": 0, "cost": 0.0, "pnl": 0.0})
+        k["n"] += 1
+        k["won"] += int(e["won"])
+        k["cost"] += e["breakeven"]
+        k["pnl"] += (1.0 if e["won"] else 0.0) - e["breakeven"]
+    for k in by_kind.values():
+        k["return_pct"] = round(100 * k["pnl"] / k["cost"], 1) if k["cost"] else None
+        k["cost"], k["pnl"] = round(k["cost"], 2), round(k["pnl"], 2)
     out = {"first": first, "last": last, "decide_hour_utc": decide_hour_utc,
            "markets_examined": examined, "markets_priced": priced,
            "signals": len(picks), "signals_won": sum(1 for e in picks if e["won"]),
@@ -1113,6 +1153,7 @@ def backtest(first, last, decide_hour_utc=20, cfg=None, verbose=True):
            "taken_won": sum(1 for e in taken if e["won"]),
            "taken_cost_usd": round(sum(e["cost_usd"] for e in taken), 2),
            "taken_pnl_usd": round(sum(e["pnl_usd"] for e in taken), 2),
+           "by_kind": by_kind, "buy_kinds": sorted(BUY_KINDS),
            "signals_detail": picks,
            "forecast_error": _error_stats(errors), "errors_detail": errors}
     try:
@@ -1153,15 +1194,20 @@ def main(argv=None):
     ap.add_argument("--report", action="store_true")
     ap.add_argument("--backtest", nargs=2, metavar=("FIRST", "LAST"))
     ap.add_argument("--decide-hour", type=int, default=20)
+    ap.add_argument("--kinds", help="comma list: rain,high,low (default all)")
     a = ap.parse_args(argv)
     if a.backtest:
-        r = backtest(a.backtest[0], a.backtest[1], a.decide_hour)
+        r = backtest(a.backtest[0], a.backtest[1], a.decide_hour,
+                     kinds=set(a.kinds.split(",")) if a.kinds else None)
         ct._write_json(BACKTEST_FILE, {k: v for k, v in r.items()})
         print(f"BACKTEST {r['first']}..{r['last']} decide D-1 {r['decide_hour_utc']}:00Z: "
               f"examined {r['markets_examined']}, priced {r['markets_priced']}, signals "
               f"{r['signals']} ({r['signals_won']} won, {r['signals_pnl_per_contract']:+.2f} per "
               f"1 contract each), within caps {r['taken_n']} bought ({r['taken_won']} won) "
               f"cost ${r['taken_cost_usd']:.2f} P&L ${r['taken_pnl_usd']:+.2f}")
+        for k, v in sorted(r["by_kind"].items()):
+            print(f"  signals {k:<9} n={v['n']:<4} won {v['won']:<4} return {v['return_pct']}% "
+                  f"(1 contract each, fee in)")
         for k, v in (r.get("forecast_error") or {}).items():
             print(f"  forecast error {k:<9} n={v['n']:<4} bias {v['bias']:+.2f}F  sd {v['sd']:.2f}F  "
                   f"rmse {v['rmse']:.2f}F  within 1F {v['within_1F']:.0%}")
