@@ -1,0 +1,44 @@
+BACKTEST 2026-11-04..2026-11-25 decide D-1 20:00Z: examined 734, priced 645, signals 53 (20 won, -0.03 per 1 contract each), within caps 41 bought (12 won) cost $33.05 P&L $-4.05
+  signals rain_no   n=44   won 17   return -0.4% (1 contract each, fee in)
+  signals rain_yes  n=9    won 3    return 1.0% (1 contract each, fee in)
+  2026-11-05T20 KXRAIN-26NOV06-ABQ               NO  x2 @0.48 forecast 0.87 -> yes (actual 0.02) P&L -1.00
+  2026-11-05T20 KXRAIN-26NOV06-DTW               NO  x4 @0.19 forecast 0.32 -> yes (actual 0.03) P&L -0.81
+  2026-11-05T20 KXRAIN-26NOV06-LEX               NO  x1 @0.72 forecast 0.86 -> no (actual 0.00) P&L +0.26
+  2026-11-08T20 KXRAIN-26NOV09-HOU               NO  x5 @0.18 forecast 0.53 -> yes (actual 0.42) P&L -0.96
+  2026-11-09T20 KXRAIN-26NOV10-HOU               NO  x4 @0.21 forecast 0.64 -> yes (actual 0.49) P&L -0.89
+  2026-11-10T20 KXRAIN-26NOV11-HOU               NO  x5 @0.15 forecast 0.38 -> yes (actual 0.52) P&L -0.80
+  2026-11-10T20 KXRAIN-26NOV11-NOLA              NO  x3 @0.31 forecast 0.53 -> yes (actual 0.06) P&L -0.98
+  2026-11-10T20 KXRAIN-26NOV11-IND               NO  x4 @0.23 forecast 0.39 -> yes (actual 0.15) P&L -0.97
+  2026-11-10T20 KXRAIN-26NOV11-LEX               NO  x1 @0.21 forecast 0.35 -> yes (actual 0.27) P&L -0.23
+  2026-11-11T20 KXRAIN-26NOV12-LEX               NO  x5 @0.17 forecast 0.38 -> yes (actual 0.08) P&L -0.90
+  2026-11-11T20 KXRAIN-26NOV12-DTW               NO  x5 @0.18 forecast 0.29 -> no (actual 0.00) P&L +4.04
+  2026-11-11T20 KXRAIN-26NOV12-MIA               NO  x2 @0.38 forecast 0.56 -> no (actual 0.00) P&L +1.20
+  2026-11-11T20 KXRAIN-26NOV12-DC                NO  x1 @0.29 forecast 0.40 -> no (actual 0.00) P&L +0.69
+  2026-11-12T20 KXRAIN-26NOV13-CMH               NO  x4 @0.21 forecast 0.52 -> yes (actual 0.02) P&L -0.89
+  2026-11-12T20 KXRAIN-26NOV13-IND               NO  x2 @0.37 forecast 0.63 -> no (actual 0.00) P&L +1.22
+  2026-11-12T20 KXRAIN-26NOV13-ABQ               NO  x1 @0.62 forecast 0.89 -> yes (actual 0.06) P&L -0.64
+  2026-11-12T20 KXRAIN-26NOV13-MKE               YES x2 @0.32 forecast 0.44 -> no (actual 0.00) P&L -0.68
+  2026-11-13T20 KXRAIN-26NOV14-SATX              NO  x5 @0.18 forecast 0.45 -> yes (actual 0.04) P&L -0.96
+  2026-11-13T20 KXRAIN-26NOV14-AUS               NO  x4 @0.22 forecast 0.43 -> yes (actual 0.91) P&L -0.93
+  2026-11-13T20 KXRAIN-26NOV14-PIT               NO  x3 @0.24 forecast 0.43 -> no (actual 0.00) P&L +2.24
+  2026-11-13T20 KXRAIN-26NOV14-SFO               YES x1 @0.26 forecast 0.37 -> yes (actual 0.01) P&L +0.72
+  2026-11-14T20 KXRAIN-26NOV15-PIT               NO  x3 @0.29 forecast 0.52 -> yes (actual 0.05) P&L -0.92
+  2026-11-15T20 KXRAIN-26NOV16-NOLA              NO  x4 @0.21 forecast 0.60 -> yes (actual 0.01) P&L -0.89
+  2026-11-15T20 KXRAIN-26NOV16-HOU               NO  x3 @0.29 forecast 0.50 -> yes (actual 0.08) P&L -0.92
+  2026-11-16T20 KXRAIN-26NOV17-SAN               YES x3 @0.26 forecast 0.38 -> scalar (actual ) P&L -0.83
+  2026-11-16T20 KXRAIN-26NOV17-ABQ               NO  x2 @0.47 forecast 0.64 -> yes (actual 0.30) P&L -0.98
+  2026-11-17T20 KXRAIN-26NOV18-SEA               NO  x3 @0.30 forecast 0.41 -> no (actual 0.00) P&L +2.05
+  2026-11-18T20 KXRAIN-26NOV19-LV                NO  x4 @0.19 forecast 0.41 -> yes (actual 0.03) P&L -0.81
+  2026-11-19T20 KXRAIN-26NOV20-MIA               YES x5 @0.16 forecast 0.38 -> no (actual 0.00) P&L -0.85
+  2026-11-20T20 KXRAIN-26NOV21-MIN               NO  x5 @0.15 forecast 0.39 -> yes (actual 0.13) P&L -0.80
+  2026-11-20T20 KXRAIN-26NOV21-ABQ               NO  x2 @0.43 forecast 0.68 -> yes (actual 0.01) P&L -0.90
+  2026-11-20T20 KXRAIN-26NOV21-MIA               NO  x2 @0.40 forecast 0.52 -> yes (actual 0.61) P&L -0.84
+  2026-11-21T20 KXRAIN-26NOV22-LEX               NO  x3 @0.25 forecast 0.60 -> yes (actual 0.05) P&L -0.79
+  2026-11-21T20 KXRAIN-26NOV22-LAX               YES x5 @0.17 forecast 0.34 -> yes (actual 0.02) P&L +4.10
+  2026-11-21T20 KXRAIN-26NOV22-SFO               YES x2 @0.34 forecast 0.57 -> no (actual 0.00) P&L -0.72
+  2026-11-21T20 KXRAIN-26NOV22-SEA               NO  x2 @0.26 forecast 0.38 -> no (actual 0.00) P&L +1.45
+  2026-11-22T20 KXRAIN-26NOV23-SDF               NO  x2 @0.39 forecast 0.91 -> no (actual 0.00) P&L +1.18
+  2026-11-22T20 KXRAIN-26NOV23-CLE               NO  x2 @0.35 forecast 0.51 -> yes (actual 0.02) P&L -0.74
+  2026-11-22T20 KXRAIN-26NOV23-ABQ               NO  x2 @0.43 forecast 0.56 -> no (actual 0.00) P&L +1.10
+  2026-11-23T20 KXRAIN-26NOV24-NOLA              NO  x2 @0.34 forecast 0.68 -> yes (actual 0.11) P&L -0.72
+  2026-11-23T20 KXRAIN-26NOV24-DAL               YES x3 @0.30 forecast 0.43 -> no (actual 0.00) P&L -0.95

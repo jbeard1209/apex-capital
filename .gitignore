@@ -56,6 +56,14 @@ institutional-tracker/data/kalshi_copytrade_scout_report.json
 institutional-tracker/data/kalshi_copytrade_manager_report.json
 institutional-tracker/data/kalshi_copytrade_manager_state.json
 institutional-tracker/data/kalshi_report_publish.json
+# kalshi_weather_edge.py (2026-11-25): its own arm file (Chairman only), plus
+# its runtime state, paper ledger and evaluation log. Live orders go to the
+# copier's ledger above. The station cache and backtest report are tracked.
+institutional-tracker/data/.kalshi_weather_armed
+institutional-tracker/data/kalshi_weather_edge_config.json
+institutional-tracker/data/kalshi_weather_edge_state.json
+institutional-tracker/data/kalshi_weather_edge_paper.jsonl
+institutional-tracker/data/kalshi_weather_edge_log.jsonl
 # sync_check_watchdog.py runtime state (VM only)
 institutional-tracker/data/sync_watchdog_state.json
 institutional-tracker/data/sync_watchdog_report.json

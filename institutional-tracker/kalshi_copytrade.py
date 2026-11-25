@@ -111,6 +111,12 @@ LEDGER_FILE = DATA_DIR / "kalshi_copytrade_ledger.jsonl"
 ARM_FILE = DATA_DIR / ".kalshi_copytrade_armed"
 HALT_FILE = DATA_DIR / ".kalshi_copytrade_halted"
 LOCK_FILE = DATA_DIR / ".kalshi_copytrade.lock"
+# Held for the few milliseconds between reading the ledger's spend and
+# appending the order that spends it. Two strategies now share the caps (this
+# copier and kalshi_weather_edge.py); without one lock, both could read "$0.80
+# left today" in the same second and each spend it. LOCK_FILE cannot be it:
+# the copier holds that for its whole 55 s run.
+SPEND_LOCK_FILE = DATA_DIR / ".kalshi_spend.lock"
 
 SOCIAL_BASE = "https://api.elections.kalshi.com/v1/social"
 
@@ -193,6 +199,30 @@ def armed():
     if HALT_FILE.exists():
         return False, "halted: data/.kalshi_copytrade_halted exists"
     return True, ""
+
+
+# Ledger "leader" values written by other strategies that share this ledger
+# (and so its caps), not by copying anyone. Their positions are theirs: a
+# copied exit never sells them.
+NON_COPY_LEADERS = frozenset({"weather-edge"})
+
+
+class spend_lock:
+    """`with spend_lock():` serialises cap-check -> order -> ledger append
+    across every Kalshi strategy on this host (see SPEND_LOCK_FILE)."""
+
+    def __enter__(self):
+        SPEND_LOCK_FILE.parent.mkdir(parents=True, exist_ok=True)
+        self._f = SPEND_LOCK_FILE.open("a")
+        fcntl.flock(self._f, fcntl.LOCK_EX)
+        return self
+
+    def __exit__(self, *exc):
+        try:
+            fcntl.flock(self._f, fcntl.LOCK_UN)
+        finally:
+            self._f.close()
+        return False
 
 
 # ------------------------------------------------------------------- feed --
@@ -757,62 +787,66 @@ def poll_once(cfg, state, now=None, fetch=fetch_trades, place=kc.place_order,
             seen[t["trade_id"]] = None
             if first:
                 continue
-            now_ = now or datetime.now(timezone.utc)
-            rows_ = ledger_rows()
-            dec = decide(t, leader, cfg, spent_today(rows_, now=now_, live=is_live),
-                         now=now_,
-                         market_spent=market_spent(t.get("ticker"), rows_, live=is_live),
-                         market_contracts=market_contracts(t.get("ticker"), rows_,
-                                                           live=is_live))
-            if dec["action"] == "order" and not dec.get("reduce_only"):
-                dec = settle_check(dec, cfg, now_,
-                                   settle_time(dec["ticker"], settle_cache))
-                if dec["action"] == "order":
-                    # the record settle_time just read; no second request
-                    dec = venue_check(dec, cfg, settle_cache.get(("market", dec["ticker"])))
-                if dec["action"] == "order":
-                    dec = game_check(dec, game_state(
-                        settle_cache.get(("market", dec["ticker"])), settle_cache))
-                if dec["action"] == "order" and is_live:
-                    if cash is None and cash_fn is not None:
-                        cash = cash_fn()
-                    dec = cash_check(dec, cash, settle_cache.get(("market", dec["ticker"])))
-            elif dec["action"] == "order":
-                dec = exit_check(dec, net_position(dec["ticker"], rows_, live=is_live))
-            row = {"at": now_.isoformat(), "leader": leader,
-                   "leader_trade_id": t["trade_id"], "leader_ts": t.get("create_date"),
-                   "leader_side": t.get("taker_side"), "leader_action": t.get("taker_action"),
-                   "leader_count": t.get("count_fp"), **{k: v for k, v in dec.items()
-                                                         if k != "action"}}
-            if dec["action"] == "skip":
-                row["status"] = "skipped"
-            elif not is_live:
-                row.update(status="paper", why_not_live=why_not)
-            else:
-                coid = f"apex-copy-{uuid.uuid4().hex[:16]}"
-                row["client_order_id"] = coid
-                try:
-                    resp = place(ticker=dec["ticker"], side=dec["side"], count=dec["count"],
-                                 price=dec["price"], time_in_force="immediate_or_cancel",
-                                 reduce_only=dec["reduce_only"], client_order_id=coid)
-                    row.update(status="placed", order_id=resp.get("order_id"),
-                               fill_count=kc.parse_size(resp.get("fill_count")))
-                    if cash is not None and not dec.get("reduce_only"):
-                        m = settle_cache.get(("market", dec["ticker"])) or {}
-                        try:
-                            ix = int(m.get("exchange_index") or 0)
-                        except (TypeError, ValueError):
-                            ix = 0
-                        cash[ix] = cash.get(ix, 0.0) - float(dec.get("cost_usd") or 0)
-                    state["consecutive_errors"] = 0
-                except Exception as e:
-                    row.update(status="error", error=f"{type(e).__name__}: {str(e)[:200]}")
-                    state["consecutive_errors"] = state.get("consecutive_errors", 0) + 1
-                    if state["consecutive_errors"] >= MAX_CONSECUTIVE_ERRORS:
-                        _write_json(HALT_FILE, {"at": row["at"], "last_error": row["error"]})
-                        is_live, why_not = False, "halted after repeated order errors"
-            _append(row)
-            written.append(row)
+            with spend_lock():   # shared caps; see SPEND_LOCK_FILE
+                now_ = now or datetime.now(timezone.utc)
+                rows_ = ledger_rows()
+                dec = decide(t, leader, cfg, spent_today(rows_, now=now_, live=is_live),
+                             now=now_,
+                             market_spent=market_spent(t.get("ticker"), rows_, live=is_live),
+                             market_contracts=market_contracts(t.get("ticker"), rows_,
+                                                               live=is_live))
+                if dec["action"] == "order" and not dec.get("reduce_only"):
+                    dec = settle_check(dec, cfg, now_,
+                                       settle_time(dec["ticker"], settle_cache))
+                    if dec["action"] == "order":
+                        # the record settle_time just read; no second request
+                        dec = venue_check(dec, cfg, settle_cache.get(("market", dec["ticker"])))
+                    if dec["action"] == "order":
+                        dec = game_check(dec, game_state(
+                            settle_cache.get(("market", dec["ticker"])), settle_cache))
+                    if dec["action"] == "order" and is_live:
+                        if cash is None and cash_fn is not None:
+                            cash = cash_fn()
+                        dec = cash_check(dec, cash, settle_cache.get(("market", dec["ticker"])))
+                elif dec["action"] == "order":
+                    # only the COPIER's own contracts: a leader's exit must
+                    # never sell what kalshi_weather_edge.py bought
+                    own = [r for r in rows_ if r.get("leader") not in NON_COPY_LEADERS]
+                    dec = exit_check(dec, net_position(dec["ticker"], own, live=is_live))
+                row = {"at": now_.isoformat(), "leader": leader,
+                       "leader_trade_id": t["trade_id"], "leader_ts": t.get("create_date"),
+                       "leader_side": t.get("taker_side"), "leader_action": t.get("taker_action"),
+                       "leader_count": t.get("count_fp"), **{k: v for k, v in dec.items()
+                                                             if k != "action"}}
+                if dec["action"] == "skip":
+                    row["status"] = "skipped"
+                elif not is_live:
+                    row.update(status="paper", why_not_live=why_not)
+                else:
+                    coid = f"apex-copy-{uuid.uuid4().hex[:16]}"
+                    row["client_order_id"] = coid
+                    try:
+                        resp = place(ticker=dec["ticker"], side=dec["side"], count=dec["count"],
+                                     price=dec["price"], time_in_force="immediate_or_cancel",
+                                     reduce_only=dec["reduce_only"], client_order_id=coid)
+                        row.update(status="placed", order_id=resp.get("order_id"),
+                                   fill_count=kc.parse_size(resp.get("fill_count")))
+                        if cash is not None and not dec.get("reduce_only"):
+                            m = settle_cache.get(("market", dec["ticker"])) or {}
+                            try:
+                                ix = int(m.get("exchange_index") or 0)
+                            except (TypeError, ValueError):
+                                ix = 0
+                            cash[ix] = cash.get(ix, 0.0) - float(dec.get("cost_usd") or 0)
+                        state["consecutive_errors"] = 0
+                    except Exception as e:
+                        row.update(status="error", error=f"{type(e).__name__}: {str(e)[:200]}")
+                        state["consecutive_errors"] = state.get("consecutive_errors", 0) + 1
+                        if state["consecutive_errors"] >= MAX_CONSECUTIVE_ERRORS:
+                            _write_json(HALT_FILE, {"at": row["at"], "last_error": row["error"]})
+                            is_live, why_not = False, "halted after repeated order errors"
+                _append(row)
+                written.append(row)
         # keep the newest 500 ids per leader (oldest first); the feed returns 100,
         # so anything trimmed is long past max_age_s and could not be copied anyway
         state["seen"][leader] = list(seen)[-500:]
