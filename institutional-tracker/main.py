@@ -172,6 +172,28 @@ def _load_canary_alert() -> dict:
         return {}
 
 
+def _fmt_pp(value) -> str:
+    """A percentage-point figure, or N/A when it was not measured."""
+    return "N/A" if value is None else f"{value:+.1f}pp"
+
+
+def _update_streak(state: dict, pnl_pct) -> None:
+    """Count an executed exit toward the win or loss streak.
+
+    The old tracker read ex["side"] and ex["pnl_pct"], keys execute_decision
+    never returns, so both streaks sat at 0 (M03 audit, 2026-11-25).
+    """
+    pnl = pnl_pct or 0
+    if pnl > 0:
+        state["win_streak"]        = state.get("win_streak", 0) + 1
+        state["loss_streak"]       = 0
+        state["last_trade_result"] = "WIN"
+    elif pnl < 0:
+        state["loss_streak"]       = state.get("loss_streak", 0) + 1
+        state["win_streak"]        = 0
+        state["last_trade_result"] = "LOSS"
+
+
 def run_daily(send_email: bool = True, include_backtest: bool = False):
     """Execute the full daily trading pipeline."""
     logger.info("=" * 65)
@@ -879,11 +901,18 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                         "order_id":   result.get("order_id", ""),
                     })
                     logger.info(f"  ✅ 13F BUY approved & executed: {ticker} ({conviction:.0f}★)")
+                else:
+                    logger.warning(
+                        f"  ✗  13F BUY approved but NOT executed for {ticker}: "
+                        f"{result.get('error') or result.get('note')}"
+                    )
             else:
-                rationale = (decision_13f.get("manager_rationale") or [""])[0]
+                # The whole rationale: the first line can read "APPROVED: ..."
+                # when a later rule is what turned the pick down.
+                rationale = " | ".join(decision_13f.get("manager_rationale") or [])
                 logger.info(
-                    f"  ✗  13F signal REJECTED for {ticker}: "
-                    f"{rationale[:80]}"
+                    f"  ✗  13F signal {decision_13f.get('manager_decision')} for {ticker}: "
+                    f"{rationale[:400]}"
                 )
     else:
         logger.info("  No new 13F signals today")
@@ -901,7 +930,7 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
             logger.info(
                 f"  Trade review complete — {a.get('total_trades',0)} trades | "
                 f"Win rate: {a.get('win_rate','N/A')}% | "
-                f"vs SPY: {a.get('benchmark_delta',0):+.1f}pp"
+                f"vs SPY: {_fmt_pp(a.get('benchmark_delta'))}"
             )
         except Exception as e:
             logger.warning(f"  Trade Review Team error: {e}")
@@ -1241,6 +1270,7 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     executions        = []   # initialised here so the DMS write below always has a valid reference
     try:
         from manager_agent import evaluate_recommendation, execute_decision, build_management_report, _load_pdo_signal
+        from manager_agent import NewPositionPacer, _liveness_beats
         if review_report:
             acct_snap  = review_report["account"]
             pdo_signal = _load_pdo_signal()
@@ -1297,13 +1327,19 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
             logger.info(f"  Manager approved {len(approved_trades)} trade action(s)")
 
             executions = []
+            pacer = NewPositionPacer()
             for d in approved_trades:
+                if not pacer.admit(d):
+                    logger.info(f"  {d['manager_rationale'][-1]}")
+                    continue
                 ex = execute_decision(d, trader, dry_run=False)
+                pacer.record(d, ex)
                 executions.append(ex)
                 if ex.get("executed"):
                     if d["manager_action"] in ("SELL", "TRIM"):
                         _pnl_pct = d.get("unrealized_pnl_pct", 0)
                         _src     = _lookup_buy_source(state, d["ticker"])
+                        _update_streak(state, _pnl_pct)
                         # SECOND sell_log writer. The one at ~line 568 is the
                         # review/exit path; this is the manager's. Both book a
                         # `pnl_pct` that cit_director turns into the firm's win
@@ -1389,21 +1425,11 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                                                dry_run=False)
             logger.info("\n" + text_rpt)
 
-            # ── Win/loss streak tracker ────────────────────────────────────
-            # For each completed SELL this cycle, check P&L and update streaks.
-            # A "win" = positive P&L at close; "loss" = negative.
-            # Streaks are stored in state.json and visible to the Manager Agent context.
-            for ex in executions:
-                if ex.get("executed") and ex.get("side") == "sell":
-                    _pnl = ex.get("pnl_pct", 0) or 0
-                    if _pnl > 0:
-                        state["win_streak"]        = state.get("win_streak", 0) + 1
-                        state["loss_streak"]       = 0
-                        state["last_trade_result"] = "WIN"
-                    elif _pnl < 0:
-                        state["loss_streak"]       = state.get("loss_streak", 0) + 1
-                        state["win_streak"]        = 0
-                        state["last_trade_result"] = "LOSS"
+            # Streaks are updated per executed exit in the loop above.
+            _liveness_beats(manager_decisions, executions, False,
+                            canary_alert=canary_alert or None,
+                            cvar_circuit_breaker=cvar_circuit_breaker_active)
+
             _ws = state.get("win_streak", 0)
             _ls = state.get("loss_streak", 0)
             if _ws >= 3:

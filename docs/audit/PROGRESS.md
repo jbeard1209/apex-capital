@@ -26,8 +26,8 @@ Status values: `TODO`, `IN PROGRESS`, `DONE` (all gates pass), `DONE-WITH-FINDIN
 |---|---|---|---|---|---|---|
 | M00 | Liveness watcher + registry (build; see LIVENESS_GAPS) | 0 | DONE-WITH-FINDINGS | 2026-11-13 | 3/4 | Built by PR audit/M00-liveness-2026-11-13; VM gate BLOCKED until deployed (Jack). 0 of 15 features instrumented yet |
 | M01 | Order path & choke point | 1 | DONE-WITH-FINDINGS | 2026-11-16 | 4/8 PASS, 1 FAIL, 1 PARTIAL, 1 BLOCKED, +suite | Pass 1. PR audit/M01-order-path-2026-11-16. TRIM-on-short fixed; Mac entry 11-12; no 7% cap at choke point (CIT) |
-| M02 | Positions, entry dates, max-hold | 1 | TODO | — | 0/4 | Open HIGH chairman item (re-buy dating) |
-| M03 | Manager, picks, CRO | 1 | TODO | — | 0/4 | |
+| M02 | Positions, entry dates, max-hold | 1 | BLOCKED | 2026-11-19 | — | Audited on branch `audit/M02-positions-2026-11-19` (95a7c5d): pushed, **no PR, not merged** (found 11-25). Merge it, then update this row; do not re-audit from scratch |
+| M03 | Manager, picks, CRO | 1 | BLOCKED | 2026-11-25 | 1 PASS, 1 PARTIAL, 1 FAIL, 1 BLOCKED, +suite | Pass 1. B1 has 6 of 30 days of logs (full window ~12-20); F1 needs Jack (reject vs raise). PR #88 + M03 PR |
 | M04 | Kalshi copy-trader / manager / scout | 1 | TODO | — | 0/6 | Shard balance issue 11-09 |
 | M05 | Kalshi scanner / calibration / mirror | 1 | TODO | — | 0/4 | |
 | M06 | Pods: budgets & boards | 1 | TODO | — | 0/4 | |
@@ -82,6 +82,13 @@ Record the pass number in the run log.
 | 2026-11-16 | M01 | LLM calls failed in the test run: "credit balance is too low" (claude-fable-5 and fallback) | A | Pushed to Jack; check production key/credits |
 | 2026-11-16 | M01 | PROGRESS.md on main had unresolved merge-conflict markers in the run log | C | **Fixed** in this PR |
 | 2026-11-11 | baseline | Coherence `deployed_set_matches_repo` VIOLATED (5 files differ) and `positions_conserve` VIOLATED | B | M19 / M02 |
+| 2026-11-25 | M03 | **Urgent:** queued off-hours hedge orders are invisible; 28 SH buys filled together 11-23 (81% of account) | A | PR #88; deploy needs Jack |
+| 2026-11-25 | M03 | Every emergency board session pauses all buys 24 h, even at risk score 0; board pause refused buys on 11-20/23/24/25 | A | **Jack** (loosens a safety control) |
+| 2026-11-25 | M03 | 13F buys have never executed (no price on the order) | A | Draft PR; Jack decides |
+| 2026-11-25 | M03 | 15% ceiling trim never sent; scheduled run had no new-name pacing; liveness blind to board pause; refusal reasons lost; dead streak tracker; S&P benchmark always 0; research RSI free point | A/B | Fixed in M03 PR. Pacing now means about one new name per run |
+| 2026-11-25 | M03 | CRO HIGH does not block buys (contradicts intent 1.5); unknown verb is refused not raised | B | Jack |
+| 2026-11-25 | M03 | Canary hedge buy/sell loop; fail-open risk reads; pod-id substring match | B/C | Open: M14 / pass 2 / M06 |
+| 2026-11-25 | M02 | M02 audit branch of 11-19 was never merged and has no PR; its fixes are not live | B | Jack: open and merge |
 
 ## Run log
 
@@ -93,6 +100,7 @@ Record the pass number in the run log.
 | 2026-11-13 | recurring | M00 (pass 1) | Built liveness.py + registry + 8 tests; host MAC (MacBook-Air-173.local) | — |
 | 2026-11-12 | follow-up | M13 (partial) | Routine prompt made host-aware (records hostname; MAC vs CLOUD branches; cloud marks VM/Mac gates BLOCKED). Logged pregenerate retirement, hook-python fix, test-queue leak; fixed HR attendance/roster disagreement | — |
 | 2026-11-16 | recurring | M01 (pass 1) | Host MAC (MacBook-Air-173.local), worktree /Users/jackbeard/apex-audit-2026-11-16. Order path audited; 15 sites gated; TRIM-on-short fixed; `order_gate` heartbeat added (registry entry uninstrumented until deploy) | — |
+| 2026-11-25 | recurring | M03 (pass 1) | Host MAC (Mac.lan), worktrees /Users/jackbeard/apex-audit-2026-11-25 (PR #88) and -b (M03). BLOCKED on F1/B1; urgent hedge-stacking fix split out | — |
 
 ## Budget
 Target is about 30% of the weekly token allowance. With a run every third day that comes

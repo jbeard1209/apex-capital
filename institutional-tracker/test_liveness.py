@@ -2,6 +2,7 @@
 import os, sys, tempfile, unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest import mock
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 
@@ -206,8 +207,14 @@ class TestManagerBeats(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp()
         os.environ["APEX_HEARTBEAT_DIR"] = self.tmp
-        import manager_agent
+        import manager_agent, risk_gate, canary_agent
         self.M = manager_agent
+        # Hermetic: this host's real pause or canary record must not decide it.
+        for target, name, value in ((risk_gate, "pause_state", None),
+                                    (canary_agent, "load_active_alert", {})):
+            p = mock.patch.object(target, name, return_value=value)
+            p.start()
+            self.addCleanup(p.stop)
 
     def tearDown(self):
         os.environ.pop("APEX_HEARTBEAT_DIR", None)

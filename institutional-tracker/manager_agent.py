@@ -581,7 +581,11 @@ def evaluate_recommendation(rec: dict, account: dict,
         _regime_trim     = REGIME_MANDATES.get(cro_risk_level, REGIME_MANDATES["UNKNOWN"])
         _regime_trim_pct = _regime_trim["max_position_pct"] * 100
         limit = min(MAX_POSITION_SIZE_PCT * 100, _regime_trim_pct)
-        if weight_pct > limit * 1.3:
+        if weight_pct > limit * 1.3 or weight_pct > _HARD_SINGLE_NAME_CEILING_PCT:
+            # The hard-ceiling override above arrives here marked MODIFIED, and
+            # only APPROVED executes: until the 2026-11-25 M03 audit every >15%
+            # position was logged "APPROVED:" and never trimmed.
+            decision = "APPROVED"
             rationale.append(
                 f"APPROVED: {ticker} is {weight_pct:.1f}% of portfolio — "
                 f"materially over {limit:.0f}% regime limit ({cro_risk_level}). Trimming to restore balance."
@@ -1019,6 +1023,38 @@ def _resolve_pod_id(decision: dict) -> str:
     return "pod1_rd"
 
 
+def _refused(trader, call: str, fallback: str = "") -> str:
+    """Error text for a trader call that returned None, carrying its reason.
+
+    The reason starts BLOCK_ when a firm control refused the order, which is how
+    risk_manager_agent tells a guard working from a broker failing.
+    """
+    why = getattr(trader, "last_refusal", None)
+    if isinstance(why, str) and why:
+        return f"{call} returned None — {why}"
+    return f"{call} returned None" + (f" — {fallback}" if fallback else "")
+
+
+def _waiting_order(trader, ticker: str, side: str) -> bool:
+    """True if an unfilled order on this ticker and side is already at the broker.
+
+    An unreadable order list answers False: a trim reduces risk and is never
+    withheld because a read failed.
+    """
+    try:
+        from alpaca.trading.requests import GetOrdersRequest
+        from alpaca.trading.enums import QueryOrderStatus
+        orders = trader.client.get_orders(filter=GetOrdersRequest(
+            status=QueryOrderStatus.OPEN, symbols=[ticker]))
+        return any(
+            str(o.symbol) == ticker
+            and str(getattr(o.side, "value", o.side)).lower() == side.lower()
+            for o in orders)
+    except Exception as e:
+        logger.warning(f"  [TRIM] could not read open orders for {ticker}: {e}")
+        return False
+
+
 def execute_decision(decision: dict, trader, dry_run: bool = False) -> dict:
     """
     Execute the manager-approved action for a single position.
@@ -1118,7 +1154,7 @@ def execute_decision(decision: dict, trader, dry_run: bool = False) -> dict:
                     except Exception as _pl_e:
                         logger.warning(f"  [POD LEDGER] record_trade (SELL) error: {_pl_e}")
             else:
-                result["error"] = "submit_sell returned None — position may not exist"
+                result["error"] = _refused(trader, "submit_sell", "position may not exist")
 
         elif action == "TRIM":
             positions = trader.get_positions()
@@ -1132,6 +1168,13 @@ def execute_decision(decision: dict, trader, dry_run: bool = False) -> dict:
                     result["error"] = f"nothing to trim: {ticker} qty={qty_held}"
                     return result
                 trim_side, trim_qty = _plan
+                # A trim sent while the market is shut waits at the broker and
+                # the position does not change, so the next run would send it
+                # again and the two would fill together.
+                if _waiting_order(trader, ticker, trim_side):
+                    result["error"] = (f"BLOCK_PENDING_ORDER: a {trim_side} order for "
+                                       f"{ticker} is already waiting to fill")
+                    return result
                 from alpaca.trading.requests import MarketOrderRequest
                 from alpaca.trading.enums import OrderSide, TimeInForce
                 order_req = MarketOrderRequest(
@@ -1193,7 +1236,7 @@ def execute_decision(decision: dict, trader, dry_run: bool = False) -> dict:
                     except Exception as _pl_e:
                         logger.warning(f"  [POD LEDGER] record_trade (BUY) error: {_pl_e}")
             else:
-                result["error"] = "submit_buy returned None"
+                result["error"] = _refused(trader, "submit_buy")
 
         else:
             # The branch that did not exist, and whose absence cost 66 days of
@@ -1534,7 +1577,11 @@ def _apply_historical_context(rec: dict, trade_review: dict,
     Adjust a BUY_NEW/ADD decision based on historical trade review directives.
     Returns (possibly updated decision, exec_action).
     """
-    if not trade_review or rec["action"] not in ("BUY_NEW", "ADD"):
+    # Judge the verb that will execute, not the raw one on the pick: an alias
+    # ("BUY") skipped every directive, a signal-only pick raised KeyError (which
+    # the caller swallows), and a hard-ceiling TRIM of a raw "ADD" could be
+    # turned back into HOLD.
+    if not trade_review or exec_action not in ("BUY_NEW", "ADD"):
         return decision, exec_action
 
     directives = trade_review.get("manager_directives", [])
@@ -1633,8 +1680,36 @@ def _load_energy_research_picks() -> list[dict]:
         return []
 
 
+def _buy_block_reasons(cro_level: str, canary_alert: Optional[dict] = None,
+                       cvar_circuit_breaker: bool = False) -> list:
+    """Every firm-wide reason new buys are blocked right now ([] = buys open).
+
+    Per-order limits (cash floor, position count) are not here: those are a full
+    book, not a block somebody can forget to lift.
+    """
+    reasons = []
+    if cro_level in ("HIGH", "CRITICAL"):
+        reasons.append(f"CRO risk level {cro_level}")
+    if not canary_alert:
+        from canary_agent import load_active_alert
+        canary_alert = load_active_alert()
+    level = (canary_alert or {}).get("level")
+    if level in ("RED", "ORANGE"):
+        reasons.append(f"canary {level}")
+    if cvar_circuit_breaker:
+        reasons.append("CVaR circuit breaker")
+    import risk_gate
+    pause = risk_gate.pause_state()
+    if pause:
+        reasons.append(f"board buy pause from {pause.get('source')} until "
+                       f"{pause.get('expires_at')}")
+    return reasons
+
+
 def _liveness_beats(decisions: list, executions: list, dry_run: bool,
-                    cro_level: Optional[str] = None) -> dict:
+                    cro_level: Optional[str] = None,
+                    canary_alert: Optional[dict] = None,
+                    cvar_circuit_breaker: bool = False) -> dict:
     """Heartbeats for the liveness watcher (docs/audit/LIVENESS_GAPS.md G04/G05/G07).
 
     pod_orders     beats only when orders were attempted; an all-failed cycle
@@ -1643,9 +1718,11 @@ def _liveness_beats(decisions: list, executions: list, dry_run: bool,
     short_covers   n_examined = approved SELL/TRIM on short positions, n_done =
                    those that reached the broker. Nothing to cover is OK; covers
                    that all fail is the "shorts could open but never cover" bug.
-    cro_buy_block  beats only while buys are NOT blocked by the CRO (level not
-                   HIGH/CRITICAL), so a block that lasts longer than the
-                   registry's window goes STALE (G07).
+    cro_buy_block  beats only while new buys are open (no CRO HIGH/CRITICAL, no
+                   canary ORANGE/RED, no CVaR breaker, no board pause), so a
+                   block that outlasts the registry's window goes STALE (G07).
+                   Until 2026-11-25 it read the CRO level alone and stayed green
+                   through a board pause that held for three trading days.
     Dry runs beat nothing: a rehearsal must not prove the live thing alive.
     Returns what it beat (for tests); never raises.
     """
@@ -1668,12 +1745,66 @@ def _liveness_beats(decisions: list, executions: list, dry_run: bool,
         out["short_covers"] = (done, len(covers))
         if cro_level is None:
             cro_level = (_load_cro_bulletin() or {}).get("risk_level", "UNKNOWN")
-        if cro_level not in ("HIGH", "CRITICAL"):
+        blocked = _buy_block_reasons(cro_level, canary_alert, cvar_circuit_breaker)
+        if blocked:
+            logger.warning(f"  [liveness] new buys are BLOCKED: {'; '.join(blocked)}")
+        else:
             liveness.beat("cro_buy_block", 1, 1)
             out["cro_buy_block"] = (1, 1)
     except Exception as e:
         logger.warning(f"  [liveness] beat failed: {e}")
     return out
+
+
+# Board-mandated (2026-05-06): cap new positions per cycle to prevent
+# all-at-once deployment after a defensive mode period. One new name per pod,
+# so one pod's queue cannot consume the shared budget every cycle.
+MAX_NEW_POSITIONS_PER_CYCLE = 2
+MAX_NEW_POSITIONS_PER_POD   = 1
+
+
+class NewPositionPacer:
+    """The new-position budget for one cycle, shared by every execution path.
+
+    It lived inline in run_manager only, so main.py's step 4c (the scheduled
+    path, four times a day) executed every approval: 30 in one run on
+    2026-11-24 (M03 audit). The budget is spent by orders that reach the
+    broker; a refused order does not use up a slot, or one name that always
+    fails would starve the queue behind it.
+    """
+
+    def __init__(self):
+        self.opened = 0
+        self.new_by_pod: dict = {}
+
+    def admit(self, d: dict) -> bool:
+        """True if d may be executed. A deferred BUY_NEW is rewritten in place."""
+        if d.get("manager_action") != "BUY_NEW":
+            return True
+        pod = _resolve_pod_id(d)
+        if self.new_by_pod.get(pod, 0) >= MAX_NEW_POSITIONS_PER_POD:
+            why = (f"[POD PACING] BUY_NEW for {d['ticker']} deferred — "
+                   f"{pod} already opened its {MAX_NEW_POSITIONS_PER_POD} "
+                   f"new position(s) this cycle. The per-cycle budget is "
+                   f"shared across pods so one pod's queue cannot consume "
+                   f"it every cycle. Will reconsider next cycle.")
+        elif self.opened >= MAX_NEW_POSITIONS_PER_CYCLE:
+            why = (f"[CYCLE PACING] BUY_NEW for {d['ticker']} deferred — "
+                   f"max {MAX_NEW_POSITIONS_PER_CYCLE} new positions per cycle "
+                   f"already reached (board-mandated 2026-05-06). "
+                   f"Will reconsider next cycle.")
+        else:
+            return True
+        d["manager_decision"]  = "REJECTED"
+        d["manager_action"]    = "HOLD"
+        d["manager_rationale"] = d.get("manager_rationale", []) + [why]
+        return False
+
+    def record(self, d: dict, execution: dict) -> None:
+        if d.get("manager_action") == "BUY_NEW" and execution.get("executed"):
+            pod = _resolve_pod_id(d)
+            self.opened += 1
+            self.new_by_pod[pod] = self.new_by_pod.get(pod, 0) + 1
 
 
 def run_manager(dry_run: bool = False, skip_review: bool = False,
@@ -1794,9 +1925,6 @@ def run_manager(dry_run: bool = False, skip_review: bool = False,
                 f"{sum(1 for d in decisions if d['manager_decision']=='REJECTED')} rejected")
 
     # ── Step 3: Execute approved trades ──────────────────────────────────
-    # Board-mandated (2026-05-06): max 3 new BUY_NEW positions per cycle to
-    # prevent all-at-once deployment after a defensive mode period.
-    MAX_NEW_POSITIONS_PER_CYCLE = 2
     logger.info("  Step 3/5: Executing approved changes...")
     executions: list[dict] = []
 
@@ -1804,60 +1932,26 @@ def run_manager(dry_run: bool = False, skip_review: bool = False,
         from alpaca_trader import AlpacaTrader
         trader = AlpacaTrader()
 
-        # ── One new position per pod per cycle ────────────────────────────
-        # The loop takes decisions in list order, unranked, and stops at the
-        # 2-per-cycle cap. That was harmless only because one pod's picks were
-        # being silently discarded before they got here. Now that the FI pod's
-        # verb is understood, its 118 picks sit ahead of the equity book in the
-        # same list — and would take both slots, every cycle, forever. The
-        # equity book would simply stop growing, and nothing would report an
-        # error, because every governor involved would be working as specified.
-        #
-        # A cap that is always consumed by whoever is first in an arbitrary
-        # list is not a risk control, it is a queue position. So: the per-cycle
-        # budget is shared, one new name per pod, and the next cycle's ordering
-        # gives the others their turn.
-        MAX_NEW_POSITIONS_PER_POD = 1
-        new_positions_this_cycle = 0
-        new_by_pod: dict[str, int] = {}
+        # Decisions are taken in list order; the pacer shares the new-position
+        # budget across pods (see NewPositionPacer).
+        pacer = NewPositionPacer()
         for d in decisions:
             if d["manager_decision"] == "APPROVED" and d["manager_action"] not in ("HOLD", "WATCH"):
-                if d["manager_action"] == "BUY_NEW":
-                    _pod = _resolve_pod_id(d)
-                    if new_by_pod.get(_pod, 0) >= MAX_NEW_POSITIONS_PER_POD:
-                        d["manager_decision"]  = "REJECTED"
-                        d["manager_action"]    = "HOLD"
-                        d["manager_rationale"] = d.get("manager_rationale", []) + [
-                            f"[POD PACING] BUY_NEW for {d['ticker']} deferred — "
-                            f"{_pod} already opened its {MAX_NEW_POSITIONS_PER_POD} "
-                            f"new position(s) this cycle. The per-cycle budget is "
-                            f"shared across pods so one pod's queue cannot consume "
-                            f"it every cycle. Will reconsider next cycle."
-                        ]
-                        continue
-                    if new_positions_this_cycle >= MAX_NEW_POSITIONS_PER_CYCLE:
-                        d["manager_decision"]  = "REJECTED"
-                        d["manager_action"]    = "HOLD"
-                        d["manager_rationale"] = d.get("manager_rationale", []) + [
-                            f"[CYCLE PACING] BUY_NEW for {d['ticker']} deferred — "
-                            f"max {MAX_NEW_POSITIONS_PER_CYCLE} new positions per cycle "
-                            f"already reached (board-mandated 2026-05-06). "
-                            f"Will reconsider next cycle."
-                        ]
-                        continue
-                    new_positions_this_cycle += 1
-                    new_by_pod[_pod] = new_by_pod.get(_pod, 0) + 1
+                if not pacer.admit(d):
+                    continue
                 ex = execute_decision(d, trader, dry_run=dry_run)
+                pacer.record(d, ex)
                 executions.append(ex)
-        if new_positions_this_cycle >= MAX_NEW_POSITIONS_PER_CYCLE:
+        if pacer.opened >= MAX_NEW_POSITIONS_PER_CYCLE:
             logger.info(
-                f"  [CYCLE PACING] Cycle limit reached: {new_positions_this_cycle} new positions opened. "
+                f"  [CYCLE PACING] Cycle limit reached: {pacer.opened} new positions opened. "
                 f"Remaining BUY_NEW deferred to next cycle."
             )
     else:
         logger.info("  No trades to execute this cycle.")
 
-    _liveness_beats(decisions, executions, dry_run)
+    _liveness_beats(decisions, executions, dry_run, canary_alert=canary_alert,
+                    cvar_circuit_breaker=cvar_circuit_breaker_active)
 
     # ── Step 4: Persist decision log ──────────────────────────────────────
     logger.info("  Step 4/5: Saving decision log...")

@@ -19,6 +19,7 @@
 
 import json
 import logging
+import numbers
 import os
 import sys
 from collections import Counter
@@ -113,6 +114,24 @@ def _drop_untradeable(picks: list) -> list:
         if t.startswith("^"):
             logger.warning(f"  [research_team] dropped untradeable index pick {t} "
                            f"from {(r or {}).get('source_agent', '?')}")
+            continue
+        kept.append(r)
+    return kept
+
+
+def _drop_malformed(picks: list) -> list:
+    """Drop picks with no ticker or no numeric conviction.
+
+    The cycle sorts on r["conviction"]; one registry agent omitting it raised
+    outside any try and lost every agent's picks (M03 audit, 2026-11-25)."""
+    kept = []
+    for r in picks or []:
+        conv = r.get("conviction") if isinstance(r, dict) else None
+        if (not isinstance(r, dict) or not r.get("ticker")
+                or not isinstance(conv, numbers.Real) or isinstance(conv, bool)
+                or conv != conv):
+            logger.warning(f"  [research_team] dropped malformed pick "
+                           f"(ticker/conviction): {str(r)[:120]}")
             continue
         kept.append(r)
     return kept
@@ -219,9 +238,10 @@ class SectorResearchAgent:
         elif mom["trend"] == "neutral":
             score += 1
 
-        # RSI sweet spot 45–65 (max 1)
+        # RSI sweet spot 45–65 (max 1). With no price history _momentum returns
+        # a placeholder RSI of 50, which must not score.
         rsi = mom.get("rsi_14", 50)
-        if 45 <= rsi <= 65:
+        if mom["trend"] != "unknown" and 45 <= rsi <= 65:
             score += 1
 
         # Fundamentals — long-term bonus (max 2)
@@ -587,7 +607,7 @@ class ResearchTeamCoordinator:
                         reg_report = reg_agent.run()
                         ran.append(class_name)
                         agent_reports.append(reg_report)
-                        for rec in reg_report["recommendations"]:
+                        for rec in _drop_malformed(reg_report["recommendations"]):
                             ticker = rec["ticker"]
                             if ticker not in seen_tickers:
                                 seen_tickers.add(ticker)
@@ -616,7 +636,7 @@ class ResearchTeamCoordinator:
             except Exception as e:
                 logger.warning(f"  Could not load agent registry: {e}")
 
-        all_picks = _drop_untradeable(all_picks)
+        all_picks = _drop_malformed(_drop_untradeable(all_picks))
 
         # Sort all picks by conviction desc
         all_picks.sort(key=lambda r: r["conviction"], reverse=True)

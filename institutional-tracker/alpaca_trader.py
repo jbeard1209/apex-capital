@@ -343,6 +343,10 @@ class AlpacaTrader:
 
         return result
 
+    def _refuse(self, why: str) -> None:
+        """Record why submit_buy/submit_sell is about to return None."""
+        self.last_refusal = why
+
     def submit_buy(self, ticker: str, conviction_score: float = 1.0,
                    current_weight_pct: float = 0.0,
                    cro_level: str = "UNKNOWN") -> Optional[dict]:
@@ -352,9 +356,11 @@ class AlpacaTrader:
         current_weight_pct:  Existing position weight as % of portfolio (for incremental ADD sizing).
         cro_level:           CRO risk level string for regime cap lookup.
         """
+        self.last_refusal = None
         positions = self.get_positions()
         if not positions.empty and len(positions) >= MAX_OPEN_POSITIONS:
             logger.info(f"  Max positions ({MAX_OPEN_POSITIONS}) reached, skipping {ticker}")
+            self._refuse(f"BLOCK_MAX_POSITIONS: {len(positions)} open, max {MAX_OPEN_POSITIONS}")
             return None
 
         shares, cost = self.calculate_position_size(
@@ -366,6 +372,7 @@ class AlpacaTrader:
 
         if shares <= 0:
             logger.warning(f"  Cannot size position for {ticker} (insufficient buying power or price unavailable)")
+            self._refuse("cannot size position (buying power, price, or no room under the cap)")
             return None
 
         # Cash floor: never let cash drop below 20% of portfolio value.
@@ -394,6 +401,7 @@ class AlpacaTrader:
         except Exception as _cf_e:
             logger.warning(f"  [CASH FLOOR] Skipping {ticker} — could not read the "
                            f"account to evaluate the floor: {_cf_e}")
+            self._refuse(f"cash floor unreadable: {_cf_e}")
             return None
         _cash_cf = _num(_acct_cf.get("cash"))
         _pv_cf   = _num(_acct_cf.get("portfolio_value"))
@@ -403,6 +411,7 @@ class AlpacaTrader:
                 f"{_acct_cf.get('cash')!r} equity={_acct_cf.get('portfolio_value')!r}; "
                 f"the floor cannot be evaluated against those."
             )
+            self._refuse("cash floor unreadable: account cash or equity is not a number")
             return None
         if (_cash_cf - cost) < (_pv_cf * MIN_CASH_FLOOR_PCT):
             logger.warning(
@@ -410,6 +419,8 @@ class AlpacaTrader:
                 f"would drop cash to ${_cash_cf - cost:,.0f} "
                 f"({(_cash_cf - cost) / _pv_cf * 100:.1f}%), below {MIN_CASH_FLOOR_PCT*100:.0f}% floor."
             )
+            self._refuse(f"BLOCK_CASH_FLOOR: ${cost:,.0f} would take cash below "
+                         f"{MIN_CASH_FLOOR_PCT*100:.0f}% of equity")
             return None
 
         # Run pairwise correlation check — warn but don't block (Manager Agent decides)
@@ -438,15 +449,18 @@ class AlpacaTrader:
             }
         except Exception as e:
             logger.error(f"  Buy order failed for {ticker}: {e}")
+            self._refuse(f"{type(e).__name__}: {e}")
             return None
 
     def submit_sell(self, ticker: str, reason: str = "signal") -> Optional[dict]:
         """Submit a market sell order for the full position in ticker."""
+        self.last_refusal = None
         try:
             # Fetch position qty before building the order request
             positions = self.get_positions()
             if positions.empty or ticker not in positions["ticker"].values:
                 logger.warning(f"  ⚠ No position in {ticker} to sell — skipping")
+                self._refuse(f"no position in {ticker}")
                 return None
 
             pos_row = positions[positions["ticker"] == ticker]
@@ -488,6 +502,8 @@ class AlpacaTrader:
                     f"  ⚠ {ticker} available qty={qty} (total={total_qty}) — "
                     f"all shares held for pending orders. Skipping to avoid error 40310000."
                 )
+                self._refuse(f"BLOCK_PENDING_ORDER: all {total_qty} shares are held "
+                             f"for pending orders")
                 return None
 
             order_req = self._MarketOrderRequest(
@@ -508,6 +524,7 @@ class AlpacaTrader:
             }
         except Exception as e:
             logger.error(f"  Sell order failed for {ticker}: {e}")
+            self._refuse(f"{type(e).__name__}: {e}")
             return None
 
     # -----------------------------------------------------------------------
