@@ -51,7 +51,7 @@ cd ~/institutional-tracker
    `kalshi_weather_edge.py kalshi_copytrade.py kalshi_copytrade_manager.py`.
 2. Add to the VM crontab, then refresh `data/vm_crontab_snapshot.txt`:
    `20 * * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 kalshi_weather_edge.py --run >> logs/kalshi_weather_edge.log 2>&1`
-3. Set `instrumented_since` for `kalshi_weather_edge` in `config/liveness.json` to the deploy time.
+3. `instrumented_since` is set to 2026-11-25T22:00Z (the planned deploy); if the deploy slips past ~03:00Z, bump it.
 4. Add the deny rules for `.kalshi_weather_armed` to the Mac's Claude settings
    (listed in `docs/audit/2026-11-11-permissions-setup.md`).
 
