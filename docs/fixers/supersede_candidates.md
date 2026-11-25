@@ -91,3 +91,21 @@ Backup before claim: VM `data/cit_implementation_queue.before-fixer-claim.<UTC s
 The PT-collision row's second half ("PROCESS_IMPROVEMENT unrouted") is not fixed: PT proposals go to
 `rd_pod_pending.json` → `rd_pod_board` → `rd_pod_approved.json`, and no executor reads
 `rd_pod_approved.json`. Whether R&D pod approvals should reach `board_dispatch` is a design call.
+
+## specialist-fixer-run 2026-11-25 (read-only checks on the VM, ~05:00-05:30Z; VM deploy_stamp 5c0ce93, 2026-11-24 19:37Z)
+
+| Row(s) | Premise | Check | Verdict |
+|---|---|---|---|
+| `PHM-20261124190050-PROD` (CRITICAL) | VM runs stale code (f818ede) | `cat deploy_stamp.json` on VM: sha 5c0ce93, deployed 2026-11-24T19:37Z, 37 min after the row was filed; origin/main 581479c is the merge of 5c0ce93 | false (deployed since), supersede |
+| `fund-sanity-WING` (needs_human) | WING debt > assets "physically impossible" | `grep -c WING data/fundamentals_sanity_report.json` (04:20Z today): 0; no `data/fe_fundamentals_cache/WING.json`; the debt>assets rule was narrowed to debt>liabilities on 2026-11-19 (`TestFundamentalsSanity...` at test_pipeline_smoke.py ~38170) | false, supersede |
+| `loop-sig-2945be2b1d8e` (research zero picks, 36 agents) | pipeline dark | problem_lifecycle: SILENT_DROP, present=false, last seen 2026-11-16 | gone, supersede |
+| `loop-sig-65007fa6e312`, `loop-sig-8a1cad8e9084`, `loop-sig-28f3502e61e5` | HR OKR / zero-pick streak memo / SPY index gap | problem_lifecycle: RESOLVED, present=false (last seen 11-11, 11-12, 11-20) | gone, supersede (the SPY gap is a market event, never a code defect) |
+| `loop-sig-f51982771719` ([ETF] 0 qualified picks) | ETF pod produced no picks | problem_lifecycle OPEN, present=true, last seen 04:55Z today | still true; research judgment (filter strictness vs market), not claimed |
+| `loop-sig-996d0af1cda0` (nested_probabilities) | 8 of 856 Kalshi ladders non-monotone | present=false at 00:55Z; it is a fact about quoted markets, not a code defect | not a fixer fix; leave to the kalshi brief owner |
+
+Routing defect found and PR'd (`claude/fixer-wiring-20261125`): 24 open rows on the VM queue routed to
+`fallback:unrouted` — 23 PerformanceLogicAgent `loss_no_attribution` rows (twin of the risk row
+"below starting capital — attribution stale") and the PHM STALE_CODE row. After the fix, 0 of 125 open rows
+fall back. Existing rows keep their stamped `owner_area` (stamping is at row creation / backfill of
+missing values), so the change applies to new rows only. No queue rows were claimed: the PR does not
+resolve any row's premise.
