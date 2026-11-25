@@ -366,6 +366,14 @@ _RERUN_DENY = _re.compile(r"^(main|catch_up|deploy|ship)\b|alpaca|kalshi|trader|
                           r"manager_agent|copier|order|exit_guard|single_writer", _re.I)
 RERUN_TIMEOUT_S = 300
 MAX_RERUNS_PER_RUN = 2
+# A script this handler already reran within the window, whose alarm then came
+# back, is not cleared by rerunning it. 2026-11-19..24 on the VM, the sentinel
+# re-filed the "ML improvement agent" / "ML drift monitor" rows after every
+# dispatch (their source is stale Chairman items, not the job), and each
+# re-file reran ml_longterm_improvement_agent.py and ml_feature_drift_monitor.py
+# again: ~44 extra runs each, alarm unchanged. One rerun per window, then Ops.
+RERUN_REPEAT_WINDOW_DAYS = 7
+_RAN_RX = _re.compile(r"^rerun-job: ran (\S+\.py) once")
 _reruns_this_run = [0]
 _dry = [False]
 
@@ -410,7 +418,28 @@ def _job_script(label: str, crontab: list):
     return (in_repo[0] if in_repo else None), None
 
 
-def _handle_rerun_job(row: dict) -> dict:
+def _recent_reruns(queue, script: str) -> list:
+    """dispatched_at of every row this handler marked executed by rerunning
+    `script` within RERUN_REPEAT_WINDOW_DAYS. Keyed on the script, not the row
+    id: two loop signatures mapped to the same job on the VM."""
+    if not queue:
+        return []
+    from time_utils import age_hours
+    hits = []
+    for r in queue:
+        if not isinstance(r, dict) or r.get("status") != "executed":
+            continue
+        m = _RAN_RX.match(str(r.get("dispatch_note") or ""))
+        if not m or m.group(1) != script:
+            continue
+        # default=0.0: an unreadable stamp counts as a rerun inside the window.
+        # That errs toward escalating to a human, never toward running again.
+        if age_hours(r.get("dispatched_at"), default=0.0) <= RERUN_REPEAT_WINDOW_DAYS * 24:
+            hits.append(str(r.get("dispatched_at") or "undated")[:16])
+    return sorted(hits)
+
+
+def _handle_rerun_job(row: dict, queue: list = None) -> dict:
     label = _stale_job_name(row)
     crontab = _crontab_lines()
     if crontab is None:
@@ -437,6 +466,14 @@ def _handle_rerun_job(row: dict) -> dict:
         return {"status": "needs_human", "owner_area": "ops",
                 "note": f"rerun-job: {script} can reach the broker or redeploy; never "
                         f"auto-rerun. Ops/Risk fixer to diagnose why it went stale"}
+    prior = _recent_reruns(queue, script)
+    if prior:
+        return {"status": "needs_human", "owner_area": "ops",
+                "note": f"rerun-job: {script} was already rerun {len(prior)}x in the "
+                        f"last {RERUN_REPEAT_WINDOW_DAYS}d (last {prior[-1]}) and the "
+                        f"alarm came back, so rerunning it is not what clears it. Ops "
+                        f"fixer: find what keeps the alarm alive (its log path, or an "
+                        f"old open item for a check that no longer runs)"}
     if _reruns_this_run[0] >= MAX_RERUNS_PER_RUN:
         return {"status": "queued",
                 "note": f"rerun-job: {script} deferred, {MAX_RERUNS_PER_RUN}-rerun cap "
@@ -712,7 +749,7 @@ def run(dry_run: bool = False) -> dict:
                     no_handler.append(pid)
                 continue
             try:
-                out = fn(row)
+                out = fn(row, queue) if fn is _handle_rerun_job else fn(row)
             except Exception as e:
                 errors.append({"id": pid, "error": f"{type(e).__name__}: {e}"})
                 logger.exception(f"  [Dispatch] handler failed on {pid}")

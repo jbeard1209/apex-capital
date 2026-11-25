@@ -91,3 +91,39 @@ Backup before claim: VM `data/cit_implementation_queue.before-fixer-claim.<UTC s
 The PT-collision row's second half ("PROCESS_IMPROVEMENT unrouted") is not fixed: PT proposals go to
 `rd_pod_pending.json` → `rd_pod_board` → `rd_pod_approved.json`, and no executor reads
 `rd_pod_approved.json`. Whether R&D pod approvals should reach `board_dispatch` is a design call.
+
+## specialist-fixer-run 2026-11-24 evening (risk, then ops; read-only on the VM ~23:00-23:40Z, VM at f818ede)
+
+**Risk:** the only open group is the stale loss attribution (`loop-sig-b92740cbf61d`,
+`LO-20261118201625-unexplained_loss`). Unchanged: a written attribution is a board/Chairman judgment. Skipped.
+
+**Ops: the rerun-job loop (fixed on `claude/fixer-ops-20261124-rerunloop`).**
+`loop-sig-4e1461c8cc17` / `loop-sig-a9c8bd129799` ("ML improvement agent") and `loop-sig-a289dc0e1944` /
+`loop-sig-2733dd4cbc6c` ("ML drift monitor") have 18-26 `executed` rows each in the VM queue. Every one is
+`rerun-job: ran <script> once (exit 0)`: `ml_longterm_improvement_agent.py` and `ml_feature_drift_monitor.py`
+each reran 44 times 2026-11-19..24. The alarm never moved because the job was never its cause.
+
+| Row | Premise (job stale) | Check | Verdict |
+|---|---|---|---|
+| `loop-sig-4e1461c8cc17` ML improvement agent | no log | `logs/ml_improve_2026112{0..4}.log` written 06:30 daily | false |
+| `loop-sig-a289dc0e1944` ML drift monitor | no log | `logs/ml_feature_drift.log` 2026-11-24 20:20 | false |
+| `loop-sig-e72ace4241ce` EDGAR scraper | no log | crontab line 486 (Mon 11:00), `logs/edgar_13f_20261123.log` | false |
+
+They stay alive because `data/chairman_action_required.json` still holds 6 `apex_system_cit_agent` items from
+2026-07-30, 07-31 and 08-27 (`apex-sys-cit-20260730-2145-cron_job_stale_on_we{,-2fd0d9,-d3c01b}`,
+`apex-sys-cit-20260731-1421-cron_job_stale_on_we{,-2fd0d9}`, `apex-sys-cit-20260827-1300-cron_job_stale_on_we-d3c01b`),
+all `awaiting_chairman`. The same ids are `resolved_upstream` in `chairman_decision_queue.json`. Their labels
+were retired from `_CRON_LOG_CHECKS` in 33e1f4a, so PR #74's closer will never close them (deliberately).
+Jack: resolve those 6 by hand (with a backup), then supersede the 3 rows above.
+
+**Ops, other groups: no new action.** The no-schedule jobs (ML data watchdog, alpha decay, research leader,
+FE CIT, portfolio risk dashboard, FE watchlist monitor) are still Jack's schedule-or-retire call (table 2026-11-19).
+Heartbeat, `runs_match_schedule`, `deployed_set`/`shipped_config`, QQQ gap: supersede list 2026-11-20.
+`CIT-2026-267/268/1005/1149/1448`: supersede list earlier today. New: `loop-sig-28f3502e61e5` (SPY index_gap)
+is a market event, not a defect: close, same as QQQ.
+
+**Wiring, seen but not worked (PR budget):**
+- `PHM-20261124190050-PROD` (CRITICAL, "deploy drift"): true. VM at f818ede, main at 581479c. Closing it means
+  a deploy, which is Jack's call. Not a fixer row.
+- `loop-sig-efde3449bef4` (`data_integrity_sentinel --report` TIMEOUT at 75s in the 2026-11-23 sweep): run by hand
+  on the VM today, 30s, rc=0. Intermittent under load, not a reproducible crash. Recheck after the next weekly sweep.
