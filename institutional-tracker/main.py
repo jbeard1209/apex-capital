@@ -47,8 +47,9 @@ import sys
 import json
 import logging
 import argparse
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Optional
 
 import time_utils
 
@@ -192,6 +193,39 @@ def _update_streak(state: dict, pnl_pct) -> None:
         state["loss_streak"]       = state.get("loss_streak", 0) + 1
         state["win_streak"]        = 0
         state["last_trade_result"] = "LOSS"
+
+
+def _skip_13f_tickers(trader, buy_log: list, today: datetime) -> set:
+    """Tickers a 13F signal must not buy. Raises if the broker cannot be read.
+
+    submit_buy sizes a fresh position without looking at what is already held,
+    and a filing keeps signalling on every run for weeks. So: nothing already
+    held (long or short), nothing with an order waiting, and nothing the 13F
+    path bought in the last 90 days (one filing cycle).
+    """
+    from alpaca.trading.requests import GetOrdersRequest
+    from alpaca.trading.enums import QueryOrderStatus
+    positions = trader.get_positions()
+    skip = set(positions["ticker"]) if not positions.empty else set()
+    orders = trader.client.get_orders(filter=GetOrdersRequest(
+        status=QueryOrderStatus.OPEN, limit=500))
+    skip |= {str(o.symbol) for o in orders}
+    since = (today - timedelta(days=90)).strftime("%Y-%m-%d")
+    skip |= {r.get("ticker") for r in buy_log
+             if r.get("source") == "13F" and str(r.get("date", "")) >= since}
+    return skip
+
+
+def _price_13f(trader, sig) -> Optional[float]:
+    """A positive price for the signal's ticker, or None. Never a made-up one."""
+    for value in (sig.get("current_price"), trader.get_latest_price(sig["ticker"])):
+        try:
+            price = float(value)
+        except (TypeError, ValueError):
+            continue
+        if price > 0 and price != float("inf"):
+            return price
+    return None
 
 
 def run_daily(send_email: bool = True, include_backtest: bool = False):
@@ -821,8 +855,19 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     # -----------------------------------------------------------------------
     logger.info("\nStep 4: Evaluating & executing 13F signals through risk pipeline...")
     buys_today = []
-
+    # One new-position budget for the whole cycle: this loop and step 4c share it.
+    from manager_agent import NewPositionPacer
+    pacer = NewPositionPacer()
+    _skip_13f = None
+    _13f_attempts = _13f_done = 0
     if not signals_df.empty and _alpaca_ok:
+        try:
+            _skip_13f = _skip_13f_tickers(trader, state.get("buy_log", []), datetime.now())
+        except Exception as _skip_e:
+            logger.warning(f"  13F buys skipped: cannot read holdings/open orders: {_skip_e}")
+            _13f_attempts = len(signals_df)   # work was waiting: the heartbeat alarms
+
+    if _skip_13f is not None:
         from manager_agent import evaluate_recommendation as _eval_rec, execute_decision as _exec_dec, _load_pdo_signal as _load_pdo
         _pdo_signal_13f = _load_pdo()
         _acct_13f = trader.get_account()
@@ -839,6 +884,15 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         for _, sig in signals_df.iterrows():
             ticker     = sig["ticker"]
             conviction = sig.get("conviction_score", 1.0)
+            if ticker in _skip_13f:
+                logger.info(f"  13F signal skipped for {ticker}: held, order waiting, "
+                            f"or bought on a 13F signal in the last 90 days")
+                continue
+            price = _price_13f(trader, sig)
+            if price is None:
+                logger.warning(f"  ✗  13F signal skipped for {ticker}: no price available")
+                _13f_attempts += 1
+                continue
 
             rec_13f = {
                 "ticker":             ticker,
@@ -855,6 +909,7 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                 "hold_days":          0,
                 "conviction":         conviction,
                 "source_agent":       "SignalEngine_13F",
+                "current_price":      price,
             }
 
             decision_13f = _eval_rec(
@@ -870,9 +925,16 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                 },
             )
 
-            if decision_13f["manager_decision"] == "APPROVED":
+            if decision_13f["manager_decision"] == "APPROVED" and pacer.admit(decision_13f):
                 result = _exec_dec(decision_13f, trader, dry_run=False)
+                pacer.record(decision_13f, result)
+                # A cash-floor / position-count / pause refusal is a full book,
+                # not a broken path; anything else counts against the heartbeat.
+                if result.get("executed") or "BLOCK_" not in str(result.get("error")):
+                    _13f_attempts += 1
                 if result.get("executed"):
+                    _13f_done += 1
+                    _skip_13f.add(ticker)
                     buys_today.append(result)
                     state["entry_dates"][ticker] = datetime.now().strftime("%Y-%m-%d")
                     # `order_id` here is INSURANCE, not a repair. Measured on the
@@ -914,8 +976,13 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                     f"  ✗  13F signal {decision_13f.get('manager_decision')} for {ticker}: "
                     f"{rationale[:400]}"
                 )
-    else:
+    elif signals_df.empty:
         logger.info("  No new 13F signals today")
+    try:
+        import liveness
+        liveness.beat("buys_13f", _13f_done, _13f_attempts)
+    except Exception:
+        pass
 
     # -----------------------------------------------------------------------
     # Step 3a: Historical Trade Review Team — weekly performance post-mortem
@@ -1270,7 +1337,7 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     executions        = []   # initialised here so the DMS write below always has a valid reference
     try:
         from manager_agent import evaluate_recommendation, execute_decision, build_management_report, _load_pdo_signal
-        from manager_agent import NewPositionPacer, _liveness_beats
+        from manager_agent import _liveness_beats
         if review_report:
             acct_snap  = review_report["account"]
             pdo_signal = _load_pdo_signal()
@@ -1327,7 +1394,6 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
             logger.info(f"  Manager approved {len(approved_trades)} trade action(s)")
 
             executions = []
-            pacer = NewPositionPacer()
             for d in approved_trades:
                 if not pacer.admit(d):
                     logger.info(f"  {d['manager_rationale'][-1]}")

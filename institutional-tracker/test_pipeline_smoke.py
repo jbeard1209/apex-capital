@@ -26,6 +26,7 @@ import sqlite3
 import subprocess
 import tempfile
 import threading
+import types
 import shutil
 import unittest
 from datetime import date, datetime, timedelta, timezone
@@ -2504,6 +2505,91 @@ class TestM03PacingCoversEveryExecutionPath(unittest.TestCase):
             self.assertLess(src.index("pacer.admit(d)"),
                             src.index("execute_decision(d,"), fname)
             self.assertIn("pacer.record(d, ex)", src, fname)
+
+
+class TestM0313FSignalsOnlyOpenNewPositions(unittest.TestCase):
+    """13F buys never executed (no price on the record). Giving them one turns
+    the path on, and submit_buy does not look at what is already held."""
+
+    class _Trader:
+        def __init__(self, held=(), waiting=(), price=10.0, broken=False):
+            self._held, self._price, self._broken = list(held), price, broken
+            orders = [types.SimpleNamespace(symbol=s) for s in waiting]
+            self.client = types.SimpleNamespace(get_orders=lambda filter=None: orders)
+
+        def get_positions(self):
+            import pandas as pd
+            if self._broken:
+                raise RuntimeError("broker down")
+            return pd.DataFrame([{"ticker": t} for t in self._held])
+
+        def get_latest_price(self, ticker):
+            return self._price
+
+    NOW = datetime(2026, 11, 25, 12, 0)
+
+    def test_held_waiting_and_recently_bought_names_are_skipped(self):
+        import main
+        log = [{"date": "2026-10-01", "ticker": "RECENT", "source": "13F"},
+               {"date": "2026-06-01", "ticker": "OLD", "source": "13F"},
+               {"date": "2026-11-20", "ticker": "RESEARCH", "source": "research"}]
+        skip = main._skip_13f_tickers(
+            self._Trader(held=["HELD"], waiting=["WAIT"]), log, self.NOW)
+        self.assertEqual(skip, {"HELD", "WAIT", "RECENT"})
+
+    def test_an_unreadable_broker_raises_instead_of_reading_as_empty(self):
+        import main
+        with self.assertRaises(RuntimeError):
+            main._skip_13f_tickers(self._Trader(broken=True), [], self.NOW)
+
+    def test_price_comes_from_the_signal_then_the_quote_never_a_default(self):
+        import main
+        self.assertEqual(main._price_13f(
+            self._Trader(price=7.0), {"ticker": "A", "current_price": 5.0}), 5.0)
+        for bad in (None, 0, -1, float("nan"), float("inf"), "n/a"):
+            self.assertEqual(main._price_13f(
+                self._Trader(price=7.0), {"ticker": "A", "current_price": bad}), 7.0, bad)
+            self.assertIsNone(main._price_13f(
+                self._Trader(price=bad), {"ticker": "A"}), bad)
+
+    def _step4(self):
+        base = Path(__file__).parent
+        fn = next(n for n in ast.parse((base / "main.py").read_text()).body
+                  if isinstance(n, ast.FunctionDef) and n.name == "run_daily")
+        loops = [ast.unparse(n) for n in ast.walk(fn) if isinstance(n, ast.For)
+                 and ast.unparse(n.iter) == "signals_df.iterrows()"
+                 and "_exec_dec(" in ast.unparse(n)]
+        self.assertEqual(len(loops), 1)
+        return ast.unparse(fn), loops[0]
+
+    def test_the_loop_skips_prices_and_paces_before_it_executes(self):
+        _, loop = self._step4()
+        run = loop.index("_exec_dec(")
+        for guard in ("ticker in _skip_13f", "_price_13f(trader, sig)",
+                      "pacer.admit(decision_13f)"):
+            self.assertLess(loop.index(guard), run, guard)
+        self.assertIn("'current_price': price", loop)
+        self.assertIn("pacer.record(decision_13f, result)", loop)
+        self.assertIn("_skip_13f.add(ticker)", loop)
+
+    def test_one_pacer_is_shared_by_both_execution_loops(self):
+        fn_src, _ = self._step4()
+        self.assertEqual(fn_src.count("NewPositionPacer()"), 1)
+
+    def test_signals_waiting_on_an_unreadable_broker_alarm(self):
+        fn_src, _ = self._step4()
+        self.assertIn("_13f_attempts = len(signals_df)", fn_src)
+        self.assertIn("liveness.beat('buys_13f', _13f_done, _13f_attempts)", fn_src)
+        import liveness
+        reg = json.loads((Path(__file__).parent / "config" / "liveness.json").read_text())
+        spec = {"features": {"buys_13f": reg["features"]["buys_13f"]}}
+        now = datetime(2026, 12, 1, 12, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as td, \
+                patch.dict(os.environ, {"APEX_HEARTBEAT_DIR": td}):
+            for done, seen, want in ((0, 0, "OK"), (0, 3, "NO_OUTCOME"), (1, 3, "OK")):
+                liveness.beat("buys_13f", done, seen, now=now)
+                got = liveness.check(spec, now=now)["results"]["buys_13f"]["status"]
+                self.assertEqual(got, want, (done, seen))
 
 
 class TestM03LivenessSeesEveryFirmWideBlock(unittest.TestCase):
