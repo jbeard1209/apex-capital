@@ -67,6 +67,10 @@ data/kalshi_copytrade_config.json, plus the copier's payout cap.
 
 ARMING (Chairman only — Claude never writes these files)
 --------------------------------------------------------
+Since 2026-11-25 the Chairman's standing order is a SCHEDULED go-live: from
+AUTO_ARM_AT (2026-12-02 4 PM ET) the bot arms itself unless its last 7 days
+of settled paper buys lost 20% or more (see auto_arm_check). The arm file
+below still works and still wins.
 Live orders need EVERYTHING the copier needs (KALSHI_ENV=live, the key,
 data/.kalshi_armed, data/.kalshi_copytrade_armed, no halt file) AND its own
     data/.kalshi_weather_armed      {"env": "live", "armed": true}
@@ -118,6 +122,26 @@ EVAL_LOG = DATA_DIR / "kalshi_weather_edge_log.jsonl"
 STATION_CACHE = DATA_DIR / "kalshi_weather_stations.json"
 LOCK_FILE = DATA_DIR / ".kalshi_weather_edge.lock"
 BACKTEST_FILE = DATA_DIR / "kalshi_weather_edge_backtest.json"
+AUTO_ARM_FILE = DATA_DIR / "kalshi_weather_auto_arm.json"   # the go-live decision, once made
+
+# SCHEDULED GO-LIVE (Chairman, project thread 2026-11-25 21:31-21:33Z):
+#   "in a week tho make it live" / "unless it heinously loses money" /
+#   "no make it automatic so i dont have to put in a command".
+# So the bot arms ITSELF: from AUTO_ARM_AT it judges its own paper record
+# over the previous AUTO_ARM_WINDOW_DAYS and goes live unless the paper buys
+# that have SETTLED lost auto_arm_max_loss_pct (20%) or more of what they
+# cost. (auto_arm_min_settled can demand a sample; it defaults to 0.) Either
+# way it emails the Chairman once with the numbers. A loss refusal is final
+# (going live then needs Jack); too few settled buys, if a minimum is set, is
+# re-checked every 6 hours. Nothing here writes an arm
+# file, and every copier gate (KALSHI_ENV=live, the key, data/.kalshi_armed,
+# data/.kalshi_copytrade_armed, no halt file) still has to pass, so the
+# copier's halt or the Manager's loss breaker still stops it.
+# Stop it, alone, at any time: {"auto_arm_enabled": false} in
+# data/kalshi_weather_edge_config.json, or `kalshi_weather_edge.py --disarm`.
+AUTO_ARM_AT = "2026-12-02T21:00:00Z"        # 4 PM ET
+AUTO_ARM_WINDOW_DAYS = 7
+AUTO_ARM_RECHECK_H = 6.0
 
 LEADER = "weather-edge"          # the ledger's "leader" column for our rows
 LIVENESS_FEATURE = "kalshi_weather_edge"
@@ -149,7 +173,14 @@ DEFAULTS = {
     "nbm_max_age_h": 9.0,      # NBM runs hourly; IEM carries 4 a day
     "gfs_max_age_h": 15.0,     # GFS MOS runs 4x a day
     "pause_s": 0.4,            # between Kalshi list calls; the copier shares the IP
+    # Chairman 2026-11-25 21:34Z: "if it made fewer than 5 trades thats just
+    # fine" / "only dont turn it on if it lost 20% or more". So no minimum by
+    # default: zero settled paper buys arms it. Raise this to demand a sample.
+    "auto_arm_min_settled": 0,     # settled paper buys needed before it may arm itself
+    "auto_arm_max_loss_pct": 20.0,  # refuse to arm if the paper week lost this much or more
 }
+HARD_MIN_AUTO_ARM_SETTLED = 0
+HARD_MAX_AUTO_ARM_LOSS_PCT = 50.0
 HARD_MIN_MARGIN = 0.05
 # Chairman's Kalshi caps (2026-11): $1 per market, $3 per day. This strategy
 # shares the copier's config, and is ALSO clipped here, so raising the
@@ -191,6 +222,10 @@ def load_config():
     cfg["margin"] = max(cfg["margin"], HARD_MIN_MARGIN)
     cfg["max_lead_h"] = min(cfg["max_lead_h"], HARD_MAX_LEAD_H)
     cfg["max_orders_per_run"] = int(min(cfg["max_orders_per_run"], HARD_MAX_ORDERS))
+    cfg["auto_arm_min_settled"] = int(max(cfg["auto_arm_min_settled"], HARD_MIN_AUTO_ARM_SETTLED))
+    cfg["auto_arm_max_loss_pct"] = min(cfg["auto_arm_max_loss_pct"], HARD_MAX_AUTO_ARM_LOSS_PCT)
+    # only an explicit false switches the scheduled go-live off
+    cfg["auto_arm_enabled"] = not (isinstance(raw, dict) and raw.get("auto_arm_enabled") is False)
     return cfg
 
 
@@ -202,9 +237,15 @@ def armed():
     if not live:
         return False, why
     d = ct._read_json(ARM_FILE, {})
-    if not (isinstance(d, dict) and d.get("env") == "live" and d.get("armed") is True):
-        return False, "data/.kalshi_weather_armed absent or not live"
-    return True, ""
+    if isinstance(d, dict) and d.get("env") == "live" and d.get("armed") is True:
+        return True, ""
+    a = ct._read_json(AUTO_ARM_FILE, {})
+    if isinstance(a, dict) and a.get("decision") == "armed":
+        if not load_config()["auto_arm_enabled"]:
+            return False, "scheduled go-live switched off (auto_arm_enabled: false)"
+        return True, ""
+    return False, ("paper until the scheduled go-live check at "
+                   f"{AUTO_ARM_AT} ({(a or {}).get('decision') or 'not yet run'})")
 
 
 # ------------------------------------------------------------------- http --
@@ -785,6 +826,101 @@ def _log_evals(evals, now):
         pass
 
 
+# ------------------------------------------------------- scheduled go-live --
+
+def paper_week(now, rows=None, market=None):
+    """Settled paper buys opened in the AUTO_ARM_WINDOW_DAYS before `now`:
+    {"settled", "open", "spent_usd", "pnl_usd", "loss_pct"}. Settled =
+    Kalshi has a result; an open position is not judged yet."""
+    import kalshi_copytrade_manager as mgr
+    rows = paper_rows() if rows is None else rows
+    since = now - timedelta(days=AUTO_ARM_WINDOW_DAYS)
+    fake = [dict(r, status="placed", fill_count=r.get("count")) for r in rows
+            if r.get("status") == "paper" and since <= (ct._parse_ts(r.get("at")) or now) <= now]
+    cache = {}
+    market = market or (lambda t: mgr._market(t, cache))
+    settled = open_ = 0
+    spent = pnl = 0.0
+    for t, b in mgr.books(fake).items():
+        realised, _u, done = mgr.value_book(b, market(t))
+        if not done:
+            open_ += 1
+            continue
+        settled += 1
+        spent += b["spent"] + b["fees"]
+        pnl += realised
+    return {"settled": settled, "open": open_, "spent_usd": round(spent, 2),
+            "pnl_usd": round(pnl, 2),
+            "loss_pct": round(-100.0 * pnl / spent, 1) if spent else None}
+
+
+def _notify(subject, body):
+    try:
+        from email_sender import send_alert_email
+        return send_alert_email(subject, body, force=True) is not False
+    except Exception:
+        return False
+
+
+def auto_arm_check(now=None, market=None, notify=_notify, cfg=None):
+    """Make the scheduled go-live decision once it is due. Returns the
+    decision record (also written to AUTO_ARM_FILE)."""
+    now = now or datetime.now(timezone.utc)
+    cfg = cfg or load_config()
+    rec = ct._read_json(AUTO_ARM_FILE, {})
+    rec = rec if isinstance(rec, dict) else {}
+    if rec.get("decision") in ("armed", "refused"):
+        return rec                                   # final either way
+    due = ct._parse_ts(AUTO_ARM_AT)
+    if not cfg["auto_arm_enabled"] or due is None or now < due:
+        return rec
+    last = ct._parse_ts(rec.get("checked_at"))
+    if last and (now - last).total_seconds() < AUTO_ARM_RECHECK_H * 3600:
+        return rec
+    wk = paper_week(now, market=market)
+    need, cap = cfg["auto_arm_min_settled"], cfg["auto_arm_max_loss_pct"]
+    rule = (f"settled paper buys in the last {AUTO_ARM_WINDOW_DAYS} days lost less than "
+            f"{cap:.0f}% of their cost" + (f", with at least {need} of them" if need else ""))
+    stats = (f"{wk['settled']} settled ({wk['open']} still open), cost ${wk['spent_usd']:.2f}, "
+             f"P&L ${wk['pnl_usd']:+.2f}"
+             + ("" if wk["loss_pct"] is None else f" ({-wk['loss_pct']:+.1f}%)"))
+    if wk["settled"] < need:
+        first = rec.get("decision") != "waiting"
+        rec = {"decision": "waiting", "checked_at": now.isoformat(), "rule": rule,
+               "paper_week": wk, "why": f"only {wk['settled']} settled paper buys; need {need}"}
+        if first:
+            notify("Kalshi weather-edge: NOT live yet (too few paper trades)",
+                   f"<p>The scheduled go-live check ran. Rule: {rule}.</p><p>Paper week: "
+                   f"{stats}.</p><p>It stays on paper and re-checks every "
+                   f"{AUTO_ARM_RECHECK_H:.0f} hours until it has {need}.</p>")
+    elif wk["loss_pct"] is not None and wk["loss_pct"] >= cap:
+        rec = {"decision": "refused", "checked_at": now.isoformat(), "rule": rule,
+               "paper_week": wk, "why": f"paper week lost {wk['loss_pct']:.1f}% (limit {cap:.0f}%)"}
+        notify("Kalshi weather-edge: REFUSED to go live (paper losses)",
+               f"<p>The scheduled go-live check ran. Rule: {rule}.</p><p>Paper week: "
+               f"{stats}.</p><p>It stays on paper. Going live now needs you.</p>")
+    else:
+        rec = {"decision": "armed", "checked_at": now.isoformat(), "armed_at": now.isoformat(),
+               "rule": rule, "paper_week": wk, "why": "paper week passed the rule"}
+        notify("Kalshi weather-edge is now LIVE",
+               f"<p>The scheduled go-live check passed. Rule: {rule}.</p><p>Paper week: "
+               f"{stats}.</p><p>It now buys real rain contracts by itself, inside the shared "
+               "$1 per market / $3 per day caps. Stop it alone: ask Claude to run "
+               "<code>kalshi_weather_edge.py --disarm</code> on the VM; the copier's halt file "
+               "stops everything.</p>")
+    ct._write_json(AUTO_ARM_FILE, rec)
+    return rec
+
+
+def disarm():
+    """Switch the scheduled go-live off on this host (a disarm, never an arm)."""
+    raw = ct._read_json(CONFIG_FILE, {})
+    raw = raw if isinstance(raw, dict) else {}
+    raw["auto_arm_enabled"] = False
+    ct._write_json(CONFIG_FILE, raw)
+    return armed()
+
+
 # ------------------------------------------------------------------- run ---
 
 def run(now=None, dry_run=False, place=None, market_fetch=None, scan_fn=None, cfg=None):
@@ -796,6 +932,11 @@ def run(now=None, dry_run=False, place=None, market_fetch=None, scan_fn=None, cf
     place = place or kc.place_order
     market_fetch = market_fetch or (lambda t: kc._get(
         f"/markets/{urllib.parse.quote(str(t))}").get("market"))
+    if not dry_run and not ARM_FILE.exists():
+        try:
+            auto_arm_check(now=now, cfg=cfg)
+        except Exception:
+            pass                                  # the Manager reports a missed check
     is_live, why_not = armed()
     if dry_run:
         is_live, why_not = False, "dry run"
@@ -933,7 +1074,10 @@ def health(now=None):
     """Findings for the Manager: [] when fine or not deployed on this host."""
     now = now or datetime.now(timezone.utc)
     arm = ct._read_json(ARM_FILE, {})
-    armed_intent = isinstance(arm, dict) and arm.get("armed") is True
+    auto = ct._read_json(AUTO_ARM_FILE, {})
+    armed_intent = (isinstance(arm, dict) and arm.get("armed") is True) or (
+        isinstance(auto, dict) and auto.get("decision") == "armed"
+        and load_config()["auto_arm_enabled"])
     if not (STATE_FILE.exists() or ARM_FILE.exists()):
         return []
     out = []
@@ -950,6 +1094,12 @@ def health(now=None):
     if armed_intent and not live:
         out.append({"kind": "WEATHER_ARMED_BUT_PAPER", "severity": "CRITICAL",
                     "detail": f"weather-edge is armed but trading on paper because: {why}"})
+    due = ct._parse_ts(AUTO_ARM_AT)
+    a = ct._read_json(AUTO_ARM_FILE, {})
+    if (due and now > due + timedelta(hours=3) and load_config()["auto_arm_enabled"]
+            and not (isinstance(a, dict) and a.get("decision"))):
+        out.append({"kind": "WEATHER_AUTO_ARM_MISSED", "severity": "HIGH",
+                    "detail": f"the scheduled go-live check due {AUTO_ARM_AT} has not run"})
     s = st.get("stats") or {}
     if last is not None and s and (s.get("error") or (s.get("eligible", 0) > 0
                                                        and s.get("priced", 0) == 0)):
@@ -957,6 +1107,17 @@ def health(now=None):
                     "detail": s.get("error") or f"priced 0 of {s.get('eligible')} weather "
                     "markets: the NBM forecast feed (IEM) is down or stale"})
     return out
+
+
+def _auto_arm_line(cfg):
+    a = ct._read_json(AUTO_ARM_FILE, {})
+    a = a if isinstance(a, dict) else {}
+    if not cfg["auto_arm_enabled"]:
+        return "scheduled go-live switched OFF (auto_arm_enabled: false)"
+    if not a.get("decision"):
+        return (f"automatic at {AUTO_ARM_AT[:16]}Z unless the last {AUTO_ARM_WINDOW_DAYS}d of "
+                f"settled paper buys lost {cfg['auto_arm_max_loss_pct']:.0f}% or more")
+    return f"{a['decision'].upper()} at {str(a.get('checked_at'))[:16]}: {a.get('why')}"
 
 
 def report_lines(now=None):
@@ -970,6 +1131,7 @@ def report_lines(now=None):
            f"    mode      : {'LIVE' if live else 'paper (' + why + ')'}",
            f"    rule      : forecast >= break-even + {cfg['margin']:.2f}, every source agrees, "
            f"target day within {cfg['max_lead_h']:.0f}h, shared copier caps",
+           "    go-live   : " + _auto_arm_line(cfg),
            f"    last run  : {st.get('last_run', 'never')[:16]}  examined {s.get('eligible', 0)} "
            f"markets, priced {s.get('priced', 0)}, buy signals {st.get('n_buy_signals', 0)}"]
     for o in st.get("orders") or []:
@@ -1195,7 +1357,13 @@ def main(argv=None):
     ap.add_argument("--backtest", nargs=2, metavar=("FIRST", "LAST"))
     ap.add_argument("--decide-hour", type=int, default=20)
     ap.add_argument("--kinds", help="comma list: rain,high,low (default all)")
+    ap.add_argument("--disarm", action="store_true",
+                    help="switch the scheduled go-live off on this host")
     a = ap.parse_args(argv)
+    if a.disarm:
+        live, why = disarm()
+        print(f"scheduled go-live OFF on this host; now {'LIVE (own arm file)' if live else 'paper: ' + why}")
+        return 0
     if a.backtest:
         r = backtest(a.backtest[0], a.backtest[1], a.decide_hour,
                      kinds=set(a.kinds.split(",")) if a.kinds else None)

@@ -64,6 +64,7 @@ institutional-tracker/data/kalshi_weather_edge_config.json
 institutional-tracker/data/kalshi_weather_edge_state.json
 institutional-tracker/data/kalshi_weather_edge_paper.jsonl
 institutional-tracker/data/kalshi_weather_edge_log.jsonl
+institutional-tracker/data/kalshi_weather_auto_arm.json
 # sync_check_watchdog.py runtime state (VM only)
 institutional-tracker/data/sync_watchdog_state.json
 institutional-tracker/data/sync_watchdog_report.json

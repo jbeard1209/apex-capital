@@ -1,7 +1,12 @@
 # Kalshi weather-edge strategy (built 2026-11-25)
 
-**Status: shipped in PAPER mode. Not armed. The backtest found no proven edge,
-so it should not go live until its paper record says otherwise.**
+**Status: PAPER mode now; it goes LIVE BY ITSELF on 2026-12-02 at 4 PM ET
+unless its last 7 days of settled paper buys lost 20% or more** (Jack,
+2026-11-25: "in a week tho make it live", "unless it heinously loses money",
+"make it automatic so i dont have to put in a command", "if it made fewer than
+5 trades thats just fine", "only dont turn it on if it lost 20% or more").
+The backtest found no proven edge (below), so expect roughly break-even to a
+small loss, bounded by the shared $3/day cap.
 
 ## What it does
 `institutional-tracker/kalshi_weather_edge.py`, run hourly at :20 on the VM,
@@ -55,7 +60,22 @@ cd ~/institutional-tracker
 4. Add the deny rules for `.kalshi_weather_armed` to the Mac's Claude settings
    (listed in `docs/audit/2026-11-11-permissions-setup.md`).
 
-## Arm / stop (Chairman only)
+## Scheduled go-live (`auto_arm_check`)
+* From `AUTO_ARM_AT` = 2026-12-02 21:00 UTC, every run checks once: paper buys
+  opened in the 7 days before, settled by Kalshi. Loss ≥ `auto_arm_max_loss_pct`
+  (20) of their cost → REFUSED (final; going live then needs Jack). Otherwise
+  → ARMED (zero trades arms too; `auto_arm_min_settled` defaults to 0).
+* The decision is written to `data/kalshi_weather_auto_arm.json` and emailed
+  to Jack once (urgent), and shown on the `--report` "go-live" line. The
+  Manager raises WEATHER_AUTO_ARM_MISSED if the check has not run 3h after.
+* Every copier gate still applies (KALSHI_ENV=live, key, `.kalshi_armed`,
+  `.kalshi_copytrade_armed`, no halt file). The bot never writes an arm file.
+* Change the threshold: `{"auto_arm_max_loss_pct": 10}` in
+  `data/kalshi_weather_edge_config.json` on the VM (clipped at 50).
+* Stop it alone: `~/venv/bin/python3 kalshi_weather_edge.py --disarm` on the VM
+  (writes `auto_arm_enabled: false`; paper from the next run).
+
+## Arm / stop by hand (Chairman only)
 Arm (VM): `echo '{"env": "live", "armed": true}' > ~/institutional-tracker/data/.kalshi_weather_armed`
 Stop it alone: `rm ~/institutional-tracker/data/.kalshi_weather_armed` (back to paper at the next run).
 Stop the whole Kalshi desk: the copier's halt file / arm file, as before.
