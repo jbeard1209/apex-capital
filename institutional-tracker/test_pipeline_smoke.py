@@ -39164,6 +39164,107 @@ class TestTheSyncCheckIsItselfWatched(unittest.TestCase):
         self.assertLess(S.HEARTBEAT_S / 3600.0 * 2, self.W.STALE_H)
 
 
+class TestM03AnUnfilledOrderIsStillExposure(unittest.TestCase):
+    """2026-11-21/22: every Canary RED cycle re-bought SH because the earlier
+    buys were queued, not filled. 2,206 shares (~80% of the account) filled
+    together on Monday. Positions alone cannot see an order that is waiting."""
+
+    def setUp(self):
+        import risk_gate
+        self.G = risk_gate
+        risk_gate.clear_reservations()
+        self.addCleanup(risk_gate.clear_reservations)
+        for name, fake in (("limits", lambda: {"cash_floor": 0.20, "max_positions": 20}),
+                           ("pause_state", lambda *a, **k: None),
+                           ("_quote", lambda s: 100.0)):
+            p = patch.object(risk_gate, name, fake)
+            p.start()
+            self.addCleanup(p.stop)
+
+    @staticmethod
+    def _snap(open_orders, positions=None, cash=60000.0):
+        return {"cash": cash, "portfolio_value": 100000.0,
+                "positions": {s: {"qty": q, "price": 100.0}
+                              for s, q in (positions or {}).items()},
+                "open_orders": open_orders}
+
+    @staticmethod
+    def _o(symbol, side="buy", qty=73.0):
+        return {"symbol": symbol, "side": side, "qty": qty, "price": None}
+
+    def test_a_second_buy_while_the_first_waits_is_blocked(self):
+        allowed, verdict, _ = self.G.check(
+            "SH", "OrderSide.BUY", 73, snap=self._snap([self._o("SH")]))
+        self.assertFalse(allowed)
+        self.assertEqual("BLOCK_PENDING_ORDER", verdict)
+
+    def test_POISON_PILL_nothing_waiting_still_allows_the_buy(self):
+        allowed, verdict, _ = self.G.check("NVDA", "buy", 10, snap=self._snap([]))
+        self.assertTrue(allowed)
+        self.assertEqual("ALLOW_WITHIN_LIMITS", verdict)
+
+    def test_a_second_short_open_while_the_first_waits_is_blocked(self):
+        _, verdict, _ = self.G.check(
+            "BA", "sell", 5, snap=self._snap([self._o("BA", "sell", 5.0)]))
+        self.assertEqual("BLOCK_PENDING_ORDER", verdict)
+
+    def test_an_exit_is_never_blocked_by_a_waiting_order(self):
+        snap = self._snap([self._o("KO", "sell", 10.0)], positions={"KO": 10.0})
+        _, verdict, _ = self.G.check("KO", "sell", 10, snap=snap)
+        self.assertEqual("ALLOW_EXIT", verdict)
+
+    def test_a_waiting_exit_does_not_block_a_buy_of_another_name(self):
+        snap = self._snap([self._o("KO", "sell", 10.0)], positions={"KO": 10.0})
+        allowed, _, _ = self.G.check("NVDA", "buy", 10, snap=snap)
+        self.assertTrue(allowed)
+
+    def test_waiting_buys_spend_the_cash_floor(self):
+        snap = self._snap([self._o("AAA", qty=350.0)], cash=60000.0)
+        allowed, verdict, _ = self.G.check("NVDA", "buy", 100, price=100.0, snap=snap)
+        self.assertFalse(allowed)
+        self.assertEqual("BLOCK_CASH_FLOOR", verdict)
+
+    def test_waiting_buys_take_position_slots(self):
+        snap = self._snap([self._o("AAA", qty=1.0)],
+                          positions={"SYM%02d" % i: 1.0 for i in range(19)})
+        allowed, verdict, _ = self.G.check("NVDA", "buy", 1, price=10.0, snap=snap)
+        self.assertFalse(allowed)
+        self.assertEqual("BLOCK_MAX_POSITIONS", verdict)
+
+    def test_unreadable_open_orders_refuse_the_hedge_exemption(self):
+        import portfolio_beta
+        with patch.object(portfolio_beta, "is_structural_hedge", lambda s: True):
+            out = self.G._hedge_verdict("SH", "buy", 73, 35.0, self._snap(None))
+        self.assertFalse(out["allowed"])
+        self.assertIn("open orders could not be read", out["reason"])
+
+    def test_the_snapshot_reads_open_orders_net_of_fills(self):
+        from types import SimpleNamespace as NS
+        client = MagicMock()
+        client.get_account.return_value = NS(cash="1000", portfolio_value="2000")
+        client.get_all_positions.return_value = []
+        client.get_orders.return_value = [
+            NS(symbol="sh", side=NS(value="buy"), qty="73", filled_qty="3",
+               limit_price=None)]
+        snap = self.G.snapshot(client=client, force=True)
+        self.assertEqual([{"symbol": "SH", "side": "buy", "qty": 70.0,
+                           "price": None}], snap["open_orders"])
+
+    def test_a_failed_order_read_is_none_not_empty(self):
+        from types import SimpleNamespace as NS
+        client = MagicMock()
+        client.get_account.return_value = NS(cash="1000", portfolio_value="2000")
+        client.get_all_positions.return_value = []
+        client.get_orders.side_effect = RuntimeError("api down")
+        self.assertIsNone(self.G.snapshot(client=client, force=True)["open_orders"])
+
+    def test_a_reservation_drops_the_cached_snapshot(self):
+        import time
+        self.G._snapshot_cache.update(at=time.time(), snap=self._snap([]))
+        self.G.reserve("SH", 2600.0)
+        self.assertIsNone(self.G._snapshot_cache["snap"])
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.
