@@ -91,3 +91,22 @@ Backup before claim: VM `data/cit_implementation_queue.before-fixer-claim.<UTC s
 The PT-collision row's second half ("PROCESS_IMPROVEMENT unrouted") is not fixed: PT proposals go to
 `rd_pod_pending.json` → `rd_pod_board` → `rd_pod_approved.json`, and no executor reads
 `rd_pod_approved.json`. Whether R&D pod approvals should reach `board_dispatch` is a design call.
+
+## specialist-fixer-run 2026-11-26 ~08:45-09:10Z (all six areas; read-only on the VM, deploy_stamp d8b4986)
+
+No code fix this run. Every open group in risk, ops, wiring, fe, research and kalshi either has a
+recorded premise check from 11-19..11-26, an open fixer PR (#64-#96), or is a board/Chairman call.
+Nothing was claimed. New checks:
+
+| Row(s) | Premise | Check | Verdict |
+|---|---|---|---|
+| `loop-sig-6910a9e170de`, `loop-sig-0f72893682f3` (ops, `ml_research_team_leader` log missing) | job runs nowhere | VM crontab now has `0 7 * * * ... ml_research_team_leader.py` (arrived with the 11-25 deploy); `logs/ml_research_team_leader.log` mtime 2026-11-26 07:00, last line "complete — elapsed 16.0s" | false (scheduled and running), supersede |
+| `loop-sig-b0725b67137e`, `-b62d906d23a8`, `-41b3f4a76a2c`, `-38b8a2c066e0`, `-21837bc97ded`, `-3616daec9161` (ops stale-cron) | job runs nowhere | `crontab -l` on VM: 0 lines for ml_data_watchdog, ml_alpha_decay_monitor, fe_cit_agent, portfolio_risk_dashboard | still true; unchanged decision for Jack (schedule or retire), no cron line added |
+| `loop-sig-52f253043d5e` (disk) | disk elevated | `df -h /` 72% of 9.7G, 2.7G free; the 155M `historical_13f.before-two-sigma-cik.20261119201815.db` backup is still there | still true, not a code fix |
+| risk `loop-sig-b92740cbf61d`, `LO-20261118201625-unexplained_loss` | attribution stale | `performance_history.json` written 2026-11-25 20:17 on the VM; `loss_attribution.py` deliberately leaves `loss_attribution` to the board/Chairman | unchanged: not a fixer row |
+
+**Process note:** rows marked "supersede now" since 2026-11-20 (heartbeat, pregenerate_lessons x28,
+runs_match_schedule, deployed/shipped set, BBIO/FICO/MSCI/TDG, the ^VIX row, CIT-2026-267/268/210/1448)
+are still `queued`/`needs_human` on the VM six days later. The routine may only record a supersede, not
+run one, so nothing closes them. Each run re-reads the same rows. Someone has to run
+`board_dispatch.py --supersede` on the VM, or authorise the routine to.
