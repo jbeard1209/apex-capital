@@ -392,6 +392,19 @@ def _build_etf_entry(
 def _build_regime_summary(bridge: dict, hist: dict, spy_1d_return: Optional[float] = None) -> dict:
     """Summarise current macro regime for the board meeting."""
     regime = bridge.get("regime", {})
+    # Derive the regime from rd_historical_context.json itself when it has data, using
+    # the bridge's own derivation. The bridge file is a copy of the PREVIOUS cycle: on
+    # the VM cron this agent runs at :15/19:30 and ml_rd_bridge_agent rewrites the
+    # bridge at :30/19:45, so its rd_vix was always one cycle stale (2026-11-25: the
+    # 19:30 brief said VIX 33.5 while the 19:15 history said 28.1, and the 20:00 board
+    # exited on "VIX=33.5 exceeds 30"). The bridge stays the fallback.
+    cur = (hist or {}).get("current_regime") if isinstance(hist, dict) else None
+    if isinstance(cur, dict) and cur.get("data_available"):
+        try:
+            from ml_rd_bridge_agent import _build_regime_context
+            regime = _build_regime_context(hist)
+        except Exception as exc:
+            log.warning("regime from rd_historical_context failed (%s) — using bridge", exc)
     bull = regime.get("rd_regime_bull", 1)
     bear = regime.get("rd_regime_bear", 0)
     vix = regime.get("rd_vix", 20.0)
