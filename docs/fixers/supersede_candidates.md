@@ -91,3 +91,23 @@ Backup before claim: VM `data/cit_implementation_queue.before-fixer-claim.<UTC s
 The PT-collision row's second half ("PROCESS_IMPROVEMENT unrouted") is not fixed: PT proposals go to
 `rd_pod_pending.json` → `rd_pod_board` → `rd_pod_approved.json`, and no executor reads
 `rd_pod_approved.json`. Whether R&D pod approvals should reach `board_dispatch` is a design call.
+
+## specialist-fixer-run 2026-11-26 ~20:45Z (read-only checks on the VM; stamp d8b4986, deployed 2026-11-25 21:43Z)
+
+Nothing new to fix in risk, ops, wiring, fe, research or kalshi. Every open group has
+either an open fixer PR (#64 #66 #67 #68 #74 #75 #76 #81 #82 #83 #86 #87 #92 #96) or a recorded check
+from an earlier run (11-20, 11-24, 11-25, and 11-26 at ~05:45Z and ~08:48Z). The only rows filed
+since the 08:48Z run are 5 more `LT-*-loss_no_attribution` copies (not a fixer row; PR #76 stops the
+re-filing) and two `awaiting_chairman` rows (Kelly sizing, ETF zero picks), which go to the Chairman.
+
+**The rerun-job loop that PR #86 fixes is still running on the VM, under new signature ids.**
+| Row | Job | `executed` reruns filed in the VM queue | Job health |
+|---|---|---|---|
+| `loop-sig-a9c8bd129799` | ML improvement agent | 11-24: 1, 11-25: 6, 11-26: 5 | `logs/ml_improve_20261126.log` written 06:30Z today |
+| `loop-sig-2733dd4cbc6c` | ML drift monitor | 11-24: 1, 11-25: 6, 11-26: 5 | `logs/ml_feature_drift.log` written 13:30Z today |
+
+Check: `grep -c RERUN_REPEAT_WINDOW_DAYS board_dispatch.py` on the VM returns 0, so #86 is not
+deployed. Both signatures read `SILENT_DROP` in `problem_lifecycle.json`. They differ from #86's
+rows (`loop-sig-4e1461c8cc17`, `loop-sig-a289dc0e1944`), but #86 keys its repeat check on the
+script rather than the row id, so it covers these too. No new PR. The loop stops once #86 is
+merged and deployed. The rows close after the stale Chairman items listed under 11-24 are resolved.
