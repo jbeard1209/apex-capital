@@ -111,3 +111,20 @@ deployed. Both signatures read `SILENT_DROP` in `problem_lifecycle.json`. They d
 rows (`loop-sig-4e1461c8cc17`, `loop-sig-a289dc0e1944`), but #86 keys its repeat check on the
 script rather than the row id, so it covers these too. No new PR. The loop stops once #86 is
 merged and deployed. The rows close after the stale Chairman items listed under 11-24 are resolved.
+
+## specialist-fixer-run 2026-11-27 ~11:45Z (read-only on the VM; stamp d8b4986, deployed 2026-11-25 21:43Z)
+
+No code fix and nothing claimed. 123 open rows (queued/needs_human, not chairman, not escalated)
+in 23 groups. No row has `queued_at` after the 11-26 20:19Z `LT-201923-loss_no_attribution`
+copy, so nothing is new since the 11-26 ~20:45Z run. The 10:10Z timestamps on the loop rows are
+the sentinel's `last_reseen_at` refresh, not new filings. `grep -c RERUN_REPEAT_WINDOW_DAYS
+board_dispatch.py` on the VM is still 0 (#86 not deployed).
+
+One group had no recorded check:
+
+| Row | Premise | Check | Verdict |
+|---|---|---|---|
+| `COUNCIL-HR-etf_picks-20261123120002` (research, "Macro/ETF pod below output OKR 0/1") | ETF pod produces no picks | TRUE. VM `data/etf_board_meeting.json` 2026-11-27 08:45: `final_vote` EMERGENCY_EXIT, `target_etfs` [], reason "Bear regime confirmed with VIX=26.8>25"; `etf_research_brief.json` 08:15 has all 12 ETFs priced (yfinance 12/12), so the data path works | not a code defect: zero picks is the designed output of the pod's emergency-exit rule. Whether a bear regime should rotate into defensives (the brief itself says `defensive_rotation_advised: true`) instead of going flat is a strategy call. Same problem as `PHM-20261126153002-ETF` (awaiting_chairman); fold this row into it. Not a fixer row |
+
+Not in this routine's area order, seen and left: ml `[job failure] ml_research_team_leader` (2 rows),
+fi "fixed income pipeline has never run" (June).
