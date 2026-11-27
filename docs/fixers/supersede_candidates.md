@@ -128,3 +128,15 @@ One group had no recorded check:
 
 Not in this routine's area order, seen and left: ml `[job failure] ml_research_team_leader` (2 rows),
 fi "fixed income pipeline has never run" (June).
+
+## specialist-fixer-run 2026-11-27 ~14:45Z (read-only on the VM; stamp d8b4986)
+
+No code fix and nothing claimed. Filed since the ~11:45Z run: two more `LT-*-loss_no_attribution`
+copies (not a fixer row), two `executed` rerun-job rows for the ML loop (#86 still not deployed:
+`grep -c RERUN_REPEAT_WINDOW_DAYS board_dispatch.py` = 0), and two `needs_human` ops rows that
+are **new signature ids for jobs already in the 2026-11-19 no-schedule table**:
+
+| Row | Job | Check | Verdict |
+|---|---|---|---|
+| `loop-sig-d0c9c8eebabc` | `fe_cit_agent.py` (same job as `loop-sig-21837bc97ded`) | `crontab -l \| grep -c fe_cit_agent` on VM = 0 | true; Jack's schedule-or-retire call, not a fixer row |
+| `loop-sig-d768c57533e8` | `fe_watchlist_monitor` (same as `loop-sig-e890ba6a27c3`) | `ls fe_watchlist_monitor*` on VM: no such file; no `.py` on the VM or Mac emits the label | moot job. The label comes from a 2026-07-29 Chairman item the sentinel still sees (`kinds: [chairman]`), not from a live check, so there is no check to retire in code. Resolve that Chairman item, then supersede both sigs |
