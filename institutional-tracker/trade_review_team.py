@@ -156,6 +156,11 @@ class TradeHistorianAgent:
 # AGENT 2 — PERFORMANCE ANALYST
 # =============================================================================
 
+def _pp(value, places: int = 1) -> str:
+    """A percentage-point figure, or N/A when it was not measured."""
+    return "N/A" if value is None else f"{value:+.{places}f}pp"
+
+
 class PerformanceAnalystAgent:
     """
     Takes the Historian's trade records and computes statistical analytics:
@@ -163,17 +168,31 @@ class PerformanceAnalystAgent:
     hold-duration patterns, and failure mode classification.
     """
 
-    def _spy_return(self, start: str, end: str) -> float:
-        """SPY return (%) between two ISO date strings."""
+    def _spy_return(self, start: str, end: str) -> Optional[float]:
+        """SPY return (%) from start to end inclusive, or None if not measurable.
+
+        Never 0.0 for a failure: on the VM df["Close"] is a one-column frame,
+        float() raised, and every window read 0.0, so the "vs SPY" figure was
+        just the sum of trade returns (M03 audit, 2026-11-25).
+        """
         try:
-            df = yf.download("SPY", start=start, end=end,
+            # yfinance's end date is exclusive.
+            end_incl = (date.fromisoformat(str(end)[:10]) + timedelta(days=1)).isoformat()
+            df = yf.download("SPY", start=str(start)[:10], end=end_incl,
                              progress=False, auto_adjust=True)
-            if df.empty or len(df) < 2:
-                return 0.0
+            if df is None or df.empty:
+                return None
             prices = df["Close"]
-            return float((prices.iloc[-1] - prices.iloc[0]) / prices.iloc[0] * 100)
-        except Exception:
-            return 0.0
+            if getattr(prices, "ndim", 1) == 2:
+                prices = prices.iloc[:, 0]
+            prices = prices.dropna()
+            if len(prices) < 2:
+                return None
+            ret = float((prices.iloc[-1] - prices.iloc[0]) / prices.iloc[0] * 100)
+            return ret if ret == ret else None
+        except Exception as e:
+            logger.warning(f"  [Performance Analyst] SPY {start}..{end} unavailable: {e}")
+            return None
 
     def _classify_failure(self, trade: dict) -> Optional[str]:
         """Classify why a losing trade lost, if discernible."""
@@ -226,12 +245,16 @@ class PerformanceAnalystAgent:
         worst = min(trades, key=lambda t: t["pnl_pct"])
 
         # Benchmark comparison (SPY for same periods)
-        portfolio_total = sum(t["pnl_pct"] for t in trades)
-        spy_total       = 0.0
+        # Like with like: only trades whose SPY window could be measured are on
+        # either side of the subtraction.
+        matched = []
         for t in trades:
             if t.get("entry_date") and t.get("exit_date"):
-                spy_total += self._spy_return(t["entry_date"], t["exit_date"])
-        benchmark_delta = portfolio_total - spy_total
+                spy = self._spy_return(t["entry_date"], t["exit_date"])
+                if spy is not None:
+                    matched.append((t["pnl_pct"], spy))
+        spy_total       = sum(s for _, s in matched) if matched else None
+        benchmark_delta = (sum(p for p, _ in matched) - spy_total) if matched else None
 
         # Failure mode breakdown
         failure_modes: dict[str, int] = defaultdict(int)
@@ -304,7 +327,9 @@ class PerformanceAnalystAgent:
                 "This suggests excessive reaction to short-term noise. "
                 "Consider requiring minimum 7-day hold before momentum-reversal exits."
             )
-        if benchmark_delta < -5:
+        if benchmark_delta is None:
+            pass
+        elif benchmark_delta < -5:
             pattern_flags.append(
                 f"UNDERPERFORMING SPY by {abs(benchmark_delta):.1f}pp: "
                 "Portfolio is generating less alpha than a passive index. "
@@ -348,7 +373,7 @@ class PerformanceAnalystAgent:
                 f"Worst trade: {worst['ticker']} ({worst['pnl_pct']:.1f}%). "
                 "Understand what went wrong before re-entering similar setups."
             )
-        if benchmark_delta != 0:
+        if benchmark_delta is not None and benchmark_delta != 0:
             lessons.append(
                 f"vs SPY (same periods): {benchmark_delta:+.1f}pp. "
                 + ("Active management is adding value." if benchmark_delta > 0 else
@@ -365,7 +390,7 @@ class PerformanceAnalystAgent:
                     "non-obvious pattern in the data and state it as an actionable lesson.",
                     f"{len(trades)} closed trades | win rate {win_rate:.0f}% | "
                     f"avg win +{avg_win:.1f}% vs avg loss {avg_loss:.1f}% | "
-                    f"avg hold {avg_hold:.0f}d | vs SPY {benchmark_delta:+.1f}pp\n"
+                    f"avg hold {avg_hold:.0f}d | vs SPY {_pp(benchmark_delta)}\n"
                     f"Failure modes: {fm}\n"
                     f"Win rate by hold-period: {win_by_hold}\n"
                     "2 sentences: the most important lesson the rule-based analysis missed.",
@@ -378,7 +403,7 @@ class PerformanceAnalystAgent:
 
         logger.info(
             f"  [Performance Analyst] Win rate: {win_rate:.0f}% | "
-            f"Avg P&L: {avg_pnl:+.2f}% | vs SPY: {benchmark_delta:+.1f}pp"
+            f"Avg P&L: {avg_pnl:+.2f}% | vs SPY: {_pp(benchmark_delta)}"
         )
 
         return {
@@ -390,8 +415,9 @@ class PerformanceAnalystAgent:
             "avg_hold_days":     round(avg_hold, 1),
             "best_trade":        {"ticker": best["ticker"],  "pnl_pct": best["pnl_pct"]},
             "worst_trade":       {"ticker": worst["ticker"], "pnl_pct": worst["pnl_pct"]},
-            "benchmark_delta":   round(benchmark_delta, 2),
-            "spy_total_same_periods": round(spy_total, 2),
+            "benchmark_delta":   None if benchmark_delta is None else round(benchmark_delta, 2),
+            "benchmark_n_trades": len(matched),
+            "spy_total_same_periods": None if spy_total is None else round(spy_total, 2),
             "failure_modes":     dict(failure_modes),
             "hold_distribution": hold_distribution,
             "win_rate_by_hold":  win_by_hold,
@@ -454,7 +480,7 @@ class ReviewTeamLeader:
         total   = analytics["total_trades"]
         win_r   = analytics.get("win_rate") or 0
         avg_p   = analytics.get("avg_pnl_pct") or 0
-        bd      = analytics.get("benchmark_delta") or 0
+        bd      = analytics.get("benchmark_delta")      # None = not measured
         fails   = analytics.get("failure_modes", {})
 
         grade_impact = "NEUTRAL"
@@ -463,17 +489,17 @@ class ReviewTeamLeader:
         if total < 3:
             notes.append("Too few closed trades for statistical significance.")
         else:
-            if win_r >= 55 and bd >= 0:
+            if win_r >= 55 and bd is not None and bd >= 0:
                 grade_impact = "POSITIVE"
                 notes.append(f"Strong historical performance: {win_r:.0f}% win rate, +{bd:.1f}pp vs SPY.")
-            elif win_r < 40 or bd < -5:
+            elif win_r < 40 or (bd is not None and bd < -5):
                 grade_impact = "NEGATIVE"
                 notes.append(
-                    f"Weak historical performance: {win_r:.0f}% win rate, {bd:+.1f}pp vs SPY. "
+                    f"Weak historical performance: {win_r:.0f}% win rate, {_pp(bd)} vs SPY. "
                     "Should weigh against Manager Agent grade."
                 )
             else:
-                notes.append(f"Adequate historical performance: {win_r:.0f}% win rate, {bd:+.1f}pp vs SPY.")
+                notes.append(f"Adequate historical performance: {win_r:.0f}% win rate, {_pp(bd)} vs SPY.")
 
             if fails.get("stop_loss_triggered", 0) > total * 0.3:
                 grade_impact = "NEGATIVE"
@@ -540,7 +566,7 @@ class ReviewTeamLeader:
                     f"Closed trades: {analytics['total_trades']} | "
                     f"Win rate: {analytics.get('win_rate','?')}% | "
                     f"Avg P&L: {analytics.get('avg_pnl_pct',0):+.1f}% | "
-                    f"vs SPY: {analytics.get('benchmark_delta',0):+.1f}pp\n"
+                    f"vs SPY: {_pp(analytics.get('benchmark_delta'))}\n"
                     f"Top lessons: {_lessons}\n"
                     f"Patterns: {_patterns}\n"
                     f"Directives: {_dir_text}\n\n"
@@ -574,7 +600,7 @@ class ReviewTeamLeader:
         logger.info(
             f"  Summary: {analytics['total_trades']} trades | "
             f"Win rate: {analytics.get('win_rate','N/A')}% | "
-            f"vs SPY: {analytics.get('benchmark_delta',0):+.1f}pp"
+            f"vs SPY: {_pp(analytics.get('benchmark_delta'))}"
         )
         logger.info(f"  Manager directives: {len(manager_directives)}")
         logger.info(f"  Pattern flags: {len(analytics.get('pattern_flags', []))}")
@@ -765,14 +791,14 @@ def _email_chairman(report: dict) -> None:
         subject = (
             f"Apex Capital — Trade Review | "
             f"Win Rate:{a.get('win_rate','N/A')}% | "
-            f"vs SPY:{a.get('benchmark_delta',0):+.1f}pp | "
+            f"vs SPY:{_pp(a.get('benchmark_delta'))} | "
             f"{datetime.now().strftime('%b %d, %Y')}"
         )
         key_metrics = {
             "Closed Trades":  str(a["total_trades"]),
             "Win Rate":       f"{a.get('win_rate',0):.1f}%",
             "Avg P&L":        f"{a.get('avg_pnl_pct',0):+.2f}%",
-            "vs SPY":         f"{a.get('benchmark_delta',0):+.2f}pp",
+            "vs SPY":         _pp(a.get('benchmark_delta'), 2),
         }
         polished = polish_email(html, subject, "review_team", key_metrics)
         success  = send_daily_report(html_body=polished, subject=subject, paper_day=0,

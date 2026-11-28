@@ -443,9 +443,11 @@ def evaluate_manager_agent(manager_log: list[dict],
             n_trades = tr.get("analytics", {}).get("total_trades", 0)
             if n_trades >= 5:
                 impact = ri.get("grade_impact", "NEUTRAL")
-                bench_delta = tr.get("analytics", {}).get("benchmark_delta", 0) or 0
+                bench_delta = tr.get("analytics", {}).get("benchmark_delta")
                 win_rate = ri.get("win_rate", 0)
-                if impact == "POSITIVE":
+                if bench_delta is None:
+                    pass      # not measured: neither bonus nor penalty
+                elif impact == "POSITIVE":
                     score = min(100, score + 8)
                     trade_review_note = (
                         f"Historical win rate {win_rate:.0f}% "

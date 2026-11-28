@@ -2422,6 +2422,430 @@ class TestBoardVoteHeartbeatCountsDeferrals(unittest.TestCase):
         self.assertEqual(src.count('liveness.beat("board_vote"'), 1)
 
 
+# =============================================================================
+# M03 audit (2026-11-25): manager, picks, CRO
+# =============================================================================
+class TestM03HardCeilingTrimExecutes(unittest.TestCase):
+    """The 15% single-name ceiling wrote APPROVED in its rationale and
+    MODIFIED in its verdict, and only APPROVED executes."""
+
+    def _eval(self, action, weight):
+        from manager_agent import evaluate_recommendation
+        return evaluate_recommendation(
+            {"ticker": "NVDA", "action": action, "conviction": 4,
+             "source_agent": "RDTeamLeader", "unrealized_pnl_pct": 1.0,
+             "hold_days": 30, "weight_pct": weight},
+            {"portfolio_value": 100_000, "cash": 80_000,
+             "buying_power": 80_000, "n_positions": 3},
+            canary_alert={})
+
+    def _trader(self, orders=None, raises=False):
+        trader = MagicMock()
+        pos = MagicMock()
+        pos.symbol, pos.qty = "NVDA", "100"
+        trader.client.get_all_positions.return_value = [pos]
+        trader.client.get_open_position.return_value = pos
+        if raises:
+            trader.client.get_orders.side_effect = RuntimeError("api down")
+        else:
+            trader.client.get_orders.return_value = orders or []
+        import pandas as pd
+        trader.get_positions.return_value = pd.DataFrame(
+            [{"ticker": "NVDA", "qty": 100.0, "side": "long"}])
+        return trader
+
+    def _trim(self, trader):
+        import manager_agent
+        with patch.object(manager_agent, "_POD_LEDGER_AVAILABLE", False):
+            return manager_agent.execute_decision(
+                {"ticker": "NVDA", "manager_action": "TRIM"}, trader)
+
+    def _order(self, side):
+        o = MagicMock()
+        o.symbol, o.side = "NVDA", side
+        return o
+
+    def test_position_over_the_hard_ceiling_is_an_approved_trim(self):
+        for action in ("HOLD", "ADD", "BUY_NEW"):
+            d = self._eval(action, 18.0)
+            self.assertEqual((d["manager_decision"], d["manager_action"]),
+                             ("APPROVED", "TRIM"), action)
+
+    def test_position_under_the_ceiling_is_not_force_trimmed(self):
+        d = self._eval("HOLD", 7.0)
+        self.assertNotEqual(d["manager_action"], "TRIM")
+
+    def test_history_directive_cannot_turn_a_ceiling_trim_into_a_hold(self):
+        from manager_agent import _apply_historical_context
+        review = {"manager_directives": [
+            {"rule": "PREFER_HIGH_CONVICTION_ONLY", "reason": "x"}]}
+        self.assertEqual(
+            _apply_historical_context(
+                {"ticker": "NVDA", "action": "ADD", "conviction": 1},
+                review, [], "APPROVED", "TRIM"),
+            ("APPROVED", "TRIM"))
+
+    def test_history_directive_applies_to_an_aliased_or_signal_only_buy(self):
+        from manager_agent import _apply_historical_context
+        review = {"manager_directives": [
+            {"rule": "PREFER_HIGH_CONVICTION_ONLY", "reason": "x"}]}
+        for rec in ({"ticker": "N", "action": "BUY", "conviction": 1},
+                    {"ticker": "N", "signal": "BUY", "conviction": 1}):
+            self.assertEqual(
+                _apply_historical_context(rec, review, [], "APPROVED", "BUY_NEW"),
+                ("MODIFIED", "HOLD"))
+
+    def test_trim_is_not_stacked_on_a_waiting_trim(self):
+        trader = self._trader([self._order("sell")])
+        res = self._trim(trader)
+        self.assertIn("BLOCK_PENDING_ORDER", res["error"])
+        trader.client.submit_order.assert_not_called()
+
+    def test_waiting_order_on_the_other_side_does_not_block_a_trim(self):
+        trader = self._trader([self._order("buy")])
+        self._trim(trader)
+        trader.client.submit_order.assert_called_once()
+
+    def test_unreadable_open_orders_never_block_a_trim(self):
+        trader = self._trader(raises=True)
+        self._trim(trader)
+        trader.client.submit_order.assert_called_once()
+
+
+class TestM03PacingCoversEveryExecutionPath(unittest.TestCase):
+    """The board's 2-new-positions cap lived in run_manager only; the
+    scheduled pipeline (main.py step 4c) executed every approval."""
+
+    def _d(self, ticker, source, action="BUY_NEW"):
+        return {"ticker": ticker, "source_agent": source,
+                "manager_decision": "APPROVED", "manager_action": action,
+                "manager_rationale": []}
+
+    def _run(self, decisions, ok=lambda d: True):
+        from manager_agent import NewPositionPacer
+        pacer, sent = NewPositionPacer(), []
+        for d in decisions:
+            if pacer.admit(d):
+                sent.append(d["ticker"])
+                pacer.record(d, {"executed": ok(d)})
+        return sent
+
+    def test_thirty_approvals_open_at_most_two_positions_one_per_pod(self):
+        ds = ([self._d(f"R{i}", "ReviewAgent") for i in range(15)]
+              + [self._d(f"M{i}", "ml_agent") for i in range(15)])
+        self.assertEqual(self._run(ds), ["R0", "M0"])
+        self.assertIn("[POD PACING]", ds[1]["manager_rationale"][-1])
+        self.assertEqual((ds[1]["manager_decision"], ds[1]["manager_action"]),
+                         ("REJECTED", "HOLD"))
+
+    def test_cycle_cap_applies_across_three_pods(self):
+        ds = [self._d("A", "ReviewAgent"), self._d("B", "ml_agent"),
+              self._d("C", "pod3_etf")]
+        self.assertEqual(self._run(ds), ["A", "B"])
+        self.assertIn("[CYCLE PACING]", ds[2]["manager_rationale"][-1])
+
+    def test_a_refused_order_does_not_use_up_the_slot(self):
+        ds = [self._d("BRK-B", "ReviewAgent"), self._d("KO", "ReviewAgent")]
+        self.assertEqual(self._run(ds, ok=lambda d: d["ticker"] != "BRK-B"),
+                         ["BRK-B", "KO"])
+
+    def test_exits_and_adds_are_never_paced(self):
+        ds = [self._d(t, "ReviewAgent", a) for t, a in
+              (("A", "SELL"), ("B", "TRIM"), ("C", "ADD"), ("D", "SELL"))]
+        self.assertEqual(self._run(ds), ["A", "B", "C", "D"])
+
+    def test_both_execution_loops_ask_the_pacer_before_executing(self):
+        base = Path(__file__).parent
+        for fname, scope in (("main.py", "run_daily"),
+                             ("manager_agent.py", "run_manager")):
+            fn = next(n for n in ast.parse((base / fname).read_text()).body
+                      if isinstance(n, ast.FunctionDef) and n.name == scope)
+            loops = []
+            for loop in (n for n in ast.walk(fn) if isinstance(n, ast.For)):
+                src = ast.unparse(loop)
+                if ("execute_decision(d," in src
+                        and ast.unparse(loop.iter) in ("approved_trades", "decisions")):
+                    loops.append(src)
+            self.assertEqual(len(loops), 1, fname)
+            src = loops[0]
+            self.assertLess(src.index("pacer.admit(d)"),
+                            src.index("execute_decision(d,"), fname)
+            self.assertIn("pacer.record(d, ex)", src, fname)
+
+
+class TestM03LivenessSeesEveryFirmWideBlock(unittest.TestCase):
+    """cro_buy_block stayed green through a three-day board pause because it
+    read the CRO level alone, and the scheduled path never beat it at all."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        p = patch.dict(os.environ, {"APEX_HEARTBEAT_DIR": self.tmp})
+        p.start()
+        self.addCleanup(p.stop)
+        import risk_gate
+        self.pause = Path(self.tmp) / "buy_pause.json"
+        q = patch.object(risk_gate, "PAUSE_PATH", self.pause)
+        q.start()
+        self.addCleanup(q.stop)
+
+    def _beat(self, cro="LOW", canary=None, cvar=False, stored_canary=None):
+        import manager_agent, canary_agent
+        with patch.object(canary_agent, "load_active_alert",
+                          return_value=stored_canary or {}):
+            return manager_agent._liveness_beats(
+                [], [], False, cro_level=cro, canary_alert=canary,
+                cvar_circuit_breaker=cvar)
+
+    def _set_pause(self, active=True, hours=24):
+        until = datetime.now(timezone.utc) + timedelta(hours=hours)
+        self.pause.write_text(json.dumps({
+            "active": active, "expires_at": until.isoformat(),
+            "source": "emergency_board"}))
+
+    def test_open_buys_beat(self):
+        self.assertIn("cro_buy_block", self._beat())
+
+    def test_each_block_withholds_the_beat(self):
+        for kw in ({"cro": "HIGH"}, {"cro": "CRITICAL"},
+                   {"canary": {"level": "ORANGE"}},
+                   {"stored_canary": {"level": "RED"}}, {"cvar": True}):
+            self.assertNotIn("cro_buy_block", self._beat(**kw), kw)
+
+    def test_board_pause_withholds_the_beat(self):
+        self._set_pause()
+        self.assertNotIn("cro_buy_block", self._beat())
+
+    def test_unreadable_pause_file_withholds_the_beat(self):
+        self.pause.write_text("{half")
+        self.assertNotIn("cro_buy_block", self._beat())
+
+    def test_cleared_or_expired_pause_beats(self):
+        for kw in ({"active": False}, {"hours": -1}):
+            self._set_pause(**kw)
+            self.assertIn("cro_buy_block", self._beat(), kw)
+
+    def test_f2_cleared_canary_with_a_level_does_not_block(self):
+        import canary_agent
+        from manager_agent import evaluate_recommendation
+        f = Path(self.tmp) / "canary_alert.json"
+        f.write_text(json.dumps({"active": False, "level": "ORANGE",
+                                 "cleared_at": datetime.now().isoformat()}))
+        alert = canary_agent.load_active_alert(str(f))
+        self.assertEqual(alert, {})
+        d = evaluate_recommendation(
+            {"ticker": "NVDA", "action": "BUY_NEW", "conviction": 4,
+             "source_agent": "RDTeamLeader", "weight_pct": 0},
+            {"portfolio_value": 100_000, "cash": 80_000,
+             "buying_power": 80_000, "n_positions": 3},
+            canary_alert=alert)
+        self.assertEqual(d["manager_decision"], "APPROVED", d["manager_rationale"])
+
+    def test_the_scheduled_pipeline_beats(self):
+        src = (Path(__file__).parent / "main.py").read_text()
+        calls = [n for n in ast.walk(ast.parse(src)) if isinstance(n, ast.Call)
+                 and getattr(n.func, "id", "") == "_liveness_beats"]
+        self.assertEqual(len(calls), 1)
+        self.assertEqual({k.arg for k in calls[0].keywords},
+                         {"canary_alert", "cvar_circuit_breaker"})
+
+
+class TestM03RefusalReasonReachesTheLog(unittest.TestCase):
+    """"submit_buy returned None" hid a board pause and was graded as a
+    broker failure by the risk manager."""
+
+    def _execute(self, action, trader):
+        import manager_agent
+        with patch.object(manager_agent, "_POD_LEDGER_AVAILABLE", False):
+            return manager_agent.execute_decision(
+                {"ticker": "ZZZ", "manager_action": action, "conviction": 4},
+                trader)
+
+    def _trader(self, why):
+        trader = MagicMock()
+        trader.submit_buy.return_value = None
+        trader.submit_sell.return_value = None
+        trader.last_refusal = why
+        return trader
+
+    def test_guard_refusal_is_carried_and_graded_as_governed(self):
+        from risk_manager_agent import GOVERNED_REFUSALS
+        res = self._execute("BUY_NEW", self._trader("BLOCK_CASH_FLOOR: no room"))
+        self.assertIn("BLOCK_CASH_FLOOR", res["error"])
+        self.assertTrue(any(g in res["error"].upper() for g in GOVERNED_REFUSALS))
+
+    def test_broker_failure_is_not_graded_as_governed(self):
+        from risk_manager_agent import GOVERNED_REFUSALS
+        for action in ("BUY_NEW", "SELL"):
+            res = self._execute(action, self._trader("APIError: 500"))
+            self.assertIn("APIError: 500", res["error"])
+            self.assertFalse(
+                any(g in res["error"].upper() for g in GOVERNED_REFUSALS))
+
+    def _real(self, positions):
+        import alpaca_trader
+        t = object.__new__(alpaca_trader.AlpacaTrader)
+        t.get_positions = MagicMock(return_value=positions)
+        t.client = MagicMock()
+        return t
+
+    def test_the_real_trader_names_the_position_cap(self):
+        import alpaca_trader, pandas as pd
+        full = pd.DataFrame(
+            [{"ticker": f"T{i}", "qty": 1}
+             for i in range(alpaca_trader.MAX_OPEN_POSITIONS)])
+        t = self._real(full)
+        self.assertIsNone(t.submit_buy("ZZZ"))
+        self.assertTrue(t.last_refusal.startswith("BLOCK_MAX_POSITIONS"))
+
+    def test_the_real_trader_names_a_missing_position(self):
+        import pandas as pd
+        t = self._real(pd.DataFrame())
+        t.last_refusal = "stale reason from an earlier call"
+        self.assertIsNone(t.submit_sell("ZZZ"))
+        self.assertIn("no position", t.last_refusal)
+
+
+class TestM03StreaksCountClosedTrades(unittest.TestCase):
+
+    def test_wins_and_losses_accumulate_and_reset_each_other(self):
+        from main import _update_streak
+        s = {}
+        for pnl in (-1.0, -2.0, -3.0):
+            _update_streak(s, pnl)
+        self.assertEqual((s["loss_streak"], s["win_streak"]), (3, 0))
+        _update_streak(s, 0)
+        _update_streak(s, None)
+        self.assertEqual(s["loss_streak"], 3)
+        _update_streak(s, 4.0)
+        self.assertEqual((s["loss_streak"], s["win_streak"],
+                          s["last_trade_result"]), (0, 1, "WIN"))
+
+    def test_the_execution_loop_calls_it(self):
+        src = (Path(__file__).parent / "main.py").read_text()
+        self.assertEqual(src.count("_update_streak(state, _pnl_pct)"), 1)
+        self.assertNotIn('ex.get("side") == "sell"', src)
+
+
+class TestM03SpyBenchmarkNeverFakesZero(unittest.TestCase):
+    """On the VM every SPY window read 0.0, so "vs SPY" was the sum of trade
+    returns."""
+
+    def _frame(self, closes):
+        import pandas as pd
+        cols = pd.MultiIndex.from_tuples([("Close", "SPY")])
+        return pd.DataFrame([[c] for c in closes], columns=cols,
+                            index=pd.date_range("2026-11-02", periods=len(closes)))
+
+    def _spy(self, **kw):
+        import trade_review_team as T
+        with patch.object(T.yf, "download", **kw) as dl:
+            return T.PerformanceAnalystAgent()._spy_return(
+                "2026-11-02", "2026-11-04"), dl
+
+    def test_one_column_frame_is_measured(self):
+        got, dl = self._spy(return_value=self._frame([100.0, 101.0, 110.0]))
+        self.assertAlmostEqual(got, 10.0)
+        self.assertEqual(dl.call_args.kwargs["end"], "2026-11-05")
+
+    def test_unmeasurable_windows_are_none(self):
+        import pandas as pd
+        for kw in ({"return_value": pd.DataFrame()},
+                   {"return_value": self._frame([100.0])},
+                   {"side_effect": RuntimeError("rate limit")}):
+            self.assertIsNone(self._spy(**kw)[0], kw)
+
+    def _analytics(self, windows):
+        import trade_review_team as T, apex_llm
+        trades = [{"ticker": f"T{i}", "pnl_pct": pnl, "hold_days": 5,
+                   "outcome": "WIN" if pnl > 0 else "LOSS",
+                   "entry_date": "2026-11-02", "exit_date": f"2026-11-0{3 + i}",
+                   "sector": "Tech", "reason": "x", "exit_reason": "x"}
+                  for i, (pnl, _) in enumerate(windows)]
+        spys = iter([spy for _, spy in windows])
+        with patch.object(T.PerformanceAnalystAgent, "_spy_return",
+                          lambda self, a, b: next(spys)), \
+             patch.object(apex_llm, "is_available", return_value=False):
+            return T.PerformanceAnalystAgent().run(trades), trades
+
+    def test_delta_compares_only_the_trades_that_were_measured(self):
+        a, _ = self._analytics([(10.0, 2.0), (50.0, None), (-4.0, 1.0)])
+        self.assertEqual((a["benchmark_delta"], a["spy_total_same_periods"],
+                          a["benchmark_n_trades"]), (3.0, 3.0, 2))
+
+    def test_nothing_measured_is_none_through_every_consumer(self):
+        import trade_review_team as T
+        a, trades = self._analytics([(-9.0, None), (-9.0, None), (-9.0, None)])
+        self.assertIsNone(a["benchmark_delta"])
+        lead = T.ReviewTeamLeader()
+        rules = [d["rule"] for d in lead._compile_manager_directives(a)]
+        self.assertNotIn("PREFER_HIGH_CONVICTION_ONLY", rules)
+        ri = lead._compile_risk_insights(a, trades)
+        self.assertIsNone(ri["benchmark_delta"])
+        cos = lead._compile_cos_summary(a)
+        html = T._build_html_report({
+            "analytics": a, "trades": trades, "manager_directives": [],
+            "risk_insights": ri, "cos_summary": cos,
+            "generated_at": datetime.now().isoformat()})
+        self.assertIn("—", html)
+        self.assertNotIn("SPY: +0.0", json.dumps(cos, default=str))
+
+
+class TestM03UnmeasuredBenchmarkNeitherPaysNorFines(unittest.TestCase):
+
+    def _score(self, delta):
+        import pandas as pd
+        from risk_manager_agent import evaluate_manager_agent
+        d = {"ticker": "A", "manager_decision": "APPROVED",
+             "manager_action": "BUY_NEW", "manager_rationale": ["x"]}
+        log = [{"decisions": [d], "executions": [{"ticker": "A", "executed": True}]}]
+        tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, tmp, True)
+        os.makedirs(os.path.join(tmp, "data"))
+        with open(os.path.join(tmp, "data", "trade_review_report.json"), "w") as f:
+            json.dump({"analytics": {"total_trades": 10, "benchmark_delta": delta},
+                       "risk_insights": {"grade_impact": "NEGATIVE",
+                                         "win_rate": 30}}, f)
+        old = os.getcwd()
+        os.chdir(tmp)
+        try:
+            return evaluate_manager_agent(log, {"portfolio_value": 100_000},
+                                          pd.DataFrame())["score"]
+        finally:
+            os.chdir(old)
+
+    def test_none_is_not_read_as_a_lagging_zero(self):
+        lagging, unmeasured, beating = (self._score(v) for v in (-8.0, None, 8.0))
+        self.assertLess(lagging, unmeasured)
+        self.assertLessEqual(unmeasured, beating)
+
+
+class TestM03ResearchTeamSurvivesABadPick(unittest.TestCase):
+
+    def test_picks_that_cannot_be_ranked_are_dropped_not_fatal(self):
+        import research_team as rt
+        good = {"ticker": "AAPL", "conviction": 3}
+        bad = [{"ticker": "A"}, {"ticker": "B", "conviction": None},
+               {"ticker": "C", "conviction": "5"},
+               {"ticker": "D", "conviction": float("nan")},
+               {"ticker": "E", "conviction": True}, {"conviction": 4}, "junk"]
+        kept = rt._drop_malformed([good] + bad)
+        self.assertEqual([r["ticker"] for r in kept], ["AAPL"])
+
+    def test_a_numpy_conviction_is_kept(self):
+        import numpy as np, research_team as rt
+        self.assertEqual(len(rt._drop_malformed(
+            [{"ticker": "A", "conviction": np.int64(4)}])), 1)
+
+    def test_no_price_history_scores_no_rsi_point(self):
+        import research_team as rt
+        agent = MagicMock(investment_horizon="short_term")
+        score = rt.SectorResearchAgent._conviction
+        fund = {}
+        unknown = score(agent, {"trend": "unknown", "rsi_14": 50.0}, fund)
+        outside = score(agent, {"trend": "unknown", "rsi_14": 90.0}, fund)
+        self.assertEqual(unknown, outside)
+
+
 class TestWiringContracts(unittest.TestCase):
 
     def test_weather_edge_rows_reach_the_manager_and_the_copier_leaves_them_alone(self):
