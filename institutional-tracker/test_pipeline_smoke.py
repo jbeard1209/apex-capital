@@ -38027,6 +38027,98 @@ class TestRerunStaleJob(unittest.TestCase):
         self.assertIn("cap", r["note"])
 
 
+class TestARerunThatDidNotClearTheAlarmIsNotRepeated(unittest.TestCase):
+    """rerun-job marked a stale-cron row `executed` after one exit-0 rerun. The
+    alarm's source was never the job: on the VM the "ML improvement agent" and
+    "ML drift monitor" rows are kept alive by Jul/Aug Chairman items for labels
+    the cron check no longer measures, so problem_lifecycle_sentinel re-filed
+    the row after every dispatch. Each re-file reran the job again:
+    ml_longterm_improvement_agent.py (a weekly job) and ml_feature_drift_monitor.py
+    each ran ~44 extra times 2026-11-19..24 (two loop-sig ids per job, 18-26
+    `executed` rows each) and the alarm never moved.
+
+    Fix: if this script was already rerun by the handler within
+    RERUN_REPEAT_WINDOW_DAYS and the alarm came back, the rerun is not what
+    clears it. Escalate to the Ops fixer instead of running it again."""
+
+    def setUp(self):
+        import board_dispatch as bd
+        self.bd = bd
+        self._tmp = tempfile.TemporaryDirectory(prefix="rerun_loop_")
+        self.root = Path(self._tmp.name)
+        self.data = self.root / "data"; self.data.mkdir()
+        for n in ("cit_pending_proposals.json", "cit_approved_proposals.json",
+                  "cit_rejected_proposals.json", "cit_implementation_queue.json",
+                  "chairman_action_required.json"):
+            (self.data / n).write_text("[]")
+        self.out = self.root / "ran.txt"
+        self.cron = [f"40 23 * * 0 touch {self.out} # stale_probe_job.py"]
+        self._orig = os.getcwd(); os.chdir(self.root)
+        self._p = [patch.object(bd, "DATA", self.data),
+                   patch.object(bd, "_crontab_lines", return_value=self.cron)]
+        for p in self._p: p.start()
+        bd._reruns_this_run[0] = 0
+        bd._dry[0] = False
+
+    def tearDown(self):
+        for p in self._p: p.stop()
+        self.bd._reruns_this_run[0] = 0
+        os.chdir(self._orig); self._tmp.cleanup()
+
+    def _ago(self, days):
+        from datetime import datetime, timedelta
+        return (datetime.now() - timedelta(days=days)).isoformat()
+
+    def _prior(self, pid, days_ago):
+        return {"proposal_id": pid, "status": "executed",
+                "title": "Cron job stale on weekday -- Stale probe job log no log found",
+                "dispatch_note": "rerun-job: ran stale_probe_job.py once from its crontab "
+                                 "line (exit 0). If the log goes stale again the detector "
+                                 "files a new row",
+                "dispatched_at": self._ago(days_ago)}
+
+    def _new(self, pid):
+        return {"proposal_id": pid, "status": "queued",
+                "title": "Cron job stale on weekday -- Stale probe job log no log found"}
+
+    def _queue(self, rows):
+        (self.data / "cit_implementation_queue.json").write_text(json.dumps(rows))
+
+    def _latest(self, pid):
+        q = json.loads((self.data / "cit_implementation_queue.json").read_text())
+        return [r for r in q if r["proposal_id"] == pid][-1]
+
+    def test_same_row_refiled_after_a_rerun_is_escalated_not_rerun(self):
+        self._queue([self._prior("loop-sig-x", 1), self._new("loop-sig-x")])
+        rep = self.bd.run()
+        self.assertFalse(self.out.exists(), "the job was rerun a second time")
+        row = self._latest("loop-sig-x")
+        self.assertEqual(row["status"], "needs_human", row)
+        self.assertEqual(row["owner_area"], "ops")
+        self.assertIn("already rerun", row["dispatch_note"])
+        self.assertEqual([e["id"] for e in rep["needs_human"]], ["loop-sig-x"])
+
+    def test_another_signature_for_the_same_script_is_also_escalated(self):
+        # loop-sig-a9c8bd129799 and loop-sig-4e1461c8cc17 both mapped to
+        # ml_longterm_improvement_agent.py: the guard keys on the script.
+        self._queue([self._prior("loop-sig-a", 2), self._new("loop-sig-b")])
+        self.bd.run()
+        self.assertFalse(self.out.exists())
+        self.assertEqual(self._latest("loop-sig-b")["status"], "needs_human")
+
+    def test_a_rerun_outside_the_window_may_run_again(self):
+        old = self.bd.RERUN_REPEAT_WINDOW_DAYS + 1
+        self._queue([self._prior("loop-sig-x", old), self._new("loop-sig-x")])
+        self.bd.run()
+        self.assertTrue(self.out.exists())
+        self.assertEqual(self._latest("loop-sig-x")["status"], "executed")
+
+    def test_first_rerun_still_runs(self):
+        self._queue([self._new("loop-sig-x")])
+        self.bd.run()
+        self.assertTrue(self.out.exists())
+
+
 class TestFixerRoutingContract(unittest.TestCase):
     """Producer -> fixer contract: every area route() can return is a fixer with a
     brief file, or the Chairman. A new rule naming an area with no brief is a row
