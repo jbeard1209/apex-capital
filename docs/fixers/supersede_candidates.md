@@ -140,3 +140,15 @@ are **new signature ids for jobs already in the 2026-11-19 no-schedule table**:
 |---|---|---|---|
 | `loop-sig-d0c9c8eebabc` | `fe_cit_agent.py` (same job as `loop-sig-21837bc97ded`) | `crontab -l \| grep -c fe_cit_agent` on VM = 0 | true; Jack's schedule-or-retire call, not a fixer row |
 | `loop-sig-d768c57533e8` | `fe_watchlist_monitor` (same as `loop-sig-e890ba6a27c3`) | `ls fe_watchlist_monitor*` on VM: no such file; no `.py` on the VM or Mac emits the label | moot job. The label comes from a 2026-07-29 Chairman item the sentinel still sees (`kinds: [chairman]`), not from a live check, so there is no check to retire in code. Resolve that Chairman item, then supersede both sigs |
+
+## specialist-fixer-run 2026-11-28 ~05:45Z (read-only on the VM; stamp d8b4986, deployed 2026-11-25 21:43Z)
+
+No code fix and nothing claimed. Precondition held (`fixer_routing.py` present, 1 `def claim`).
+123 open rows in the six areas, every group with an open fixer PR or a recorded check (grepped
+each open row id against the diffs of #64-#98). Filed since the 11-27 ~14:45Z run: three more
+`LT-*-loss_no_attribution` copies (33 queued now; not a fixer row, PR #76 stops the re-filing),
+one `awaiting_chairman` ETF zero-picks row (`PHM-20261127153001-ETF`), and six more `executed`
+rerun-job rows for the ML loop: `loop-sig-a9c8bd129799` and `loop-sig-2733dd4cbc6c`, 4 each on
+11-27. Both jobs ran on their own (`logs/ml_improve_20261127.log` 06:30Z, `logs/ml_feature_drift.log`
+20:19Z), so the reruns do nothing. `grep -c RERUN_REPEAT_WINDOW_DAYS board_dispatch.py` on the VM
+is still 0: #86 is not deployed.
