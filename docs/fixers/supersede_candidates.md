@@ -91,3 +91,30 @@ Backup before claim: VM `data/cit_implementation_queue.before-fixer-claim.<UTC s
 The PT-collision row's second half ("PROCESS_IMPROVEMENT unrouted") is not fixed: PT proposals go to
 `rd_pod_pending.json` → `rd_pod_board` → `rd_pod_approved.json`, and no executor reads
 `rd_pod_approved.json`. Whether R&D pod approvals should reach `board_dispatch` is a design call.
+
+## specialist-fixer-run 2026-11-26 ~05:45Z (read-only checks on the VM; VM stamp d8b4986, deployed 2026-11-25 21:43Z)
+
+An earlier run tonight (2026-11-26 ~02:30Z) did the research checks and wrote the ETF-regime fix
+below, but it never committed or pushed. This run re-checked the premise, proved the test, and
+shipped the fix as branch `claude/fixer-research-20261126`.
+
+| Row(s) | Premise | Check | Verdict |
+|---|---|---|---|
+| `PHM-20261124190050-PROD` (CRITICAL STALE_CODE, deploy drift) | VM is running stale code (f818ede vs HEAD) | VM `deploy_stamp.json` shows sha d8b4986, deployed 2026-11-25T21:43:52Z. `origin/main` is d8b4986. `tools/sync_drift_check.py --no-alert` 05:46Z: IN_SYNC | false (the 11-25 deploy closed it), supersede |
+| `loop-sig-2945be2b1d8e` (research pipeline producing ZERO picks despite 36 agents) | no picks reach the manager | VM `logs/cron_20261125.log`: the research team proposed BUY_NEW XBI and META (optionsflowmonitoragent_cos); the 4★ review directive held both. `ml_live_picks_log.json` written 20:18Z | false (picks are produced; a quality gate holds them), supersede |
+| `loop-sig-f51982771719`, `COUNCIL-HR-etf_picks-20261123120002`, `loop-sig-65007fa6e312` (Macro/ETF 0 picks / below OKR) | ETF pod deploys no capital | `data/etf_pod_orders.json` 05:45Z 11-26: `board_vote` EMERGENCY_EXIT, "Bear regime confirmed with VIX=28.1>25", budget $20,808 unspent, 0 positions | TRUE, caused by the pod's own emergency rule (a risk rule, so no fixer loosens it), not a code defect. Whether HR should count a regime-gated period against the pod's OKR is a board call |
+| `loop-sig-8a1cad8e9084` (zero-pick streaks: 17 exonerated, 0 genuine) | none (an informational HR memo) | the row's own text says 0 genuine concern | not a defect, close |
+| `loop-sig-28f3502e61e5` (INDEX_GAP on SPY) | market event | same as the QQQ row on 2026-11-20 | not a code defect, close |
+| ml `job-failure-3f4f9ec2aa16`, `job-failure-4481b28ac124` (ml_research_team_leader ValueErrors) | job fails repeatedly | `data/job_failure_report.json`: both seen only on 2026-11-25, `active: false`. 58 matching lines in `logs/ml_research_team_leader.log`, but the 11-25 07:00 run ends "complete — elapsed 18.3s" (the errors are caught inside the run) | real but not crashing the job. ML is not in this routine's area order, so it was left for an ML run |
+
+**Fixed on `claude/fixer-research-20261126`: the ETF pod reads last cycle's VIX.** `etf_research_agent`
+took `rd_vix` from `rd_ml_bridge_signals.json`. On the VM cron the agent runs at :15 (19:30 in the
+evening), and `ml_rd_bridge_agent` rewrites the bridge at :30 (19:45), so the regime was always one
+cycle old. Re-checked 2026-11-26: the 05:15Z brief used VIX 28.1 (last night's 19:15 history), while
+`rd_historical_context.json` written at 05:00Z already said 28.3. On 2026-11-25 the 20:00Z board exited
+on "VIX=33.5 exceeds 30" while the fresh history said 28.1.
+- **The fix:** derive the regime from `rd_historical_context.json` using the bridge's own
+  `_build_regime_context`, and keep the bridge as the fallback.
+- **What it does not change:** no threshold moves. With today's tape (bear, VIX 28) the
+  bear+VIX>25 exit still fires, so the ETF zero-pick rows stay open.
+- **Not fixed:** the stale duplicate `predictive_model/etf_research_agent.py` (no cron runs it).

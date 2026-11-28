@@ -39653,6 +39653,55 @@ class TestKalshiWeatherEdgeIsSafeAndShared(unittest.TestCase):
         self.assertGreater(perf["all_time"]["total_usd"], 1.9)
 
 
+class TestETFRegimeReadsThisCyclesVIX(unittest.TestCase):
+    """The ETF pod's regime (and its VIX>30 / bear+VIX>25 EMERGENCY_EXIT) must come from
+    this cycle's rd_historical_context.json, not the bridge's copy of the previous one.
+
+    On the VM cron, etf_research_agent runs at :15 (19:30 in the evening) and
+    ml_rd_bridge_agent rewrites rd_ml_bridge_signals.json at :30 (19:45) — so the
+    bridge regime the agent read was always one cycle old. 2026-11-25: the 16:15 brief
+    said VIX=26.4 while the 16:30 bridge said 33.5; the 19:30 brief said 33.5 while
+    rd_historical_context (written 19:15) said 28.1, and the 20:00 ETF board exited
+    "VIX=33.5 exceeds 30" on that stale figure."""
+
+    def setUp(self):
+        import etf_research_agent as era
+        self.era = era
+        self._state = era.DATA
+        self._tmp = tempfile.TemporaryDirectory()
+        era.DATA = Path(self._tmp.name)          # no state.json → CRO NORMAL
+
+    def tearDown(self):
+        self.era.DATA = self._state
+        self._tmp.cleanup()
+
+    STALE_BRIDGE = {"regime": {"rd_regime_bull": 0, "rd_regime_bear": 1, "rd_vix": 33.5,
+                               "rd_spy_rsi": 39.2, "rd_warning_count": 0,
+                               "rd_spy_overbought": 0, "rd_rising_rates": 0}}
+
+    def test_fresh_history_beats_the_stale_bridge(self):
+        hist = {"generated_at": "2026-11-25T19:15:07",
+                "current_regime": {"spy_trend": "bear", "vix": 28.1, "spy_rsi": 44.2,
+                                   "tlt_trend": "falling_rates", "data_available": True},
+                "warning_signals": []}
+        r = self.era._build_regime_summary(self.STALE_BRIDGE, hist)
+        self.assertEqual(r["vix"], 28.1)
+        self.assertEqual(r["spy_rsi"], 44.2)
+        self.assertEqual(r["regime_label"], "bear")
+
+    def test_a_recovery_in_history_is_not_masked_by_the_bridge(self):
+        hist = {"current_regime": {"spy_trend": "bull", "vix": 15.0, "spy_rsi": 55.0,
+                                   "data_available": True}, "warning_signals": []}
+        r = self.era._build_regime_summary(self.STALE_BRIDGE, hist)
+        self.assertTrue(r["bull"])
+        self.assertNotEqual(r["regime_label"], "bear")
+
+    def test_bridge_is_still_the_fallback_when_history_is_absent(self):
+        for hist in ({}, {"current_regime": {"data_available": False, "vix": 12}}):
+            r = self.era._build_regime_summary(self.STALE_BRIDGE, hist)
+            self.assertEqual(r["vix"], 33.5)
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.
