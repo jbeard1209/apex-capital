@@ -91,3 +91,33 @@ Backup before claim: VM `data/cit_implementation_queue.before-fixer-claim.<UTC s
 The PT-collision row's second half ("PROCESS_IMPROVEMENT unrouted") is not fixed: PT proposals go to
 `rd_pod_pending.json` → `rd_pod_board` → `rd_pod_approved.json`, and no executor reads
 `rd_pod_approved.json`. Whether R&D pod approvals should reach `board_dispatch` is a design call.
+
+## specialist-fixer-run 2026-11-25 ~20:45-21:10Z (all six areas; read-only on the VM, deploy_stamp 5c0ce93)
+
+No code fix this run: every open group was either recorded by an earlier run (11-19..11-25), already
+has an open fixer PR (#64-#92), or is a board/Chairman call. Nothing was claimed. New checks:
+
+| Row(s) | Premise | Check | Verdict |
+|---|---|---|---|
+| `investigator-20261031-kalshi-build-row-not-closed` (kalshi, LOW) | kalshi_calibration leaves a superseded build-or-drop row open | VM `chairman_action_required.json`: exactly one `source=kalshi_calibration` row open (`kalshi-build-20261111-c9f4d8`, the current verdict); `kalshi-build-20260828-0c1bbd` and `-20260908-c9f4d8` are `resolved` in `chairman_decision_queue.json`; `kalshi_calibration.py` ~1542-1580 resolves stale verdict rows via `chairman_queue.resolve(..., note="superseded — ...")`. The same investigator id is `resolved` in the decision queue | false (fixed), supersede |
+| `loop-sig-95a504f02303`, `loop-sig-4d89ad32daf1` (kalshi, old MARGINAL verdict) | build-or-drop verdict open | problem_lifecycle SILENT_DROP, present=false, last seen 2026-11-09 | superseded by the newer verdict, supersede |
+| `loop-sig-642e63669426` (kalshi, UNHARVESTABLE verdict) | open | present=true; this is the live arm-gate decision | Chairman-only (arm gate), not a fixer row |
+| 4 fe loop rows BBIO/FICO/MSCI/TDG, 2 fe "missing" rows, 10 ops stale-cron rows, disk 76% | as filed | problem_lifecycle 18:55Z: all SILENT_DROP, present=false | unchanged from 11-19/11-20/11-24 lists |
+
+**Wiring: the 10 `Sweep: N finding(s)` loop rows cannot close, and the cause is not theirs.**
+`loop-sig-2679ff76d834`, `-6e69805f2cff`, `-78b3962c4a8b`, `-b29c358b47eb`, `-a207bf634fc3`, `-509c68ceb036`,
+`-fb5561020761`, `-348c9edc9f33` (plus `-1d44314ebd26`, `-efde3449bef4`) stay `present=true` because their
+source rows `SWEEP-<KIND>` sit in VM `chairman_action_required.json` as `awaiting_chairman` and in
+`chairman_decision_queue.json` as **`escalated_to_board`** (filed 2026-08-01 / 08-17 / 10-17). The
+2026-11-23 sweep (`data/agent_sweep_report.json` `by_kind`) no longer finds `SWEEP_DID_NOT_RUN` or
+`AGENT_UNREVIEWED` at all, and the counts of the others moved (UNSCHEDULED 45→40, INPUT_UNPRODUCED 13→11,
+OUTPUT_UNCONSUMED 9→8, OUTPUT_STALE 1→2, REPORT_FAILS 3→1). `sweep_governance._reconcile` closes by
+re-observation only in `hr_action_queue.json`; the decided board/Chairman rows have no closer, so a kind
+that has cleared stays "awaiting the Chairman" forever (same shape as [[a-record-that-outlived-its-force]]).
+Not fixed: the source rows are `escalated_to_board`, which no fixer may touch, and auto-closing Chairman
+items from the sweep is a governance design call. For Jack/the board: `SWEEP-SWEEP_DID_NOT_RUN` and
+`SWEEP-AGENT_UNREVIEWED` are moot as of the 11-23 sweep.
+
+Not in this routine's area order, seen and left: ml `job-failure-4481b28ac124` (ml_research_team_leader
+"Missing column provided") and `job-failure-3f4f9ec2aa16` ("unsupported format character '…'"), both
+HIGH and queued. They need an ML-area run.
