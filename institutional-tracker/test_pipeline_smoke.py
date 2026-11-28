@@ -1206,6 +1206,73 @@ class TestBoardSlaVerdictsReachTheChairmanQueue(unittest.TestCase):
         self.assertNotIn("board_verdict", q["q3"])
 
 
+class TestMlDataWatchdogNullRateWarningFormats(unittest.TestCase):
+    """2026-11-28: the null-rate warning read `%.1%%` (no `f`), so every high-
+    null column raised `ValueError: unsupported format character` inside
+    logging -- 64 tracebacks in ml_research_team_leader.log, re-emailed by the
+    job failure monitor every day, and the warning itself never printed."""
+
+    def test_every_watchdog_log_call_formats(self):
+        import sqlite3
+        import ml_data_watchdog as wd
+        conn = sqlite3.connect(":memory:")
+        cols = ", ".join(f'"{c}" REAL' for c in wd.MONITORED_FEATURES)
+        conn.execute(f"CREATE TABLE pipeline_snapshots (snapshot_date TEXT, {cols})")
+        conn.execute("INSERT INTO pipeline_snapshots (snapshot_date) VALUES (date('now'))")
+        rendered = []
+
+        def fmt(msg, *args, **kw):
+            rendered.append(msg % args)      # raises exactly as logging would
+        with patch.object(wd.log, "warning", fmt), patch.object(wd.log, "info", fmt):
+            res = wd.check_feature_null_rates(conn)
+        self.assertTrue(any("High null rate" in r for r in rendered), rendered)
+        self.assertTrue(any("= 100.0%" in r for r in rendered), rendered)
+        self.assertNotEqual(res["status"], "CRITICAL", res.get("detail"))
+
+
+class TestJobFailureMonitorDatesUndatedLogsByLine(unittest.TestCase):
+    """2026-11-28: an undated, append-only log (ml_research_team_leader.log)
+    was dated by its mtime, so EVERY failure line it ever held counted as
+    "today". FRED's parse error, fixed 2026-11-20, stayed REPEATED forever and
+    re-emailed the Chairman each morning after the 07:00 run touched the file.
+    A line's own timestamp decides its day; mtime is only the fallback for a
+    log that carries no timestamps at all."""
+
+    FRED = ("2026-11-20 07:00:17  ERROR     ml_alt_data_agent — FRED VIXCLS unexpected "
+            "error: Missing column provided to 'parse_dates': 'DATE'\n"
+            "Traceback (most recent call last):\n  File \"x.py\", line 1\n"
+            "ValueError: Missing column provided to 'parse_dates': 'DATE'\n")
+    CLEAN = "2026-11-28 07:00:01  INFO      ml_research_team_leader — starting\n"
+
+    def _scan(self, text, now):
+        import job_failure_monitor as jfm
+        with tempfile.TemporaryDirectory() as d:
+            Path(d, "ml_research_team_leader.log").write_text(text)
+            return jfm.scan_logs(Path(d), now=now)
+
+    def test_old_lines_in_a_fresh_undated_log_are_outside_the_window(self):
+        text = self.FRED * 3 + self.CLEAN * 8
+        found, n = self._scan(text, datetime(2026, 11, 28, 8, 0))
+        self.assertEqual(n, 1, "the log is still examined")
+        self.assertEqual(found, {}, "a fixed 11-20 failure is not a failure on 11-28")
+
+    def test_recent_lines_are_dated_by_their_own_timestamp(self):
+        tb = ("2026-11-27 07:00:05  INFO x\nTraceback (most recent call last):\n"
+              "  File \"x.py\", line 1\nValueError: unsupported format character '%' (0x25) at index 29\n"
+              "2026-11-28 07:00:05  INFO x\nTraceback (most recent call last):\n"
+              "  File \"x.py\", line 1\nValueError: unsupported format character '%' (0x25) at index 29\n")
+        found, _ = self._scan(self.FRED + tb, datetime(2026, 11, 28, 8, 0))
+        self.assertEqual(len(found), 1)
+        rec = next(iter(found.values()))
+        self.assertEqual(sorted(rec["days"]), ["2026-11-27", "2026-11-28"])
+        self.assertEqual(rec["count"], 2)
+
+    def test_a_log_with_no_timestamps_still_falls_back_to_mtime(self):
+        found, _ = self._scan("WARNING CIT vote error (non-fatal): boom\n",
+                              datetime.now())
+        self.assertEqual(len(found), 1)
+
+
 class TestJobFailureMonitorCatchesSwallowedCrashes(unittest.TestCase):
     """The board-vote crash sat in four jobs' logs for ~12 weeks as a WARNING.
     job_failure_monitor must fire on exactly that line, stay quiet on clean

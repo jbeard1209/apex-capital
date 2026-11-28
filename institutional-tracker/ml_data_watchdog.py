@@ -220,7 +220,10 @@ def check_feature_null_rates(conn: sqlite3.Connection) -> CheckResult:
             null_summary[col] = round(rate, 4)
             if rate > FEATURE_NULL_WARNING_RATE:
                 high_null.append(f"{col}={rate:.1%}")
-                log.warning("[%s] High null rate: %s = %.1%% (last 30d, n=%d)", name, col, rate * 100, len(df))
+                # 2026-11-28: read `%.1%%` (no `f`) -> ValueError inside logging on every
+                # high-null column (64 tracebacks/run, re-emailed daily by
+                # job_failure_monitor) and the warning never printed.
+                log.warning("[%s] High null rate: %s = %.1f%% (last 30d, n=%d)", name, col, rate * 100, len(df))
 
         for col in absent_features:
             null_summary[col] = 1.0
