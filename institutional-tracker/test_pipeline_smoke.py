@@ -38057,6 +38057,30 @@ class TestFixerRoutingContract(unittest.TestCase):
         self.assertEqual(fr.route({"proposal_id": "LTIA-20261112015815",
                                    "title": "[LTIA] Loss needs corrective action, not just "
                                             "documentation"})[0], "risk")
+
+    def test_live_producers_on_the_vm_queue_do_not_fall_back(self):
+        """VM queue 2026-11-25: 24 open rows reached the wiring fallback. 23 were
+        PerformanceLogicAgent's loss_no_attribution (the twin of the risk row
+        'below starting capital — attribution stale', so one problem sat in two
+        areas), and PHM's CRITICAL STALE_CODE deploy-drift row had no owner at all.
+        Titles copied from the live rows."""
+        import fixer_routing as fr
+        cases = [
+            ({"proposal_id": "LT-120028-loss_no_attribution",
+              "title": "Portfolio -5.8% below start with no current loss attribution (STALE)",
+              "source": "Logic Team / PerformanceLogicAgent"}, "", "risk"),
+            ({"proposal_id": "loop-sig-f726a5bfa6fe",
+              "title": "[LOOP] Recurring problem needs a STRUCTURAL fix, not another band-aid",
+              "source": "Problem Lifecycle Sentinel"},
+             "Portfolio -4.1% below start with no current loss attribution (STALE)", "risk"),
+            ({"proposal_id": "PHM-20261124190050-PROD",
+              "title": "[PROD] STALE_CODE: Deploy drift pod health",
+              "source": "Pod Health Monitor"}, "", "ops"),
+        ]
+        for row, problem, want in cases:
+            area, rule = fr.route(row, problem)
+            self.assertFalse(rule.startswith("fallback"), f"{row['proposal_id']} unrouted")
+            self.assertEqual(area, want, row["proposal_id"])
 class TestManagerReportUnknownHoldDays(unittest.TestCase):
     """review_agent sets hold_days=None when a position's entry date is unknown
     (always, on a host with no entry-date ledger). `d.get('hold_days', 0):>3`

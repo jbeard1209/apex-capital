@@ -27,7 +27,15 @@ _RULES = [
                    r"runs_match_schedule|unreachable|deployed_set_matches_repo|"
                    r"shipped_config_matches_repo|ERROR lines|mail_guard|catch_up|INDEX_GAP|"
                    r"None score|None canary|canary_state"),
+    # Pod Health Monitor's CRITICAL "[PROD] STALE_CODE: Deploy drift" row matched nothing and
+    # sat at the wiring fallback (VM queue 2026-11-25). Deploy freshness is Ops' area; the
+    # deploy itself stays Jack's call.
+    ("ops:deploy-drift", "ops", r"STALE_CODE|deploy drift"),
     ("kalshi", "kalshi", r"kalshi|nested_probabilities"),
+    # PerformanceLogicAgent's loss_no_attribution is the same problem as the risk row
+    # "below starting capital — attribution stale", but 23 of its rows fell to the wiring
+    # fallback (VM queue 2026-11-25), so one problem was owned by two fixers.
+    ("risk:loss-attribution", "risk", r"loss_no_attribution|no current loss attribution"),
     ("risk:broker", "risk", r"positions_conserve|recorded_exits_are_executed|designated writer|"
                             r"unexplained_loss|below starting capital|alpaca|single_writer|"
                             r"signoff_ledger|\bCRO\b|loss needs corrective"),
