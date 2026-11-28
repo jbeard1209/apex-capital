@@ -156,6 +156,41 @@ def _log_day(path: Path, now: datetime):
     return path.stem, mt.date()
 
 
+_LINE_DATE = re.compile(r"^\s*\[?(\d{4}-\d{2}-\d{2})[ T]")
+
+
+def _chunks_by_line_date(lines: list[str], default_day):
+    """Split an UNDATED log into (day, lines) runs by each line's own date.
+
+    2026-11-28: undated append-only logs (ml_research_team_leader.log) were
+    dated by mtime, so every failure the file ever held counted as "today".
+    FRED's parse error, fixed 2026-11-20, stayed REPEATED and re-emailed the
+    Chairman each morning after the 07:00 run touched the file. Undated lines
+    (traceback bodies) belong to the last dated line above them; lines before
+    the first timestamp go with the first one. A log with no timestamps at all
+    keeps the old mtime behaviour, which is the only evidence it has."""
+    out: list = []
+    cur_day, cur, lead = None, [], []
+    for line in lines:
+        m = _LINE_DATE.match(line)
+        if m:
+            try:
+                d = datetime.strptime(m.group(1), "%Y-%m-%d").date()
+            except ValueError:
+                d = None
+            if d is not None and d != cur_day:
+                if cur_day is None:
+                    cur = lead + cur
+                else:
+                    out.append((cur_day, cur))
+                cur_day, cur = d, []
+        (cur if cur_day is not None else lead).append(line)
+    if cur_day is None:
+        return [(default_day, lead)]
+    out.append((cur_day, cur))
+    return out
+
+
 def scan_logs(log_dir: Path = LOG_DIR, now: datetime | None = None,
               window_days: int = WINDOW_DAYS) -> tuple[dict, int]:
     """→ ({sig: {"jobs", "days", "count", "sample"}}, n_logs_examined)."""
@@ -170,13 +205,19 @@ def scan_logs(log_dir: Path = LOG_DIR, now: datetime | None = None,
         if day is None or day < cutoff:
             continue
         n += 1
-        for msg in extract_failures(_read(path)):
-            sig = signature_of(msg)
-            rec = found.setdefault(sig, {"jobs": set(), "days": set(),
-                                         "count": 0, "sample": msg[:300]})
-            rec["jobs"].add(job)
-            rec["days"].add(day.isoformat())
-            rec["count"] += 1
+        lines = _read(path)
+        chunks = ([(day, lines)] if _DATED.match(path.name)
+                  else _chunks_by_line_date(lines, day))
+        for cday, clines in chunks:
+            if cday < cutoff:
+                continue
+            for msg in extract_failures(clines):
+                sig = signature_of(msg)
+                rec = found.setdefault(sig, {"jobs": set(), "days": set(),
+                                             "count": 0, "sample": msg[:300]})
+                rec["jobs"].add(job)
+                rec["days"].add(cday.isoformat())
+                rec["count"] += 1
     return found, n
 
 
